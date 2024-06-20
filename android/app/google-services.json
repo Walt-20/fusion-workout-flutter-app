@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "464590724690",
+    "project_id": "fusion-workout-app",
+    "storage_bucket": "fusion-workout-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:464590724690:android:ab0460ae8beb58ea4b498b",
+        "android_client_info": {
+          "package_name": "fusion.workout.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsqqDV9xOeHwyrkReKuI_szZrGabRBOU0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
