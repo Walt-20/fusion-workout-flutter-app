@@ -66,7 +66,9 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
                   },
                   child: Icon(
                     _obscureText ? Icons.visibility_off : Icons.visibility,
-                    color: _obscureText == false ? Colors.blue : Colors.grey,
+                    color: _obscureText == false
+                        ? Color.fromARGB(237, 255, 134, 21)
+                        : Colors.grey,
                   ),
                 )
               : null, // No suffix icon when isPasswordField is false

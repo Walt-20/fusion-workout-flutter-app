@@ -1,1 +1,43 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"fusion-workout-app","appId":"1:464590724690:android:ab0460ae8beb58ea4b498b","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"fusion-workout-app","configurations":{"android":"1:464590724690:android:ab0460ae8beb58ea4b498b","ios":"1:464590724690:ios:8eb7ce1bae647a464b498b","macos":"1:464590724690:ios:8eb7ce1bae647a464b498b","web":"1:464590724690:web:96d044b833d473214b498b"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "fusion-workout-app",
+          "appId": "1:464590724690:android:ab0460ae8beb58ea4b498b",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "fusion-workout-app",
+          "configurations": {
+            "android": "1:464590724690:android:ab0460ae8beb58ea4b498b",
+            "ios": "1:464590724690:ios:8eb7ce1bae647a464b498b",
+            "macos": "1:464590724690:ios:8eb7ce1bae647a464b498b",
+            "web": "1:464590724690:web:96d044b833d473214b498b"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}
