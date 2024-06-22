@@ -1,70 +1,106 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';
+import 'package:fusion_workouts/firebase_options.dart';
 import 'package:fusion_workouts/main.dart';
 import 'package:integration_test/integration_test.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  setUpAll(() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+  });
+
+  // test login no user credentials
   testWidgets(
-    "Inputting no user credentials shows and error "
-    "and does not allow the user to go to their dashboard or onboarding page. ",
-    (WidgetTester tester) async {
-      // build and intialize the app
-      await Firebase.initializeApp();
-      await tester.pumpWidget(MyApp());
+      "Test login functionality where the user enters credentials not within Auth. ",
+      (WidgetTester tester) async {
+    // Build the app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
 
-      // verify the splashscreen is displayed
-      expect(find.text('Welcome to Fusion Workouts!'), findsOneWidget);
+    expect(find.byType(LoginPage), findsOneWidget);
 
-      await tester.pumpAndSettle(Duration(seconds: 3));
+    final emailField = find.byKey(Key('emailField'));
+    final passwordField = find.byKey(Key('passwordField'));
+    final loginButton = find.byKey(Key('loginButton'));
 
-      expect(find.text('Login'), findsWidgets);
+    // Enter text into the fields
+    await tester.enterText(emailField, 'test@gmail.com');
+    await tester.enterText(passwordField, 'test123');
 
-      await tester.enterText(find.byType(TextField).at(0), 'tucan.com');
-      await tester.enterText(find.byType(TextField).at(1), 'password123');
+    // tap the login button
+    await tester.tap(loginButton);
 
-      await tester.tap(find.byKey(Key('loginButton')));
-      await tester.pumpAndSettle();
+    // wait for the alert message to show.
+    await tester.pumpAndSettle();
 
-      expect(find.byType(LoginPage), findsOneWidget);
-      expect(find.byType(OnBoarding), findsNothing);
-    },
-  );
+    // verify the user is on the login page with an alert message
+    expect(find.byType(LoginPage), findsOneWidget);
+  });
 
-  // testWidgets("sign up test", (WidgetTester tester) async {
-  //   // Build the app and trigger a frame.
-  //   await tester.pumpWidget(const MyApp());
+  // test correct credentials
+  testWidgets(
+      "Test login functionality where user enters correct credentials. ",
+      (WidgetTester tester) async {
+    // Build the app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
 
-  //   // wait for splash screen to navigate to login screen
-  //   await tester.pump(const Duration(seconds: 3));
+    expect(find.byType(LoginPage), findsOneWidget);
 
-  //   // navigate to sing up screen
-  //   final goToSignUp = find.byKey(const Key('signupButton'));
-  //   await tester.tap(goToSignUp);
-  //   await tester.pumpAndSettle();
+    final emailField = find.byKey(Key('emailField'));
+    final passwordField = find.byKey(Key('passwordField'));
+    final loginButton = find.byKey(Key('loginButton'));
 
-  //   // Replace with the actual keys of your TextFormFields and signup button
-  //   final emailField = find.byKey(const Key('emailField'));
-  //   final passwordField = find.byKey(const Key('passwordField'));
-  //   final usernameField = find.byKey(const Key('usernameField'));
-  //   final signupButton = find.byKey(const Key('signupButton'));
+    // Enter text into the fields
+    await tester.enterText(emailField, 'test@example.com');
+    await tester.enterText(passwordField, 'test123');
 
-  //   // Enter text into the fields
-  //   await tester.enterText(emailField, 'test@example.com');
-  //   await tester.enterText(passwordField, 'password123');
-  //   await tester.enterText(usernameField, 'Test User');
+    // tap the login button
+    await tester.tap(loginButton);
 
-  //   // Tap the signup button and trigger a frame
-  //   await tester.tap(signupButton);
-  //   await tester.pumpAndSettle();
+    // wait for the alert message to show.
+    await tester.pumpAndSettle(Duration(seconds: 1));
 
-  //   // Check that the OnBoarding page is displayed
-  //   expect(find.byType(OnBoarding), findsOneWidget);
-  // });
+    // verify the user is on the login page with an alert message
+    expect(find.byType(DashboardPage), findsOneWidget);
+  });
+
+  // test wrong email credentials
+  testWidgets(
+      "Test login functionality where user enters correct credentials. ",
+      (WidgetTester tester) async {
+    // Build the app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    expect(find.byType(LoginPage), findsOneWidget);
+
+    final emailField = find.byKey(Key('emailField'));
+    final passwordField = find.byKey(Key('passwordField'));
+    final loginButton = find.byKey(Key('loginButton'));
+
+    // Enter text into the fields
+    await tester.enterText(emailField, 'test@example.comm');
+    await tester.enterText(passwordField, 'test123');
+
+    // tap the login button
+    await tester.tap(loginButton);
+
+    // wait for the alert message to show.
+    await tester.pumpAndSettle(Duration(seconds: 1));
+
+    // verify the user is on the login page with an alert message
+    expect(find.byType(LoginPage), findsOneWidget);
+  });
 }

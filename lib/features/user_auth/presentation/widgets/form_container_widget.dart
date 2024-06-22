@@ -38,10 +38,11 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
+      padding: const EdgeInsets.all(5),
+      margin: const EdgeInsets.symmetric(horizontal: 25),
       decoration: BoxDecoration(
         color: Colors.grey.withOpacity(.35),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: TextFormField(
         style: TextStyle(color: Colors.blue),

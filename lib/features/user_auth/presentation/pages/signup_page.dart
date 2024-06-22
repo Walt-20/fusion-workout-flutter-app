@@ -1,14 +1,18 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, prefer_final_fields
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_container_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/widgets/my_button.dart';
+import 'dashboard_page.dart';
+import 'signup_page.dart';
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+  final Function()? onTap;
+  const SignUpPage({super.key, required this.onTap});
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -16,18 +20,10 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final FirebaseAuthService _auth = FirebaseAuthService();
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,90 +39,68 @@ class _SignUpPageState extends State<SignUpPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Sign Up",
-                style: TextStyle(fontSize: 27, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              FormContainerWidget(
-                key: Key('usernameField'),
-                controller: _usernameController,
-                hintText: "Username",
-                isPasswordField: false,
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              FormContainerWidget(
-                key: Key('emailField'),
-                controller: _emailController,
-                hintText: "Email",
-                isPasswordField: false,
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              FormContainerWidget(
-                key: Key('passwordField'),
-                controller: _passwordController,
-                hintText: "Password",
-                isPasswordField: true,
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              GestureDetector(
-                key: Key('signupButton'),
-                onTap: _signUp,
-                child: Container(
-                  width: double.infinity,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 85, 85, 85),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Sign Up",
-                      style: TextStyle(
-                          color: Color.fromARGB(237, 255, 134, 21),
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Create an account to get started!",
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Have an account?"),
-                  SizedBox(
-                    width: 5,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
-                          (route) => false);
-                    },
-                    child: Text(
-                      "Login",
-                      style: TextStyle(
-                        color: Color.fromARGB(237, 255, 134, 21),
+                SizedBox(
+                  height: 30,
+                ),
+                FormContainerWidget(
+                  controller: _emailController,
+                  hintText: "Email",
+                  isPasswordField: false,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  controller: _passwordController,
+                  hintText: "Password",
+                  isPasswordField: true,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  controller: _confirmPasswordController,
+                  hintText: "Confirm Password",
+                  isPasswordField: true,
+                ),
+                SizedBox(
+                  height: 30,
+                ),
+                MyButton(
+                  text: "Sign Up",
+                  onTap: _signUp,
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Have an account?"),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    GestureDetector(
+                      onTap: widget.onTap,
+                      child: Text(
+                        "Login",
+                        style: TextStyle(
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -134,25 +108,51 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _signUp() async {
-    String username = _usernameController.text;
-    String email = _emailController.text;
-    String password = _passwordController.text;
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
 
     try {
-      await _auth.signUpWithEmailAndPassword(email, password);
-    } catch (e) {
-      print(e);
+      if (_passwordController.text == _confirmPasswordController.text) {
+        await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password);
+      } else {
+        showAlertMessage("Passwords do not match");
+      }
+      Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context);
+      showAlertMessage(e.code);
     }
 
     if (_auth.user != null) {
-      User? user = _auth.user;
-      user?.updateDisplayName(username);
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => OnBoarding()),
           (route) => false);
     } else {
-      print("No User!");
+      print("User Creation Failed");
     }
+  }
+
+  void showAlertMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Color.fromARGB(237, 255, 134, 21),
+        title: Center(
+          child: Text(
+            message,
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
+    );
   }
 }
