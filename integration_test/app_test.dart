@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/signup_page.dart';
 import 'package:fusion_workouts/firebase_options.dart';
 import 'package:fusion_workouts/main.dart';
 import 'package:integration_test/integration_test.dart';
@@ -21,6 +22,48 @@ void main() {
 
     FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
     FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+  });
+
+  // test sign up functionality
+  testWidgets("Test sign up functionality with credentials. ",
+      (WidgetTester tester) async {
+    // Build the app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    expect(find.byType(LoginPage), findsOneWidget);
+
+    final signupButton = find.byKey(Key('signupButton'));
+
+    // tap the sign up button
+    await tester.tap(signupButton);
+
+    await tester.pumpAndSettle();
+    // should be on the sign up page
+    expect(find.byType(SignUpPage), findsOneWidget);
+
+    final emailField = find.byKey(Key('emailField'));
+    final passwordField = find.byKey(Key('passwordField'));
+    final confirmPasswordField = find.byKey(Key('confirmPasswordField'));
+    final signUp = find.byKey(Key('signupButton'));
+
+    // Enter text into the fields
+    await tester.enterText(emailField, 'test@example.com');
+    await tester.enterText(passwordField, 'test123');
+    await tester.enterText(confirmPasswordField, 'test123');
+
+    await tester.tap(signUp);
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DashboardPage), findsOneWidget);
+
+    final logoutButton = find.byKey(Key('logoutButton'));
+
+    await tester.tap(logoutButton);
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginPage), findsOneWidget);
   });
 
   // test login no user credentials
@@ -48,6 +91,8 @@ void main() {
 
     // verify the user is on the login page with an alert message
     expect(find.byType(LoginPage), findsOneWidget);
+
+    await tester.pumpAndSettle(Duration(seconds: 3));
   });
 
   // test correct credentials
@@ -75,6 +120,14 @@ void main() {
 
     // verify the user is on the login page with an alert message
     expect(find.byType(DashboardPage), findsOneWidget);
+
+    final logoutButton = find.byKey(Key('logoutButton'));
+
+    await tester.tap(logoutButton);
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginPage), findsOneWidget);
   });
 
   // test wrong email credentials

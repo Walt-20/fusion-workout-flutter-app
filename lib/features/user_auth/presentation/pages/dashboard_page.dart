@@ -23,6 +23,7 @@ class DashboardPage extends StatelessWidget {
         actions: [
           // Move the actions inside AppBar
           IconButton(
+            key: Key('logoutButton'),
             icon: Icon(Icons.logout),
             onPressed: () => signOut(context),
           ),

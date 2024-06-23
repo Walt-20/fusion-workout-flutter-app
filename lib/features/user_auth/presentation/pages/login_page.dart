@@ -119,6 +119,23 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void showAlertMessage(String message) {
+    if (message == 'user-not-found') {
+      message = 'User not found';
+    } else if (message == 'wrong-password') {
+      message = 'Wrong password';
+    } else if (message == 'invalid-email') {
+      message = 'Invalid email';
+    } else if (message == 'user-disabled') {
+      message = 'User disabled';
+    } else if (message == 'too-many-requests') {
+      message = 'Too many requests';
+    } else if (message == 'operation-not-allowed') {
+      message = 'Operation not allowed';
+    } else if (message == 'network-request-failed') {
+      message = 'Network request failed';
+    } else {
+      message = 'An error occurred';
+    }
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

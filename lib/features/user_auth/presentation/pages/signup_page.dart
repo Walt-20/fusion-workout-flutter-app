@@ -51,6 +51,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   height: 30,
                 ),
                 FormContainerWidget(
+                  fieldKey: Key('emailField'),
                   controller: _emailController,
                   hintText: "Email",
                   isPasswordField: false,
@@ -59,6 +60,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   height: 10,
                 ),
                 FormContainerWidget(
+                  fieldKey: Key('passwordField'),
                   controller: _passwordController,
                   hintText: "Password",
                   isPasswordField: true,
@@ -67,6 +69,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   height: 10,
                 ),
                 FormContainerWidget(
+                  fieldKey: Key('confirmPasswordField'),
                   controller: _confirmPasswordController,
                   hintText: "Confirm Password",
                   isPasswordField: true,
@@ -75,6 +78,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   height: 30,
                 ),
                 MyButton(
+                  fieldKey: Key('signupButton'),
                   text: "Sign Up",
                   onTap: _signUp,
                 ),
@@ -129,15 +133,6 @@ class _SignUpPageState extends State<SignUpPage> {
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
       showAlertMessage(e.code);
-    }
-
-    if (_auth.user != null) {
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => OnBoarding()),
-          (route) => false);
-    } else {
-      print("User Creation Failed");
     }
   }
 
