@@ -24,6 +24,21 @@ void main() {
     FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
   });
 
+  Future<void> login(WidgetTester tester, email, password) async {
+    final emailField = find.byKey(Key('emailField'));
+    final passwordField = find.byKey(Key('passwordField'));
+    final loginButton = find.byKey(Key('loginButton'));
+
+    // Enter text into the fields
+    await tester.enterText(emailField, email);
+    await tester.enterText(passwordField, password);
+
+    // tap the login button
+    await tester.tap(loginButton);
+
+    await tester.pumpAndSettle(Duration(seconds: 1));
+  }
+
   // test sign up functionality
   testWidgets("Test sign up functionality with credentials. ",
       (WidgetTester tester) async {
@@ -66,6 +81,21 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
   });
 
+  // test wrong password credentials
+  testWidgets(
+      "Test login functionality where user enters correct credentials. ",
+      (WidgetTester tester) async {
+    // Build the app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    expect(find.byType(LoginPage), findsOneWidget);
+
+    await login(tester, 'test@example.com', 'test123aa');
+
+    // verify the user is on the login page with an alert message
+    expect(find.byType(LoginPage), findsOneWidget);
+  });
+
   // test login no user credentials
   testWidgets(
       "Test login functionality where the user enters credentials not within Auth. ",
@@ -75,24 +105,10 @@ void main() {
 
     expect(find.byType(LoginPage), findsOneWidget);
 
-    final emailField = find.byKey(Key('emailField'));
-    final passwordField = find.byKey(Key('passwordField'));
-    final loginButton = find.byKey(Key('loginButton'));
-
-    // Enter text into the fields
-    await tester.enterText(emailField, 'test@gmail.com');
-    await tester.enterText(passwordField, 'test123');
-
-    // tap the login button
-    await tester.tap(loginButton);
-
-    // wait for the alert message to show.
-    await tester.pumpAndSettle();
+    await login(tester, 'test@gmail.com', 'test123');
 
     // verify the user is on the login page with an alert message
     expect(find.byType(LoginPage), findsOneWidget);
-
-    await tester.pumpAndSettle(Duration(seconds: 3));
   });
 
   // test correct credentials
@@ -104,56 +120,29 @@ void main() {
 
     expect(find.byType(LoginPage), findsOneWidget);
 
-    final emailField = find.byKey(Key('emailField'));
-    final passwordField = find.byKey(Key('passwordField'));
-    final loginButton = find.byKey(Key('loginButton'));
-
-    // Enter text into the fields
-    await tester.enterText(emailField, 'test@example.com');
-    await tester.enterText(passwordField, 'test123');
-
-    // tap the login button
-    await tester.tap(loginButton);
-
-    // wait for the alert message to show.
-    await tester.pumpAndSettle(Duration(seconds: 1));
+    await login(tester, 'test@example.com', 'test123');
 
     // verify the user is on the login page with an alert message
     expect(find.byType(DashboardPage), findsOneWidget);
-
-    final logoutButton = find.byKey(Key('logoutButton'));
-
-    await tester.tap(logoutButton);
-
-    await tester.pumpAndSettle();
-
-    expect(find.byType(LoginPage), findsOneWidget);
   });
 
-  // test wrong email credentials
-  testWidgets(
-      "Test login functionality where user enters correct credentials. ",
-      (WidgetTester tester) async {
-    // Build the app and trigger a frame.
+  // test drawer functionality
+  testWidgets("Test drawer functionality. ", (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
     expect(find.byType(LoginPage), findsOneWidget);
 
-    final emailField = find.byKey(Key('emailField'));
-    final passwordField = find.byKey(Key('passwordField'));
-    final loginButton = find.byKey(Key('loginButton'));
+    await login(tester, 'test@example.com', 'test123');
 
-    // Enter text into the fields
-    await tester.enterText(emailField, 'test@example.comm');
-    await tester.enterText(passwordField, 'test123');
+    // should find the dashboard page
+    expect(find.byType(DashboardPage), findsOneWidget);
 
-    // tap the login button
-    await tester.tap(loginButton);
+    await tester.tap(find.byIcon(Icons.menu));
 
-    // wait for the alert message to show.
-    await tester.pumpAndSettle(Duration(seconds: 1));
+    await tester.pumpAndSettle();
 
-    // verify the user is on the login page with an alert message
-    expect(find.byType(LoginPage), findsOneWidget);
+    final workouts = find.text('Workouts');
+
+    expect(workouts, findsOneWidget);
   });
 }

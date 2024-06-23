@@ -136,6 +136,7 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       message = 'An error occurred';
     }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
