@@ -25,17 +25,21 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _fetchEventsFromFirestore();
   }
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
       _focusedDay = day;
       _selectedDay = day;
-      _selectedEvents.value = _getEventsForDay(day);
+      final eventsForDay = _getEventsForDay(day);
+      debugPrint("Selected day events: $eventsForDay");
+      _selectedEvents.value = eventsForDay;
     });
   }
 
   List<Event> _getEventsForDay(DateTime day) {
+    debugPrint("Getting events for day: $day");
     return workouts[day] ?? [];
   }
 
@@ -114,24 +118,63 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       _selectedEvents.value = _getEventsForDay(_selectedDay!);
     });
   }
-  
-  // Future<void> _fetchWorkoutsFromDatabase() async {
-  //   String user = FirebaseAuth.instance.currentUser!.uid;
 
-  //   try {
-  //     final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  //     final snapshot = await firestore.collection('Users').doc(user).collection('events').get();
+  Future<void> _fetchEventsFromFirestore() async {
+    debugPrint("Fetching events from Firestore");
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    final userEventsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .collection('events');
 
-  //     final Map<DateTime, List<Event>> fetchedWorkouts = {};
+    try {
+      final snapshot = await userEventsCollection.get();
+      final Map<DateTime, List<Event>> fetchedEvents = {};
 
-  //     for (var doc in snapshot.docs) {
-  //       final data = doc.data();
-  //       final date = ()
-  //     }
-  //   } catch (e) {
+      for (var doc in snapshot.docs) {
+        debugPrint("Doc ID: ${doc.id}");
+        final data = doc.data();
+        final date = DateTime.parse(
+            doc.id); // Assumes doc.id is a date in ISO 8601 format
+        final eventName = data['name'] as String;
+        final workoutsData = data['workouts'] as List<dynamic>? ?? [];
 
-  //   }
-  // }
+        // Parse workouts
+        final workouts = workoutsData.map((w) {
+          final workoutData = w as Map<String, dynamic>;
+          return Workout(
+            exercise: workoutData['exercise'] ?? '',
+            weight: workoutData['weight'] ?? 0,
+            repetitions: workoutData['repetitions'] ?? 0,
+            sets: workoutData['sets'] ?? 0,
+          );
+        }).toList();
+
+        final event = Event(
+          name: eventName,
+          workouts: workouts,
+        );
+
+        if (fetchedEvents.containsKey(date)) {
+          fetchedEvents[date]!.add(event);
+        } else {
+          fetchedEvents[date] = [event];
+        }
+      }
+
+      debugPrint("Fetched Events: $fetchedEvents");
+
+      setState(() {
+        workouts = fetchedEvents;
+        final eventsForSelectedDay = _getEventsForDay(_selectedDay!);
+        debugPrint(
+            "Events for selected day after fetch: $eventsForSelectedDay");
+        _selectedEvents.value = eventsForSelectedDay;
+      });
+    } catch (e) {
+      print("Error fetching events: $e");
+    }
+  }
 
   Future<void> _saveEventToDatabase(Map<DateTime, List<Event>> events) async {
     String user = FirebaseAuth.instance.currentUser!.uid;
@@ -180,6 +223,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
               child: ValueListenableBuilder<List<Event>>(
                 valueListenable: _selectedEvents,
                 builder: (context, events, _) {
+                  debugPrint("Building ListView with events: $events");
                   return ListView.builder(
                     itemCount: events.length,
                     itemBuilder: (context, index) {
