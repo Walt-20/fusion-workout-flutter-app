@@ -1,11 +1,10 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/entry.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_container_widget.dart';
 
 class OnBoarding extends StatefulWidget {
@@ -138,6 +137,9 @@ class _OnBoardingState extends State<OnBoarding> {
                     ),
                   ),
                 ),
+                SizedBox(
+                  height: 30,
+                ),
               ],
             ),
           ),
@@ -147,7 +149,14 @@ class _OnBoardingState extends State<OnBoarding> {
   }
 
   void _onboard() {
-    User? user = _auth.user;
+    String user = FirebaseAuth.instance.currentUser!.uid;
+    print("onboard called User: " + FirebaseAuth.instance.currentUser!.uid);
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
     if (user != null) {
       try {
         _auth.writeEntryToFirebase(
@@ -163,6 +172,8 @@ class _OnBoardingState extends State<OnBoarding> {
             availability: _availabilityController.text,
           ),
         );
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => DashboardPage()));
       } on FirebaseException catch (e) {
         if (e.code == 'permission-denied') {
           print('You do not have permission to perform this operation.');
@@ -170,7 +181,7 @@ class _OnBoardingState extends State<OnBoarding> {
           print(e);
         }
       } catch (e) {
-        print(e);
+        print("Error writing to Firestore: " + e.toString());
       }
     } else {
       print("No User!");

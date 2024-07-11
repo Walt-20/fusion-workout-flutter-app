@@ -1,14 +1,11 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_container_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/my_button.dart';
-import 'dashboard_page.dart';
-import 'signup_page.dart';
 
 class SignUpPage extends StatefulWidget {
   final Function()? onTap;
@@ -124,12 +121,12 @@ class _SignUpPageState extends State<SignUpPage> {
 
     try {
       if (_passwordController.text == _confirmPasswordController.text) {
-        await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: password);
+        await _auth.signUpWithEmailAndPassword(email, password);
+        print("User signed up with uid: " + FirebaseAuth.instance.currentUser!.uid);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => OnBoarding()));
       } else {
         showAlertMessage("Passwords do not match");
       }
-      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
       showAlertMessage(e.code);
