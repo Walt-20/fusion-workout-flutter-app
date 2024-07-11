@@ -39,7 +39,7 @@ class FirebaseAuthService {
   }
 
   void writeEntryToFirebase(Entry entry) {
-    FirebaseFirestore.instance.collection('Users').add(<String, String>{
+    FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser!.uid).collection('userProfile').add(<String, String>{
       'username': entry.username,
       'email': entry.email,
       'name': entry.name,
