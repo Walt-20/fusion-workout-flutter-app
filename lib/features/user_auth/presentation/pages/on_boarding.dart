@@ -150,7 +150,6 @@ class _OnBoardingState extends State<OnBoarding> {
 
   void _onboard() {
     String user = FirebaseAuth.instance.currentUser!.uid;
-    print("onboard called User: " + FirebaseAuth.instance.currentUser!.uid);
     showDialog(
       context: context,
       builder: (context) => Center(
@@ -178,10 +177,10 @@ class _OnBoardingState extends State<OnBoarding> {
         if (e.code == 'permission-denied') {
           print('You do not have permission to perform this operation.');
         } else {
-          print(e);
+          print("Error Writing to Database");
         }
       } catch (e) {
-        print("Error writing to Firestore: " + e.toString());
+        print("Error Writing to Database");
       }
     } else {
       print("No User!");

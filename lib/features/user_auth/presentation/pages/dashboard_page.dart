@@ -48,14 +48,6 @@ class DashboardPage extends StatelessWidget {
                 );
               },
             ),
-            ListTile(
-              title: const Text('Calories'),
-              onTap: () {},
-            ),
-            ListTile(
-              title: const Text('Settings'),
-              onTap: () {},
-            ),
           ],
         ),
       ),

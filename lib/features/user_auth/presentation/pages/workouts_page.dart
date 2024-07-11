@@ -37,7 +37,6 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   }
 
   List<Event> _getEventsForDay(DateTime day) {
-    debugPrint("Getting events for day: $day");
     return workouts[day] ?? [];
   }
 
@@ -209,7 +208,6 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   }
 
   Future<void> _fetchEventsFromFirestore() async {
-    debugPrint("Fetching events from Firestore");
     String userId = FirebaseAuth.instance.currentUser!.uid;
     final userEventsCollection = FirebaseFirestore.instance
         .collection('Users')
@@ -221,7 +219,6 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       final Map<DateTime, List<Event>> fetchedEvents = {};
 
       for (var doc in snapshot.docs) {
-        debugPrint("Doc ID: ${doc.id}");
         final data = doc.data();
         final date = DateTime.parse(doc.id);
         final eventName = data['name'] as String;
@@ -250,14 +247,15 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         }
       }
 
-      debugPrint("Fetched Events: $fetchedEvents");
-
       setState(() {
         workouts = fetchedEvents;
         _selectedEvents.value = _getEventsForDay(_selectedDay!);
       });
     } catch (e) {
-      print("Error fetching events: $e");
+      const AlertDialog(
+        title: Text("Error"),
+        content: Text("Failed to fetch events"),
+      );
     }
   }
 
@@ -267,7 +265,10 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       final FirebaseAuthService _firestore = FirebaseAuthService();
       await _firestore.writeEventToFirestore(user, events);
     } catch (e) {
-      print("Error saving events: $e");
+      const AlertDialog(
+        title: Text("Error"),
+        content: Text("Error savings events"),
+      );
     }
   }
 
