@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/workout_dialog.dart';
@@ -112,14 +115,30 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     });
   }
 
+  Future<void> _saveEventToDatabase(Map<DateTime, List<Event>> events) async {
+    String user = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      final FirebaseAuthService _firestore = FirebaseAuthService();
+      await _firestore.writeEventToFirestore(user, events);
+    } catch (e) {
+      print("Error saving events: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Workouts"),
-        backgroundColor: const Color.fromARGB(255, 85, 85, 85),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+          title: const Text("Workouts"),
+          backgroundColor: const Color.fromARGB(255, 85, 85, 85),
+          iconTheme: const IconThemeData(color: Colors.white),
+          actions: [
+            IconButton(
+                icon: const Icon(Icons.save),
+                onPressed: () {
+                  _saveEventToDatabase(workouts);
+                })
+          ]),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEventDialog,
         child: Icon(Icons.add),
@@ -160,13 +179,15 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: event.workouts
                                 .map((w) => ListTile(
-                                  title: Text(
-                                      '${w.exercise} (${w.weight} kg, ${w.repetitions} reps, ${w.sets} sets)'),
+                                      title: Text(
+                                          '${w.exercise} (${w.weight} kg, ${w.repetitions} reps, ${w.sets} sets)'),
                                       trailing: IconButton(
                                         icon: Icon(Icons.delete),
-                                        onPressed: () => _deleteWorkout(event, w),
+                                        onPressed: () =>
+                                            _deleteWorkout(event, w),
                                       ),
-                                )).toList(),
+                                    ))
+                                .toList(),
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,

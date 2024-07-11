@@ -25,10 +25,6 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           TextField(
-            controller: _workoutNameController,
-            decoration: InputDecoration(labelText: "Workout Name"),
-          ),
-          TextField(
             controller: _exerciseController,
             decoration: InputDecoration(labelText: "Exercise"),
           ),

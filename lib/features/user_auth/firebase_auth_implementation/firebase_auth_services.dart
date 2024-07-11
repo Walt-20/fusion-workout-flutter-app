@@ -51,7 +51,7 @@ class FirebaseAuthService {
     });
   }
 
-  Future<void> saveEvents(
+  Future<void> writeEventToFirestore(
       String userId, Map<DateTime, List<Event>> events) async {
     final userEventsCollection = FirebaseFirestore.instance
         .collection('Users')
