@@ -114,6 +114,24 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       _selectedEvents.value = _getEventsForDay(_selectedDay!);
     });
   }
+  
+  // Future<void> _fetchWorkoutsFromDatabase() async {
+  //   String user = FirebaseAuth.instance.currentUser!.uid;
+
+  //   try {
+  //     final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //     final snapshot = await firestore.collection('Users').doc(user).collection('events').get();
+
+  //     final Map<DateTime, List<Event>> fetchedWorkouts = {};
+
+  //     for (var doc in snapshot.docs) {
+  //       final data = doc.data();
+  //       final date = ()
+  //     }
+  //   } catch (e) {
+
+  //   }
+  // }
 
   Future<void> _saveEventToDatabase(Map<DateTime, List<Event>> events) async {
     String user = FirebaseAuth.instance.currentUser!.uid;

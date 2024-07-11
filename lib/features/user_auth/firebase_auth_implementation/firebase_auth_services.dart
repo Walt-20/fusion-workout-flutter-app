@@ -53,6 +53,7 @@ class FirebaseAuthService {
 
   Future<void> writeEventToFirestore(
       String userId, Map<DateTime, List<Event>> events) async {
+        print("write events userID is: " + userId);
     final userEventsCollection = FirebaseFirestore.instance
         .collection('Users')
         .doc(userId)
@@ -77,30 +78,6 @@ class FirebaseAuthService {
     } catch (e) {
       print("Error saving events: $e");
     }
-  }
-
-  Future<Map<DateTime, List<Event>>> fetchEvents(String userId) async {
-    final userEventsCollection = FirebaseFirestore.instance
-        .collection('Users')
-        .doc(userId)
-        .collection('events');
-    Map<DateTime, List<Event>> events = {};
-
-    try {
-      final querySnapshot = await userEventsCollection.get();
-      for (var doc in querySnapshot.docs) {
-        final data = doc.data();
-        final date = DateTime.parse(doc.id);
-
-        if (data != null && data['workouts'] != null) {
-          final eventList =
-              (data['workouts'] as List).map((e) => Event.fromMap(e)).toList();
-        }
-      }
-    } catch (e) {
-      print('Error fetching events: $e');
-    }
-    return events;
   }
 
   void signOut(BuildContext context) async {
