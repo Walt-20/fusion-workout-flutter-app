@@ -1,7 +1,7 @@
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
 
 class Event {
-  final String name;
+  String name;
   final List<Workout> workouts;
 
   Event({
