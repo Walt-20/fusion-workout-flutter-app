@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/workout_dialog.dart';
@@ -22,6 +25,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+    _fetchEventsFromFirestore();
   }
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
@@ -33,6 +37,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   }
 
   List<Event> _getEventsForDay(DateTime day) {
+    debugPrint("Getting events for day: $day");
     return workouts[day] ?? [];
   }
 
@@ -70,6 +75,38 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     );
   }
 
+  void _showEditEventDialog(Event event) {
+    final _eventController = TextEditingController(text: event.name);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Edit Event"),
+          content: TextField(
+            controller: _eventController,
+            decoration: InputDecoration(labelText: "Event Name"),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                final newName = _eventController.text;
+                if (newName.isNotEmpty) {
+                  setState(() {
+                    event.name = newName;
+                    _selectedEvents.value = _getEventsForDay(_selectedDay!);
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showAddWorkoutDialog(Event event) async {
     final workout = await showDialog<Workout>(
       context: context,
@@ -86,6 +123,67 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     }
   }
 
+  void _showEditWorkoutDialog(Event event, Workout workout) {
+    final _exerciseController = TextEditingController(text: workout.exercise);
+    final _weightController = TextEditingController(text: workout.weight.toString());
+    final _repsController = TextEditingController(text: workout.repetitions.toString());
+    final _setsController = TextEditingController(text: workout.sets.toString());
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Edit Workout"),
+          content: Column(
+            children: [
+              TextField(
+                controller: _exerciseController,
+                decoration: InputDecoration(labelText: "Exercise"),
+              ),
+              TextField(
+                controller: _weightController,
+                decoration: InputDecoration(labelText: "Weight (kg)"),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: _repsController,
+                decoration: InputDecoration(labelText: "Repetitions"),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: _setsController,
+                decoration: InputDecoration(labelText: "Sets"),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                final updatedWorkout = Workout(
+                  exercise: _exerciseController.text,
+                  weight: _weightController.text,
+                  repetitions: _repsController.text,
+                  sets: _setsController.text,
+                );
+
+                setState(() {
+                  final index = event.workouts.indexOf(workout);
+                  if (index != -1) {
+                    event.workouts[index] = updatedWorkout;
+                    _selectedEvents.value = _getEventsForDay(_selectedDay!);
+                  }
+                  Navigator.of(context).pop();
+                });
+              },
+              child: Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _deleteEvent(Event event) {
     setState(() {
       workouts[_selectedDay!]?.remove(event);
@@ -100,8 +198,6 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   void _deleteWorkout(Event event, Workout workout) {
     setState(() {
       event.workouts.remove(workout);
-      // If the event has no more workouts, you might want to remove the event as well,
-      // or you can keep it based on your application's requirements.
       if (event.workouts.isEmpty) {
         workouts[_selectedDay!]!.remove(event);
         if (workouts[_selectedDay!]!.isEmpty) {
@@ -112,6 +208,69 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     });
   }
 
+  Future<void> _fetchEventsFromFirestore() async {
+    debugPrint("Fetching events from Firestore");
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    final userEventsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .collection('events');
+
+    try {
+      final snapshot = await userEventsCollection.get();
+      final Map<DateTime, List<Event>> fetchedEvents = {};
+
+      for (var doc in snapshot.docs) {
+        debugPrint("Doc ID: ${doc.id}");
+        final data = doc.data();
+        final date = DateTime.parse(doc.id);
+        final eventName = data['name'] as String;
+        final workoutsData = data['workouts'] as List<dynamic>? ?? [];
+
+        // Parse workouts
+        final workouts = workoutsData.map((w) {
+          final workoutData = w as Map<String, dynamic>;
+          return Workout(
+            exercise: workoutData['exercise'] ?? '',
+            weight: workoutData['weight'] ?? 0,
+            repetitions: workoutData['repetitions'] ?? 0,
+            sets: workoutData['sets'] ?? 0,
+          );
+        }).toList();
+
+        final event = Event(
+          name: eventName,
+          workouts: workouts,
+        );
+
+        if (fetchedEvents.containsKey(date)) {
+          fetchedEvents[date]!.add(event);
+        } else {
+          fetchedEvents[date] = [event];
+        }
+      }
+
+      debugPrint("Fetched Events: $fetchedEvents");
+
+      setState(() {
+        workouts = fetchedEvents;
+        _selectedEvents.value = _getEventsForDay(_selectedDay!);
+      });
+    } catch (e) {
+      print("Error fetching events: $e");
+    }
+  }
+
+  Future<void> _saveEventToDatabase(Map<DateTime, List<Event>> events) async {
+    String user = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      final FirebaseAuthService _firestore = FirebaseAuthService();
+      await _firestore.writeEventToFirestore(user, events);
+    } catch (e) {
+      print("Error saving events: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,6 +278,14 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         title: const Text("Workouts"),
         backgroundColor: const Color.fromARGB(255, 85, 85, 85),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () {
+              _saveEventToDatabase(workouts);
+            },
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEventDialog,
@@ -148,39 +315,71 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                     itemBuilder: (context, index) {
                       final event = events[index];
                       return Container(
-                        margin:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
                           border: Border.all(),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: ListTile(
-                          title: Text(event.name),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: event.workouts
-                                .map((w) => ListTile(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header with event name and action icons
+                            Container(
+                              padding: EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      event.name,
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Icons.edit),
+                                        onPressed: () => _showEditEventDialog(event),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.add),
+                                        onPressed: () => _showAddWorkoutDialog(event),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.delete),
+                                        onPressed: () => _deleteEvent(event),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Divider(),
+                            // Workouts list
+                            Column(
+                              children: event.workouts.map((w) {
+                                return ListTile(
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
                                   title: Text(
                                       '${w.exercise} (${w.weight} kg, ${w.repetitions} reps, ${w.sets} sets)'),
-                                      trailing: IconButton(
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Icons.edit),
+                                        onPressed: () => _showEditWorkoutDialog(event, w),
+                                      ),
+                                      IconButton(
                                         icon: Icon(Icons.delete),
                                         onPressed: () => _deleteWorkout(event, w),
                                       ),
-                                )).toList(),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.add),
-                                onPressed: () => _showAddWorkoutDialog(event),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.delete),
-                                onPressed: () => _deleteEvent(event),
-                              ),
-                            ],
-                          ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
                         ),
                       );
                     },
