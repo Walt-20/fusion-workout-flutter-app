@@ -124,7 +124,6 @@ class _SignUpPageState extends State<SignUpPage> {
         await _auth.signUpWithEmailAndPassword(email, password);
         print("User signed up with uid: " + FirebaseAuth.instance.currentUser!.uid);
         Navigator.push(context, MaterialPageRoute(builder: (context) => OnBoarding()));
-
       } else {
         showAlertMessage("Passwords do not match");
       }

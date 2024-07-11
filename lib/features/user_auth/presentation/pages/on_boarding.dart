@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/entry.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_container_widget.dart';
 
 class OnBoarding extends StatefulWidget {
@@ -59,63 +60,63 @@ class _OnBoardingState extends State<OnBoarding> {
                   hintText: "Name",
                   isPasswordField: false,
                 ),
-                // SizedBox(
-                //   height: 10,
-                // ),
-                // FormContainerWidget(
-                //   controller: _phoneNumberController,
-                //   key: Key('phoneNumber'),
-                //   hintText: "Phone Number",
-                //   isPasswordField: false,
-                // ),
-                // SizedBox(
-                //   height: 10,
-                // ),
-                // FormContainerWidget(
-                //   controller: _ageController,
-                //   key: Key('age'),
-                //   hintText: "Age",
-                //   isPasswordField: false,
-                // ),
-                // SizedBox(
-                //   height: 10,
-                // ),
-                // FormContainerWidget(
-                //   controller: _sexController,
-                //   key: Key('sex'),
-                //   hintText: "Sex",
-                //   isPasswordField: false,
-                // ),
-                // SizedBox(
-                //   height: 10,
-                // ),
-                // FormContainerWidget(
-                //   controller: _weightController,
-                //   key: Key('weight'),
-                //   hintText: "Weight",
-                //   isPasswordField: false,
-                // ),
-                // SizedBox(
-                //   height: 10,
-                // ),
-                // FormContainerWidget(
-                //   controller: _heightController,
-                //   key: Key('height'),
-                //   hintText: "Height",
-                //   isPasswordField: false,
-                // ),
-                // SizedBox(
-                //   height: 10,
-                // ),
-                // FormContainerWidget(
-                //   controller: _availabilityController,
-                //   key: Key('availability'),
-                //   hintText: "Workout availability (within a seven day peroid)",
-                //   isPasswordField: false,
-                // ),
-                // SizedBox(
-                //   height: 30,
-                // ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  controller: _phoneNumberController,
+                  key: Key('phoneNumber'),
+                  hintText: "Phone Number",
+                  isPasswordField: false,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  controller: _ageController,
+                  key: Key('age'),
+                  hintText: "Age",
+                  isPasswordField: false,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  controller: _sexController,
+                  key: Key('sex'),
+                  hintText: "Sex",
+                  isPasswordField: false,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  controller: _weightController,
+                  key: Key('weight'),
+                  hintText: "Weight",
+                  isPasswordField: false,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  controller: _heightController,
+                  key: Key('height'),
+                  hintText: "Height",
+                  isPasswordField: false,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  controller: _availabilityController,
+                  key: Key('availability'),
+                  hintText: "Workout availability (within a seven day peroid)",
+                  isPasswordField: false,
+                ),
+                SizedBox(
+                  height: 30,
+                ),
                 GestureDetector(
                   key: Key('onboardButton'),
                   onTap: _onboard,
@@ -136,6 +137,9 @@ class _OnBoardingState extends State<OnBoarding> {
                     ),
                   ),
                 ),
+                SizedBox(
+                  height: 30,
+                ),
               ],
             ),
           ),
@@ -147,6 +151,12 @@ class _OnBoardingState extends State<OnBoarding> {
   void _onboard() {
     String user = FirebaseAuth.instance.currentUser!.uid;
     print("onboard called User: " + FirebaseAuth.instance.currentUser!.uid);
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
     if (user != null) {
       try {
         _auth.writeEntryToFirebase(
@@ -162,6 +172,8 @@ class _OnBoardingState extends State<OnBoarding> {
             availability: _availabilityController.text,
           ),
         );
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => DashboardPage()));
       } on FirebaseException catch (e) {
         if (e.code == 'permission-denied') {
           print('You do not have permission to perform this operation.');
