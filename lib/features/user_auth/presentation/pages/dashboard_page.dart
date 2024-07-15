@@ -39,6 +39,7 @@ class DashboardPage extends StatelessWidget {
                   style: TextStyle(color: Colors.white, fontSize: 24)),
             ),
             ListTile(
+              key: Key('workoutsButton'),
               title: const Text('Workouts'),
               // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {

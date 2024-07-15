@@ -60,7 +60,7 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
       ),
       actions: [
         ElevatedButton(
-          key: Key('add workout'),
+          key: Key('addWorkoutButton'),
           onPressed: () {
             final workout = Workout(
               exercise: _exerciseController.text,

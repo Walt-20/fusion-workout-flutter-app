@@ -46,6 +46,7 @@ class FirebaseAuthService {
       'name': entry.name,
       'phoneNumber': entry.phoneNumber,
       'age': entry.age,
+      'sex': entry.sex,
       'weight': entry.weight,
       'height': entry.height,
       'availability': entry.availability,

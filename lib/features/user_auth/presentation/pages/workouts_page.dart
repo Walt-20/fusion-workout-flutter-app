@@ -55,6 +55,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
           ),
           actions: [
             ElevatedButton(
+              key: Key('addEventButton'),
               onPressed: () {
                 final eventName = _eventController.text;
                 if (eventName.isNotEmpty) {
@@ -374,19 +375,12 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Workouts"),
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24),
         backgroundColor: const Color.fromARGB(255, 85, 85, 85),
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () {
-              _saveEventToDatabase(workouts);
-            },
-          )
-        ],
       ),
       floatingActionButton: FloatingActionButton(
-        key: Key('saveToFirestore'),
+        key: Key('addEventFloatingActionButton'),
         onPressed: _showAddEventDialog,
         child: Icon(Icons.add),
       ),
@@ -470,7 +464,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                                   contentPadding:
                                       EdgeInsets.symmetric(horizontal: 16.0),
                                   title: Text(
-                                      '${w.exercise} (${w.weight} kg, ${w.repetitions} reps, ${w.sets} sets)'),
+                                      '${w.exercise} (${w.weight} lbs, ${w.repetitions} reps, ${w.sets} sets)'),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
