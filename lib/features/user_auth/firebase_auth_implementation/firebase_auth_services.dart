@@ -13,12 +13,10 @@ class FirebaseAuthService {
   User? user;
 
   Future<void> signUpWithEmailAndPassword(String email, String password) async {
-    print("Signing up with email and password");
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       user = credential.user;
-      print("User created with uid: " + user!.uid);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
@@ -33,8 +31,6 @@ class FirebaseAuthService {
         email: email, password: password);
     if (credential.user != null) {
       user = credential.user;
-    } else {
-      print("No User!");
     }
   }
 
@@ -53,7 +49,6 @@ class FirebaseAuthService {
 
   Future<void> writeEventToFirestore(
       String userId, Map<DateTime, List<Event>> events) async {
-        print("write events userID is: " + userId);
     final userEventsCollection = FirebaseFirestore.instance
         .collection('Users')
         .doc(userId)
@@ -76,7 +71,7 @@ class FirebaseAuthService {
       });
       await batch.commit();
     } catch (e) {
-      print("Error saving events: $e");
+      print("Error saving events");
     }
   }
 
