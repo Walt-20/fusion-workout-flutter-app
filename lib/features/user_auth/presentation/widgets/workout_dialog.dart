@@ -25,10 +25,12 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           TextField(
+            key: Key('exerciseNameField'),
             controller: _exerciseController,
             decoration: InputDecoration(labelText: "Exercise"),
           ),
           TextField(
+            key: Key('weightField'),
             controller: _weightController,
             decoration: InputDecoration(labelText: "Weight"),
             keyboardType: TextInputType.number,
@@ -37,6 +39,7 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
             children: [
               Expanded(
                 child: TextField(
+                  key: Key('repsField'),
                   controller: _repetitionsController,
                   decoration: InputDecoration(labelText: "Reps"),
                   keyboardType: TextInputType.number,
@@ -45,6 +48,7 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
               SizedBox(width: 10),
               Expanded(
                 child: TextField(
+                  key: Key('setsField'),
                   controller: _setsController,
                   decoration: InputDecoration(labelText: "Sets"),
                   keyboardType: TextInputType.number,
@@ -56,6 +60,7 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
       ),
       actions: [
         ElevatedButton(
+          key: Key('add workout'),
           onPressed: () {
             final workout = Workout(
               exercise: _exerciseController.text,

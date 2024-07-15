@@ -49,6 +49,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         return AlertDialog(
           title: const Text("Add Event"),
           content: TextField(
+            key: Key('eventNameField'),
             controller: _eventController,
             decoration: InputDecoration(labelText: "Event Name"),
           ),
@@ -124,9 +125,12 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
   void _showEditWorkoutDialog(Event event, Workout workout) {
     final _exerciseController = TextEditingController(text: workout.exercise);
-    final _weightController = TextEditingController(text: workout.weight.toString());
-    final _repsController = TextEditingController(text: workout.repetitions.toString());
-    final _setsController = TextEditingController(text: workout.sets.toString());
+    final _weightController =
+        TextEditingController(text: workout.weight.toString());
+    final _repsController =
+        TextEditingController(text: workout.repetitions.toString());
+    final _setsController =
+        TextEditingController(text: workout.sets.toString());
 
     showDialog(
       context: context,
@@ -136,20 +140,24 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
           content: Column(
             children: [
               TextField(
+                key: Key('exerciseNameField'),
                 controller: _exerciseController,
                 decoration: InputDecoration(labelText: "Exercise"),
               ),
               TextField(
+                key: Key('weightField'),
                 controller: _weightController,
                 decoration: InputDecoration(labelText: "Weight (kg)"),
                 keyboardType: TextInputType.number,
               ),
               TextField(
+                key: Key('repsField'),
                 controller: _repsController,
                 decoration: InputDecoration(labelText: "Repetitions"),
                 keyboardType: TextInputType.number,
               ),
               TextField(
+                key: Key('setsField'),
                 controller: _setsController,
                 decoration: InputDecoration(labelText: "Sets"),
                 keyboardType: TextInputType.number,
@@ -158,6 +166,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
           ),
           actions: [
             ElevatedButton(
+              key: Key('addWorkoutButton'),
               onPressed: () {
                 final updatedWorkout = Workout(
                   exercise: _exerciseController.text,
@@ -289,6 +298,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        key: Key('saveToFirestore'),
         onPressed: _showAddEventDialog,
         child: Icon(Icons.add),
       ),
@@ -316,7 +326,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                     itemBuilder: (context, index) {
                       final event = events[index];
                       return Container(
-                        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        margin:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
                           border: Border.all(),
                           borderRadius: BorderRadius.circular(12),
@@ -328,26 +339,33 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                             Container(
                               padding: EdgeInsets.all(8.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       event.name,
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
+                                        key: Key('eventEditIcon'),
                                         icon: Icon(Icons.edit),
-                                        onPressed: () => _showEditEventDialog(event),
+                                        onPressed: () =>
+                                            _showEditEventDialog(event),
                                       ),
                                       IconButton(
+                                        key: Key('eventAddIcon'),
                                         icon: Icon(Icons.add),
-                                        onPressed: () => _showAddWorkoutDialog(event),
+                                        onPressed: () =>
+                                            _showAddWorkoutDialog(event),
                                       ),
                                       IconButton(
+                                        key: Key('eventDeleteIcon'),
                                         icon: Icon(Icons.delete),
                                         onPressed: () => _deleteEvent(event),
                                       ),
@@ -361,7 +379,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                             Column(
                               children: event.workouts.map((w) {
                                 return ListTile(
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                                  contentPadding:
+                                      EdgeInsets.symmetric(horizontal: 16.0),
                                   title: Text(
                                       '${w.exercise} (${w.weight} kg, ${w.repetitions} reps, ${w.sets} sets)'),
                                   trailing: Row(
@@ -369,11 +388,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                                     children: [
                                       IconButton(
                                         icon: Icon(Icons.edit),
-                                        onPressed: () => _showEditWorkoutDialog(event, w),
+                                        onPressed: () =>
+                                            _showEditWorkoutDialog(event, w),
                                       ),
                                       IconButton(
                                         icon: Icon(Icons.delete),
-                                        onPressed: () => _deleteWorkout(event, w),
+                                        onPressed: () =>
+                                            _deleteWorkout(event, w),
                                       ),
                                     ],
                                   ),

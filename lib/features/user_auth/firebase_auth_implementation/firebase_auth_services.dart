@@ -3,7 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/entry.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
 
 import 'auth_page.dart';
@@ -35,7 +35,12 @@ class FirebaseAuthService {
   }
 
   void writeEntryToFirebase(Entry entry) {
-    FirebaseFirestore.instance.collection('Users').doc(FirebaseAuth.instance.currentUser!.uid).collection('userProfile').add(<String, String>{
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('userProfile')
+        .doc('profileInformation')
+        .set({
       'username': entry.username,
       'email': entry.email,
       'name': entry.name,

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/signup_page.dart';
 import 'package:fusion_workouts/firebase_options.dart';
 import 'package:fusion_workouts/main.dart';
@@ -70,6 +71,31 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.byType(OnBoarding), findsOneWidget);
+
+    final nameField = find.byKey(Key('name'));
+    final phoneNumberField = find.byKey(Key('phoneNumber'));
+    final ageField = find.byKey(Key('age'));
+    final sexField = find.byKey(Key('sex'));
+    final weightField = find.byKey(Key('weight'));
+    final heightField = find.byKey(Key('height'));
+    final availabilityField = find.byKey(Key('availability'));
+    final onboardButton = find.byKey(Key('onboardButton'));
+
+    await tester.enterText(nameField, 'test user');
+    await tester.enterText(phoneNumberField, '1234567890');
+    await tester.enterText(ageField, '20');
+    await tester.enterText(sexField, 'Male');
+    await tester.enterText(weightField, '185');
+    await tester.enterText(heightField, '6\'');
+    await tester.enterText(availabilityField, '5');
+
+    await tester.ensureVisible(onboardButton);
+    await tester.pumpAndSettle();
+
+    await tester.tap(onboardButton);
+    await tester.pumpAndSettle();
+
     expect(find.byType(DashboardPage), findsOneWidget);
 
     final logoutButton = find.byKey(Key('logoutButton'));
@@ -79,6 +105,35 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginPage), findsOneWidget);
+  });
+
+  testWidgets("Test that Firestore has the correct data",
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    expect(find.byType(LoginPage), findsOneWidget);
+
+    await login(tester, 'test@example.com', 'test123');
+
+    expect(find.byType(DashboardPage), findsOneWidget);
+
+    final firestoreInstance = FirebaseFirestore.instance;
+    final userUid = FirebaseAuth.instance.currentUser!.uid;
+    final docSnapshot = await firestoreInstance
+        .collection('Users')
+        .doc(userUid)
+        .collection('userProfile')
+        .doc('profileInformation')
+        .get();
+
+    expect(docSnapshot.exists, true);
+    expect(docSnapshot.data()?['name'], 'test user');
+    expect(docSnapshot.data()?['phoneNumber'], '1234567890');
+    expect(docSnapshot.data()?['age'], '20');
+    expect(docSnapshot.data()?['sex'], 'Male');
+    expect(docSnapshot.data()?['weight'], '185');
+    expect(docSnapshot.data()?['height'], '6\'');
+    expect(docSnapshot.data()?['availability'], '5');
   });
 
   // test wrong password credentials
