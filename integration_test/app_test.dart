@@ -107,6 +107,7 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
   });
 
+  // check that the correct information has been uploaded to Firestore
   testWidgets("Test that Firestore has the correct data",
       (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());

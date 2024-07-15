@@ -64,10 +64,12 @@ class FirebaseAuthService {
 
       events.forEach((date, eventList) {
         eventList.forEach((event) {
-          final eventRef = userEventsCollection.doc(date.toIso8601String());
+          debugPrint("which event? $event");
+          final eventRef = userEventsCollection.doc();
           batch.set(
               eventRef,
               {
+                'date': date.toIso8601String(),
                 'name': event.name,
                 'workouts': event.workouts.map((w) => w.toMap()).toList(),
               },

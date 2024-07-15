@@ -193,11 +193,17 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   }
 
   void _deleteEvent(Event event) {
+    final eventName = event.name;
     setState(() {
       workouts[_selectedDay!]?.remove(event);
       if (workouts[_selectedDay!]?.isEmpty ?? false) {
         workouts.remove(_selectedDay!);
       }
+
+      _deleteEventsFromFirestore(
+        _selectedDay!,
+        eventName,
+      );
 
       _selectedEvents.value = _getEventsForDay(_selectedDay!);
     });
@@ -229,42 +235,35 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        final date = DateTime.parse(doc.id);
+        final date = DateTime.parse(
+            data['date']); // Parse the date from the document data
         final eventName = data['name'] as String;
         final workoutsData = data['workouts'] as List<dynamic>? ?? [];
 
         // Parse workouts
         final workouts = workoutsData.map((w) {
           final workoutData = w as Map<String, dynamic>;
-          return Workout(
-            exercise: workoutData['exercise'] ?? '',
-            weight: workoutData['weight'] ?? 0,
-            repetitions: workoutData['repetitions'] ?? 0,
-            sets: workoutData['sets'] ?? 0,
-          );
+          // Assuming there's a method to parse workout data into Workout objects
+          return Workout.fromMap(workoutData);
         }).toList();
 
-        final event = Event(
-          name: eventName,
-          workouts: workouts,
-        );
+        // Create an Event object (assuming there's a constructor that takes the name and workouts)
+        final event = Event(name: eventName, workouts: workouts);
 
-        if (fetchedEvents.containsKey(date)) {
-          fetchedEvents[date]!.add(event);
-        } else {
-          fetchedEvents[date] = [event];
+        // Group events by date
+        if (!fetchedEvents.containsKey(date)) {
+          fetchedEvents[date] = [];
         }
+        fetchedEvents[date]!.add(event);
       }
 
+      // Update your state with the fetched events
       setState(() {
         workouts = fetchedEvents;
         _selectedEvents.value = _getEventsForDay(_selectedDay!);
       });
     } catch (e) {
-      const AlertDialog(
-        title: Text("Error"),
-        content: Text("Failed to fetch events"),
-      );
+      print("Error fetching events: $e");
     }
   }
 
@@ -278,6 +277,37 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         title: Text("Error"),
         content: Text("Error savings events"),
       );
+    }
+  }
+
+  Future<void> _deleteEventsFromFirestore(
+      DateTime eventToDelete, String eventName) async {
+    String userUid = FirebaseAuth.instance.currentUser!.uid;
+    final userEventsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userUid)
+        .collection('events');
+
+    try {
+      String docId = eventToDelete.toIso8601String();
+      debugPrint('The docId is $docId');
+
+      final querySnapshot = await userEventsCollection
+          .where('date', isEqualTo: docId)
+          .where('name', isEqualTo: eventName)
+          .get();
+
+      debugPrint('There is a querySnapshot $querySnapshot');
+
+      WriteBatch batch = FirebaseFirestore.instance.batch();
+      for (var doc in querySnapshot.docs) {
+        debugPrint('there is a doc $doc');
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+    } catch (e) {
+      print("Error removing event: $e");
     }
   }
 
