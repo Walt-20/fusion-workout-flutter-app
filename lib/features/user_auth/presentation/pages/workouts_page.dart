@@ -210,14 +210,26 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   }
 
   void _deleteWorkout(Event event, Workout workout) {
+    final eventName = event.name;
     setState(() {
       event.workouts.remove(workout);
       if (event.workouts.isEmpty) {
         workouts[_selectedDay!]!.remove(event);
+        _deleteEventsFromFirestore(
+          _selectedDay!,
+          eventName,
+        );
         if (workouts[_selectedDay!]!.isEmpty) {
           workouts.remove(_selectedDay!);
         }
+      } else {
+        _deleteWorkoutFromFirestore(
+          eventName,
+          _selectedDay!,
+          workout,
+        );
       }
+
       _selectedEvents.value = _getEventsForDay(_selectedDay!);
     });
   }
@@ -290,7 +302,6 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
     try {
       String docId = eventToDelete.toIso8601String();
-      debugPrint('The docId is $docId');
 
       final querySnapshot = await userEventsCollection
           .where('date', isEqualTo: docId)
@@ -308,6 +319,53 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       await batch.commit();
     } catch (e) {
       print("Error removing event: $e");
+    }
+  }
+
+  Future<void> _deleteWorkoutFromFirestore(String eventName,
+      DateTime eventHoldingWorkout, Workout workoutToDelete) async {
+    String userUid = FirebaseAuth.instance.currentUser!.uid;
+    final eventCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userUid)
+        .collection('events');
+
+    try {
+      String eventDocId = eventHoldingWorkout.toIso8601String();
+      debugPrint("event doc id is $eventDocId");
+
+      final querySnapshot = await eventCollection
+          .where('date', isEqualTo: eventDocId)
+          .where('name', isEqualTo: eventName)
+          .get();
+
+      // Fetch the event document
+      debugPrint("event doc is $querySnapshot");
+      if (querySnapshot.docs.isNotEmpty) {
+        debugPrint("the doc exists");
+
+        final eventDoc = querySnapshot.docs.first;
+        // Get the workouts array from the document data
+        List<dynamic> workouts = eventDoc.data()['workouts'] ?? [];
+
+        // Convert to list of Workout objects
+        List<Workout> workoutList =
+            workouts.map((w) => Workout.fromMap(w)).toList();
+
+        // Remove the specific workout based on exercise (assuming 'exercise' is unique)
+        workoutList.removeWhere((w) => w.exercise == workoutToDelete.exercise);
+
+        // Convert back to list of maps
+        List<Map<String, dynamic>> updatedWorkouts =
+            workoutList.map((w) => w.toMap()).toList();
+
+        debugPrint("update workoutlist $updatedWorkouts");
+
+        // Update the document with the modified workouts array
+        await eventDoc.reference.update({'workouts': updatedWorkouts});
+      }
+    } catch (e) {
+      print("Error removing workout: $e");
     }
   }
 
