@@ -19,13 +19,14 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   Map<DateTime, List<Event>> workouts = {};
   DateTime? _selectedDay;
   late final ValueNotifier<List<Event>> _selectedEvents;
+  final _auth = FirebaseAuthService();
 
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
     _fetchEventsFromFirestore();
+    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
   }
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
@@ -55,6 +56,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
           ),
           actions: [
             ElevatedButton(
+              key: Key('addEventButton'),
               onPressed: () {
                 final eventName = _eventController.text;
                 if (eventName.isNotEmpty) {
@@ -64,6 +66,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                       ..add(event);
                     _selectedEvents.value = _getEventsForDay(_selectedDay!);
                   });
+
+                  _saveEventToDatabase(workouts, _selectedDay!);
                   Navigator.of(context).pop();
                 }
               },
@@ -119,6 +123,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       setState(() {
         event.workouts.add(workout);
         _selectedEvents.value = _getEventsForDay(_selectedDay!);
+
+        _saveEventToDatabase(workouts, _selectedDay!);
       });
     }
   }
@@ -175,12 +181,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   sets: _setsController.text,
                 );
 
-                setState(() {
+                setState(() async {
                   final index = event.workouts.indexOf(workout);
                   if (index != -1) {
                     event.workouts[index] = updatedWorkout;
                     _selectedEvents.value = _getEventsForDay(_selectedDay!);
                   }
+
                   Navigator.of(context).pop();
                 });
               },
@@ -193,25 +200,43 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   }
 
   void _deleteEvent(Event event) {
+    final eventName = event.name;
     setState(() {
       workouts[_selectedDay!]?.remove(event);
       if (workouts[_selectedDay!]?.isEmpty ?? false) {
         workouts.remove(_selectedDay!);
       }
 
+      _deleteEventsFromFirestore(
+        _selectedDay!,
+        eventName,
+      );
+
       _selectedEvents.value = _getEventsForDay(_selectedDay!);
     });
   }
 
   void _deleteWorkout(Event event, Workout workout) {
+    final eventName = event.name;
     setState(() {
       event.workouts.remove(workout);
       if (event.workouts.isEmpty) {
         workouts[_selectedDay!]!.remove(event);
+        _deleteEventsFromFirestore(
+          _selectedDay!,
+          eventName,
+        );
         if (workouts[_selectedDay!]!.isEmpty) {
           workouts.remove(_selectedDay!);
         }
+      } else {
+        _deleteWorkoutFromFirestore(
+          eventName,
+          _selectedDay!,
+          workout,
+        );
       }
+
       _selectedEvents.value = _getEventsForDay(_selectedDay!);
     });
   }
@@ -229,55 +254,127 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        final date = DateTime.parse(doc.id);
+        debugPrint("The data exists $data");
+        final date = DateTime.parse(data['date']);
         final eventName = data['name'] as String;
         final workoutsData = data['workouts'] as List<dynamic>? ?? [];
 
         // Parse workouts
         final workouts = workoutsData.map((w) {
           final workoutData = w as Map<String, dynamic>;
-          return Workout(
-            exercise: workoutData['exercise'] ?? '',
-            weight: workoutData['weight'] ?? 0,
-            repetitions: workoutData['repetitions'] ?? 0,
-            sets: workoutData['sets'] ?? 0,
-          );
+          // Assuming there's a method to parse workout data into Workout objects
+          return Workout.fromMap(workoutData);
         }).toList();
 
-        final event = Event(
-          name: eventName,
-          workouts: workouts,
-        );
+        // Create an Event object (assuming there's a constructor that takes the name and workouts)
+        final event = Event(name: eventName, workouts: workouts);
 
-        if (fetchedEvents.containsKey(date)) {
-          fetchedEvents[date]!.add(event);
-        } else {
-          fetchedEvents[date] = [event];
+        // Group events by date
+        if (!fetchedEvents.containsKey(date)) {
+          fetchedEvents[date] = [];
         }
+        fetchedEvents[date]!.add(event);
       }
 
+      // Update your state with the fetched events
       setState(() {
         workouts = fetchedEvents;
+        debugPrint("the workouts are $workouts");
         _selectedEvents.value = _getEventsForDay(_selectedDay!);
       });
     } catch (e) {
+      print("Error fetching events: $e");
+    }
+  }
+
+  Future<void> _saveEventToDatabase(
+      Map<DateTime, List<Event>> events, DateTime _selectedDay) async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    final today = _selectedDay!;
+    try {
+      await _auth.writeEventToFirestore(userId, events, today);
+    } catch (e) {
       const AlertDialog(
         title: Text("Error"),
-        content: Text("Failed to fetch events"),
+        content: Text("Error saving events"),
       );
     }
   }
 
-  Future<void> _saveEventToDatabase(Map<DateTime, List<Event>> events) async {
-    String user = FirebaseAuth.instance.currentUser!.uid;
+  Future<void> _deleteEventsFromFirestore(
+      DateTime eventToDelete, String eventName) async {
+    String userUid = FirebaseAuth.instance.currentUser!.uid;
+    final userEventsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userUid)
+        .collection('events');
+
     try {
-      final FirebaseAuthService _firestore = FirebaseAuthService();
-      await _firestore.writeEventToFirestore(user, events);
+      String docId = eventToDelete.toIso8601String();
+
+      final querySnapshot = await userEventsCollection
+          .where('date', isEqualTo: docId)
+          .where('name', isEqualTo: eventName)
+          .get();
+
+      debugPrint('There is a querySnapshot $querySnapshot');
+
+      WriteBatch batch = FirebaseFirestore.instance.batch();
+      for (var doc in querySnapshot.docs) {
+        debugPrint('there is a doc $doc');
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
     } catch (e) {
-      const AlertDialog(
-        title: Text("Error"),
-        content: Text("Error savings events"),
-      );
+      print("Error removing event: $e");
+    }
+  }
+
+  Future<void> _deleteWorkoutFromFirestore(String eventName,
+      DateTime eventHoldingWorkout, Workout workoutToDelete) async {
+    String userUid = FirebaseAuth.instance.currentUser!.uid;
+    final eventCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userUid)
+        .collection('events');
+
+    try {
+      String eventDocId = eventHoldingWorkout.toIso8601String();
+      debugPrint("event doc id is $eventDocId");
+
+      final querySnapshot = await eventCollection
+          .where('date', isEqualTo: eventDocId)
+          .where('name', isEqualTo: eventName)
+          .get();
+
+      // Fetch the event document
+      debugPrint("event doc is $querySnapshot");
+      if (querySnapshot.docs.isNotEmpty) {
+        debugPrint("the doc exists");
+
+        final eventDoc = querySnapshot.docs.first;
+        // Get the workouts array from the document data
+        List<dynamic> workouts = eventDoc.data()['workouts'] ?? [];
+
+        // Convert to list of Workout objects
+        List<Workout> workoutList =
+            workouts.map((w) => Workout.fromMap(w)).toList();
+
+        // Remove the specific workout based on exercise (assuming 'exercise' is unique)
+        workoutList.removeWhere((w) => w.exercise == workoutToDelete.exercise);
+
+        // Convert back to list of maps
+        List<Map<String, dynamic>> updatedWorkouts =
+            workoutList.map((w) => w.toMap()).toList();
+
+        debugPrint("update workoutlist $updatedWorkouts");
+
+        // Update the document with the modified workouts array
+        await eventDoc.reference.update({'workouts': updatedWorkouts});
+      }
+    } catch (e) {
+      print("Error removing workout: $e");
     }
   }
 
@@ -286,19 +383,12 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Workouts"),
+        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24),
         backgroundColor: const Color.fromARGB(255, 85, 85, 85),
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () {
-              _saveEventToDatabase(workouts);
-            },
-          )
-        ],
       ),
       floatingActionButton: FloatingActionButton(
-        key: Key('saveToFirestore'),
+        key: Key('addEventFloatingActionButton'),
         onPressed: _showAddEventDialog,
         child: Icon(Icons.add),
       ),
@@ -345,7 +435,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                                   Expanded(
                                     child: Text(
                                       event.name,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),
@@ -382,7 +472,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                                   contentPadding:
                                       EdgeInsets.symmetric(horizontal: 16.0),
                                   title: Text(
-                                      '${w.exercise} (${w.weight} kg, ${w.repetitions} reps, ${w.sets} sets)'),
+                                      '${w.exercise} (${w.weight} lbs, ${w.repetitions} reps, ${w.sets} sets)'),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [

@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
@@ -160,8 +161,8 @@ class _OnBoardingState extends State<OnBoarding> {
       try {
         _auth.writeEntryToFirebase(
           Entry(
-            username: _auth.user?.displayName ?? '',
-            email: _auth.user?.email ?? '',
+            username: _nameController.text,
+            email: FirebaseAuth.instance.currentUser!.email ?? '',
             name: _nameController.text,
             phoneNumber: _phoneNumberController.text,
             age: _ageController.text,
