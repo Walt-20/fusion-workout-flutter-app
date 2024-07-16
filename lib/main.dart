@@ -13,22 +13,15 @@ Future<void> main() async {
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-
-    // options: const FirebaseOptions(
-    //   apiKey: "AIzaSyBsqqDV9xOeHwyrkReKuI_szZrGabRBOU0",
-    //   appId: "1:464590724690:android:ab0460ae8beb58ea4b498b",
-    //   messagingSenderId: "464590724690",
-    //   projectId: "fusion-workout-app",
-    // ),
   );
-  if (kDebugMode) {
-    try {
-      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-      FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-    } catch (e) {
-      print('Failed to connect to the emulator: $e');
-    }
-  }
+  // if (kDebugMode) {
+  //   try {
+  //     FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+  //     FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+  //   } catch (e) {
+  //     print('Failed to connect to the emulator: $e');
+  //   }
+  // }
   runApp(const MyApp());
 }
 

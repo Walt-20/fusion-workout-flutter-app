@@ -150,19 +150,20 @@ class _OnBoardingState extends State<OnBoarding> {
   }
 
   void _onboard() {
-    String user = FirebaseAuth.instance.currentUser!.uid;
-    showDialog(
-      context: context,
-      builder: (context) => Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-    if (user != null) {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      String userUid = currentUser.uid;
+      showDialog(
+        context: context,
+        builder: (context) => Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
       try {
         _auth.writeEntryToFirebase(
           Entry(
             username: _nameController.text,
-            email: FirebaseAuth.instance.currentUser!.email ?? '',
+            email: currentUser.email ?? '',
             name: _nameController.text,
             phoneNumber: _phoneNumberController.text,
             age: _ageController.text,
@@ -184,7 +185,10 @@ class _OnBoardingState extends State<OnBoarding> {
         print("Error Writing to Database");
       }
     } else {
-      print("No User!");
+      AlertDialog(
+        title: Text("Error"),
+        content: Text("No User signed in!"),
+      );
     }
   }
 }
