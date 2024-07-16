@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -45,6 +46,18 @@ class DashboardPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => WorkoutsPage()),
+                );
+              },
+            ),
+            ListTile(
+              key: Key('calorieButton'),
+              title: const Text('Calorie Tracking'),
+              // Corrected onTap method for navigating to the WorkoutsPage
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CalorieTrackingPage()),
                 );
               },
             ),
