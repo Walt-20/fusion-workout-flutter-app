@@ -53,8 +53,8 @@ class FirebaseAuthService {
     });
   }
 
-  Future<void> writeEventToFirestore(
-      String userId, Map<DateTime, List<Event>> events) async {
+  Future<void> writeEventToFirestore(String userId,
+      Map<DateTime, List<Event>> events, DateTime selectedDay) async {
     final userEventsCollection = FirebaseFirestore.instance
         .collection('Users')
         .doc(userId)
@@ -63,23 +63,47 @@ class FirebaseAuthService {
     try {
       WriteBatch batch = FirebaseFirestore.instance.batch();
 
-      events.forEach((date, eventList) {
-        eventList.forEach((event) {
-          debugPrint("which event? $event");
-          final eventRef = userEventsCollection.doc();
-          batch.set(
+      for (var entry in events.entries) {
+        DateTime date = entry.key;
+        List<Event> eventList = entry.value;
+
+        for (var event in eventList) {
+          final eventQuery = await userEventsCollection
+              .where('name', isEqualTo: event.name)
+              .where('date', isEqualTo: date.toIso8601String())
+              .limit(1)
+              .get();
+
+          if (eventQuery.docs.isNotEmpty) {
+            final eventDoc = eventQuery.docs.first;
+            batch.set(
+              eventDoc.reference,
+              {
+                'date': date.toIso8601String(),
+                'name': event.name,
+                'workouts': event.workouts.map((w) => w.toMap()).toList(),
+              },
+              SetOptions(merge: true),
+            );
+          } else {
+            final eventRef = userEventsCollection.doc();
+            batch.set(
               eventRef,
               {
                 'date': date.toIso8601String(),
                 'name': event.name,
                 'workouts': event.workouts.map((w) => w.toMap()).toList(),
               },
-              SetOptions(merge: true));
-        });
-      });
+            );
+          }
+        }
+      }
+
       await batch.commit();
     } catch (e) {
-      print("Error saving events");
+      print("Error saving events: $e");
+      // Handle error appropriately
+      throw e; // Rethrow the error to propagate it further if needed
     }
   }
 

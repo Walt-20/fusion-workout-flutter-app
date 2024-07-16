@@ -19,6 +19,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   Map<DateTime, List<Event>> workouts = {};
   DateTime? _selectedDay;
   late final ValueNotifier<List<Event>> _selectedEvents;
+  final _auth = FirebaseAuthService();
 
   @override
   void initState() {
@@ -65,6 +66,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                       ..add(event);
                     _selectedEvents.value = _getEventsForDay(_selectedDay!);
                   });
+
+                  _saveEventToDatabase(workouts, _selectedDay!);
                   Navigator.of(context).pop();
                 }
               },
@@ -120,6 +123,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       setState(() {
         event.workouts.add(workout);
         _selectedEvents.value = _getEventsForDay(_selectedDay!);
+
+        _saveEventToDatabase(workouts, _selectedDay!);
       });
     }
   }
@@ -176,12 +181,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   sets: _setsController.text,
                 );
 
-                setState(() {
+                setState(() async {
                   final index = event.workouts.indexOf(workout);
                   if (index != -1) {
                     event.workouts[index] = updatedWorkout;
                     _selectedEvents.value = _getEventsForDay(_selectedDay!);
                   }
+
                   Navigator.of(context).pop();
                 });
               },
@@ -280,15 +286,16 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
     }
   }
 
-  Future<void> _saveEventToDatabase(Map<DateTime, List<Event>> events) async {
-    String user = FirebaseAuth.instance.currentUser!.uid;
+  Future<void> _saveEventToDatabase(
+      Map<DateTime, List<Event>> events, DateTime _selectedDay) async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    final today = _selectedDay!;
     try {
-      final FirebaseAuthService _firestore = FirebaseAuthService();
-      await _firestore.writeEventToFirestore(user, events);
+      await _auth.writeEventToFirestore(userId, events, today);
     } catch (e) {
       const AlertDialog(
         title: Text("Error"),
-        content: Text("Error savings events"),
+        content: Text("Error saving events"),
       );
     }
   }
@@ -427,7 +434,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                                   Expanded(
                                     child: Text(
                                       event.name,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),

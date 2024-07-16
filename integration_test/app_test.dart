@@ -21,9 +21,13 @@ void main() {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-
+    await FirebaseAuth.instance.signOut();
     FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
     FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+  });
+
+  tearDown(() async {
+    await FirebaseAuth.instance.signOut();
   });
 
   Future<void> login(WidgetTester tester, email, password) async {
@@ -239,6 +243,9 @@ void main() {
   testWidgets("Test adding an event and workout", (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
+    // FirebaseAuth.instance.signOut();
+    // tester.pumpAndSettle();
+
     expect(find.byType(LoginPage), findsOneWidget);
 
     await login(tester, 'test@example.com', 'test123');
@@ -311,9 +318,6 @@ void main() {
     }
 
     expect(find.byType(ListTile), findsNWidgets(5));
-
-    await tester.tap(find.byKey(Key('saveToFirestore')));
-    await tester.pumpAndSettle();
   });
 
   // test login in and ensuring that workouts are read into calendar.
