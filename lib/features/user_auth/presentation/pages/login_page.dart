@@ -111,10 +111,15 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await _auth.signInWithEmailAndPassword(email, password);
-      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
-      Navigator.pop(context);
-      showAlertMessage(e.code);
+      if (mounted) {
+        showAlertMessage(
+            e.code); // Show alert only if the widget is still mounted
+      }
+    } finally {
+      if (mounted) {
+        Navigator.pop(context); // Dismiss the dialog in the finally block
+      }
     }
   }
 
