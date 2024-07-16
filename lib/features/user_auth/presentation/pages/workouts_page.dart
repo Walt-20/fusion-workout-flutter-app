@@ -5,6 +5,7 @@ import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/workout_dialog.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -51,13 +52,13 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         return AlertDialog(
           title: const Text("Add Event"),
           content: TextField(
-            key: Key('eventNameField'),
+            key: const Key('eventNameField'),
             controller: _eventController,
-            decoration: InputDecoration(labelText: "Event Name"),
+            decoration: const InputDecoration(labelText: "Event Name"),
           ),
           actions: [
             ElevatedButton(
-              key: Key('addEventButton'),
+              key: const Key('addEventButton'),
               onPressed: () {
                 final eventName = _eventController.text;
                 if (eventName.isNotEmpty) {
@@ -72,7 +73,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text("Create Event"),
+              child: const Text("Create Event"),
             ),
           ],
         );
@@ -90,7 +91,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
           title: const Text("Edit Event"),
           content: TextField(
             controller: _eventController,
-            decoration: InputDecoration(labelText: "Event Name"),
+            decoration: const InputDecoration(labelText: "Event Name"),
           ),
           actions: [
             ElevatedButton(
@@ -104,7 +105,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text("Save"),
+              child: const Text("Save"),
             ),
           ],
         );
@@ -147,33 +148,33 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
           content: Column(
             children: [
               TextField(
-                key: Key('exerciseNameField'),
+                key: const Key('exerciseNameField'),
                 controller: _exerciseController,
-                decoration: InputDecoration(labelText: "Exercise"),
+                decoration: const InputDecoration(labelText: "Exercise"),
               ),
               TextField(
-                key: Key('weightField'),
+                key: const Key('weightField'),
                 controller: _weightController,
-                decoration: InputDecoration(labelText: "Weight (kg)"),
+                decoration: const InputDecoration(labelText: "Weight (kg)"),
                 keyboardType: TextInputType.number,
               ),
               TextField(
-                key: Key('repsField'),
+                key: const Key('repsField'),
                 controller: _repsController,
-                decoration: InputDecoration(labelText: "Repetitions"),
+                decoration: const InputDecoration(labelText: "Repetitions"),
                 keyboardType: TextInputType.number,
               ),
               TextField(
-                key: Key('setsField'),
+                key: const Key('setsField'),
                 controller: _setsController,
-                decoration: InputDecoration(labelText: "Sets"),
+                decoration: const InputDecoration(labelText: "Sets"),
                 keyboardType: TextInputType.number,
               ),
             ],
           ),
           actions: [
             ElevatedButton(
-              key: Key('addWorkoutButton'),
+              key: const Key('addWorkoutButton'),
               onPressed: () {
                 final updatedWorkout = Workout(
                   exercise: _exerciseController.text,
@@ -192,7 +193,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   Navigator.of(context).pop();
                 });
               },
-              child: Text("Save"),
+              child: const Text("Save"),
             ),
           ],
         );
@@ -389,8 +390,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         actions: [
           // Move the actions inside AppBar
           IconButton(
-            key: Key('logoutButton'),
-            icon: Icon(Icons.logout),
+            key: const Key('logoutButton'),
+            icon: const Icon(Icons.logout),
             onPressed: () => _auth.signOut(context),
           ),
         ],
@@ -407,25 +408,36 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   style: TextStyle(color: Colors.white, fontSize: 24)),
             ),
             ListTile(
-              key: Key('workoutsButton'),
+              key: const Key('homeButton'),
+              title: const Text('Home'),
+              // Corrected onTap method for navigating to the WorkoutsPage
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DashboardPage()),
+                );
+              },
+            ),
+            ListTile(
+              key: const Key('workoutsButton'),
               title: const Text('Workouts'),
               // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => WorkoutsPage()),
+                  MaterialPageRoute(builder: (context) => const WorkoutsPage()),
                 );
               },
             ),
             ListTile(
-              key: Key('calorieButton'),
+              key: const Key('calorieButton'),
               title: const Text('Calorie Tracking'),
               // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => CalorieTrackingPage()),
+                      builder: (context) => const CalorieTrackingPage()),
                 );
               },
             ),
@@ -433,9 +445,9 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        key: Key('addEventFloatingActionButton'),
+        key: const Key('addEventFloatingActionButton'),
         onPressed: _showAddEventDialog,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -450,7 +462,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
               onDaySelected: _onDaySelected,
               eventLoader: _getEventsForDay,
             ),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             SizedBox(
               height: 300,
               child: ValueListenableBuilder<List<Event>>(
@@ -461,8 +473,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                     itemBuilder: (context, index) {
                       final event = events[index];
                       return Container(
-                        margin:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
                           border: Border.all(),
                           borderRadius: BorderRadius.circular(12),
@@ -472,7 +484,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                           children: [
                             // Header with event name and action icons
                             Container(
-                              padding: EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -488,20 +500,20 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        key: Key('eventEditIcon'),
-                                        icon: Icon(Icons.edit),
+                                        key: const Key('eventEditIcon'),
+                                        icon: const Icon(Icons.edit),
                                         onPressed: () =>
                                             _showEditEventDialog(event),
                                       ),
                                       IconButton(
-                                        key: Key('eventAddIcon'),
-                                        icon: Icon(Icons.add),
+                                        key: const Key('eventAddIcon'),
+                                        icon: const Icon(Icons.add),
                                         onPressed: () =>
                                             _showAddWorkoutDialog(event),
                                       ),
                                       IconButton(
-                                        key: Key('eventDeleteIcon'),
-                                        icon: Icon(Icons.delete),
+                                        key: const Key('eventDeleteIcon'),
+                                        icon: const Icon(Icons.delete),
                                         onPressed: () => _deleteEvent(event),
                                       ),
                                     ],
@@ -509,25 +521,25 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                                 ],
                               ),
                             ),
-                            Divider(),
+                            const Divider(),
                             // Workouts list
                             Column(
                               children: event.workouts.map((w) {
                                 return ListTile(
-                                  contentPadding:
-                                      EdgeInsets.symmetric(horizontal: 16.0),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
                                   title: Text(
                                       '${w.exercise} (${w.weight} lbs, ${w.repetitions} reps, ${w.sets} sets)'),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: Icon(Icons.edit),
+                                        icon: const Icon(Icons.edit),
                                         onPressed: () =>
                                             _showEditWorkoutDialog(event, w),
                                       ),
                                       IconButton(
-                                        icon: Icon(Icons.delete),
+                                        icon: const Icon(Icons.delete),
                                         onPressed: () =>
                                             _deleteWorkout(event, w),
                                       ),
