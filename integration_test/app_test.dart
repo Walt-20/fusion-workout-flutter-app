@@ -240,7 +240,89 @@ void main() {
   });
 
   // test adding an event and workout functionality
-  testWidgets("Test adding an event and workout", (WidgetTester tester) async {
+  testWidgets("Test adding Chest event and workouts",
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    // FirebaseAuth.instance.signOut();
+    // tester.pumpAndSettle();
+
+    expect(find.byType(LoginPage), findsOneWidget);
+
+    await login(tester, 'test@example.com', 'test123');
+    // should find the dashboard page
+    expect(find.byType(DashboardPage), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+
+    final workouts = find.text('Workouts');
+
+    expect(workouts, findsOneWidget);
+
+    final workoutsButton = find.byKey(Key('workoutsButton'));
+
+    await tester.tap(workoutsButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WorkoutsPage), findsOneWidget);
+
+    final addEventFloatingActionButton =
+        find.byKey(Key('addEventFloatingActionButton'));
+
+    await tester.tap(addEventFloatingActionButton);
+    await tester.pumpAndSettle();
+
+    final eventNameField = find.byKey(Key('eventNameField'));
+
+    await tester.enterText(eventNameField, 'Chest');
+
+    final addEventButton = find.byKey(Key('addEventButton'));
+
+    await tester.tap(addEventButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Chest'), findsOneWidget);
+
+    final eventAddIcon = find.byKey(Key('eventAddIcon'));
+
+    await tester.tap(eventAddIcon);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(Key('exerciseNameField')), 'Bench');
+    await tester.enterText(find.byKey(Key('weightField')), '185');
+    await tester.enterText(find.byKey(Key('repsField')), '6');
+    await tester.enterText(find.byKey(Key('setsField')), '3');
+    await tester.pump();
+
+    await tester.tap(find.byKey(Key('addWorkoutButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bench (185 lbs, 6 reps, 3 sets)'), findsOneWidget);
+
+    for (var i = 2; i <= 5; i++) {
+      await tester.tap(find.byKey(Key('eventAddIcon')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+          find.byKey(Key('exerciseNameField')), 'Exercise $i');
+      await tester.enterText(find.byKey(Key('weightField')), '$i');
+      await tester.enterText(find.byKey(Key('repsField')), '${i * 2}');
+      await tester.enterText(find.byKey(Key('setsField')), '${i + 1}');
+      await tester.pump();
+
+      await tester.tap(find.byKey(Key('addWorkoutButton')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Exercise $i ($i lbs, ${i * 2} reps, ${i + 1} sets)'),
+          findsOneWidget);
+    }
+
+    expect(find.byType(ListTile), findsNWidgets(5));
+  });
+
+  testWidgets("Test adding Legs event and workouts",
+      (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
     // FirebaseAuth.instance.signOut();
