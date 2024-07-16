@@ -1,14 +1,17 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
 
-class DashboardPage extends StatelessWidget {
-  DashboardPage({super.key});
+class CalorieTrackingPage extends StatefulWidget {
+  const CalorieTrackingPage({super.key});
 
+  @override
+  State<CalorieTrackingPage> createState() => _CalorieTrackingPageState();
+}
+
+class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
   final user = FirebaseAuth.instance.currentUser!;
   final _auth = FirebaseAuthService();
 
@@ -16,13 +19,15 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 85, 85, 85),
-        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: const Color.fromARGB(255, 85, 85, 85),
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text("Calorie Tracking",
+            style: TextStyle(color: Colors.white)),
         actions: [
           // Move the actions inside AppBar
           IconButton(
-            key: Key('logoutButton'),
-            icon: Icon(Icons.logout),
+            key: const Key('logoutButton'),
+            icon: const Icon(Icons.logout),
             onPressed: () => _auth.signOut(context),
           ),
         ],
@@ -31,7 +36,7 @@ class DashboardPage extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(
                 color: Color.fromARGB(237, 255, 134, 21),
               ),
@@ -39,7 +44,7 @@ class DashboardPage extends StatelessWidget {
                   style: TextStyle(color: Colors.white, fontSize: 24)),
             ),
             ListTile(
-              key: Key('homeButton'),
+              key: const Key('homeButton'),
               title: const Text('Home'),
               // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {
@@ -50,33 +55,61 @@ class DashboardPage extends StatelessWidget {
               },
             ),
             ListTile(
-              key: Key('workoutsButton'),
+              key: const Key('workoutsButton'),
               title: const Text('Workouts'),
               // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => WorkoutsPage()),
+                  MaterialPageRoute(builder: (context) => const WorkoutsPage()),
                 );
               },
             ),
             ListTile(
-              key: Key('calorieButton'),
+              key: const Key('calorieButton'),
               title: const Text('Calorie Tracking'),
               // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => CalorieTrackingPage()),
+                      builder: (context) => const CalorieTrackingPage()),
                 );
               },
             ),
           ],
         ),
       ),
-      body: Center(
-        child: Text("Welcome to Fusion Workout!"),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SearchAnchor(
+            builder: (BuildContext context, SearchController controller) {
+          return SearchBar(
+            controller: controller,
+            padding: const WidgetStatePropertyAll<EdgeInsets>(
+                EdgeInsets.symmetric(horizontal: 16.0)),
+            onTap: () {
+              controller.openView();
+            },
+            onChanged: (_) {
+              controller.openView();
+            },
+            leading: const Icon(Icons.search),
+          );
+        }, suggestionsBuilder:
+                (BuildContext context, SearchController controller) {
+          return List<ListTile>.generate(5, (int index) {
+            final String item = 'item $index';
+            return ListTile(
+              title: Text(item),
+              onTap: () {
+                setState(() {
+                  controller.closeView(item);
+                });
+              },
+            );
+          });
+        }),
       ),
     );
   }
