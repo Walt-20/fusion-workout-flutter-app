@@ -20,6 +20,8 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 85, 85, 85),
         iconTheme: IconThemeData(color: Colors.white),
+        title: const Text("Calorie Tracking",
+            style: TextStyle(color: Colors.white)),
         actions: [
           // Move the actions inside AppBar
           IconButton(

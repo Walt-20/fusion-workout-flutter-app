@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/workout_dialog.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -382,10 +383,54 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Workouts"),
-        titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24),
         backgroundColor: const Color.fromARGB(255, 85, 85, 85),
         iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text("Workouts", style: TextStyle(color: Colors.white)),
+        actions: [
+          // Move the actions inside AppBar
+          IconButton(
+            key: Key('logoutButton'),
+            icon: Icon(Icons.logout),
+            onPressed: () => _auth.signOut(context),
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color.fromARGB(237, 255, 134, 21),
+              ),
+              child: Text('Fusion Workout',
+                  style: TextStyle(color: Colors.white, fontSize: 24)),
+            ),
+            ListTile(
+              key: Key('workoutsButton'),
+              title: const Text('Workouts'),
+              // Corrected onTap method for navigating to the WorkoutsPage
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => WorkoutsPage()),
+                );
+              },
+            ),
+            ListTile(
+              key: Key('calorieButton'),
+              title: const Text('Calorie Tracking'),
+              // Corrected onTap method for navigating to the WorkoutsPage
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CalorieTrackingPage()),
+                );
+              },
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         key: Key('addEventFloatingActionButton'),
