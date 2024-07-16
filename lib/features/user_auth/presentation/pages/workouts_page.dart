@@ -25,8 +25,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
     _fetchEventsFromFirestore();
+    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
   }
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
@@ -254,8 +254,8 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        final date = DateTime.parse(
-            data['date']); // Parse the date from the document data
+        debugPrint("The data exists $data");
+        final date = DateTime.parse(data['date']);
         final eventName = data['name'] as String;
         final workoutsData = data['workouts'] as List<dynamic>? ?? [];
 
@@ -279,6 +279,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       // Update your state with the fetched events
       setState(() {
         workouts = fetchedEvents;
+        debugPrint("the workouts are $workouts");
         _selectedEvents.value = _getEventsForDay(_selectedDay!);
       });
     } catch (e) {
