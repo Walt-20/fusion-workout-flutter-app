@@ -452,7 +452,7 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Text("Today " + _focusedDay.toString().split(" ")[0]),
+            Text("Today: " + _focusedDay.toString().split(" ")[0]),
             TableCalendar(
               availableGestures: AvailableGestures.all,
               selectedDayPredicate: (day) => isSameDay(day, _focusedDay),

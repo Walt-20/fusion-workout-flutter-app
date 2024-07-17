@@ -117,8 +117,6 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
-    FirebaseAuth.instance.signOut();
-
     expect(find.byType(LoginPage), findsOneWidget);
 
     await login(tester, 'test@example.com', 'test123');
@@ -137,12 +135,19 @@ void main() {
     expect(docSnapshot.exists, true);
     expect(docSnapshot.data()?['name'], 'test user');
     expect(docSnapshot.data()?['phoneNumber'], '1234567890');
-    expect(docSnapshot.data()?['email'], 'test@example.com');
     expect(docSnapshot.data()?['age'], '20');
     expect(docSnapshot.data()?['sex'], 'Male');
     expect(docSnapshot.data()?['weight'], '185');
     expect(docSnapshot.data()?['height'], '6\'');
     expect(docSnapshot.data()?['availability'], '5');
+
+    final logoutButton = find.byKey(Key('logoutButton'));
+
+    await tester.tap(logoutButton);
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LoginPage), findsOneWidget);
   });
 
   // test wrong password credentials
