@@ -5,7 +5,6 @@ import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_con
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/my_button.dart';
-import 'dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
@@ -102,6 +101,11 @@ class _LoginPageState extends State<LoginPage> {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
+    if (email.isEmpty || password.isEmpty) {
+      showAlertMessage("Please enter both your email and password");
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => Center(
@@ -139,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
     } else if (message == 'network-request-failed') {
       message = 'Network request failed';
     } else {
-      message = 'An error occurred';
+      message = message;
     }
 
     showDialog(

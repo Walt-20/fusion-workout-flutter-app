@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fusion_workouts/features/user_auth/apis/FatSecretAPI.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
@@ -7,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalorieTrackingPage extends StatefulWidget {
-  const CalorieTrackingPage({super.key});
+  const CalorieTrackingPage({Key? key}) : super(key: key);
 
   @override
   State<CalorieTrackingPage> createState() => _CalorieTrackingPageState();
@@ -18,6 +19,8 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
   final _auth = FirebaseAuthService();
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  List<dynamic> _searchResults = [];
+  final TextEditingController _searchController = TextEditingController();
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
@@ -26,6 +29,31 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
     });
 
     Navigator.pop(context);
+  }
+
+  void _searchFoods(String query) async {
+    try {
+      List<dynamic> results = await FatSecretAPI.searchFoods(query);
+      debugPrint("Search results: $results");
+      setState(() {
+        _searchResults = results;
+      });
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            backgroundColor: Color.fromARGB(237, 255, 134, 21),
+            title: Center(
+              child: Text(
+                "Error communicating with API",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -37,7 +65,6 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
         title: const Text("Calorie Tracking",
             style: TextStyle(color: Colors.white)),
         actions: [
-          // Move the actions inside AppBar
           IconButton(
             key: const Key('logoutButton'),
             icon: const Icon(Icons.logout),
@@ -59,7 +86,6 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
             ListTile(
               key: const Key('homeButton'),
               title: const Text('Home'),
-              // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {
                 Navigator.push(
                   context,
@@ -70,7 +96,6 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
             ListTile(
               key: const Key('workoutsButton'),
               title: const Text('Workouts'),
-              // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {
                 Navigator.push(
                   context,
@@ -81,7 +106,6 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
             ListTile(
               key: const Key('calorieButton'),
               title: const Text('Calorie Tracking'),
-              // Corrected onTap method for navigating to the WorkoutsPage
               onTap: () {
                 Navigator.push(
                   context,
@@ -96,13 +120,12 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
-                    // Corrected function signature
                     return AlertDialog(
                       title: const Text("Select Day"),
                       content: SizedBox(
@@ -123,7 +146,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                 );
               },
               child: Text(
-                _selectedDay == null || isSameDay(_selectedDay, DateTime.now())
+                _selectedDay == null || isSameDay(_selectedDay!, DateTime.now())
                     ? "Today"
                     : DateFormat('yyyy-MM-dd').format(_selectedDay!),
                 style: TextStyle(),
@@ -133,33 +156,44 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SearchAnchor(
-                builder: (BuildContext context, SearchController controller) {
-              return SearchBar(
-                controller: controller,
-                padding: const WidgetStatePropertyAll<EdgeInsets>(
-                    EdgeInsets.symmetric(horizontal: 16.0)),
-                onTap: () {
-                  controller.openView();
-                },
-                onChanged: (_) {
-                  controller.openView();
-                },
-                leading: const Icon(Icons.search),
-              );
-            }, suggestionsBuilder:
-                    (BuildContext context, SearchController controller) {
-              return List<ListTile>.generate(5, (int index) {
-                final String item = 'item $index';
-                return ListTile(
-                  title: Text(item),
-                  onTap: () {
-                    setState(() {
-                      controller.closeView(item);
-                    });
+              builder: (BuildContext context, SearchController controller) {
+                return SearchBar(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    // Handle onChanged if needed
                   },
+                  onSubmitted: (query) {
+                    _searchFoods(query); // Trigger search on submit
+                  },
+                  leading: const Icon(Icons.search),
+                  trailing: [
+                    IconButton(
+                      onPressed: () {
+                        // Handle microphone button press if needed
+                      },
+                      icon: const Icon(Icons.mic),
+                    ),
+                  ],
                 );
-              });
-            }),
+              },
+              suggestionsBuilder:
+                  (BuildContext context, SearchController controller) {
+                return [];
+                // Optionally build suggestions list UI
+                // return ListView.builder(
+                //   itemCount: _searchResults.length,
+                //   itemBuilder: (context, index) {
+                //     return ListTile(
+                //       title: Text(_searchResults[index]['food_name']),
+                //       subtitle: Text(_searchResults[index]['brand_name'] ?? ''),
+                //       onTap: () {
+                //         // Handle selection of search result if needed
+                //       },
+                //     );
+                //   },
+                // );
+              },
+            ),
           ),
         ],
       ),
