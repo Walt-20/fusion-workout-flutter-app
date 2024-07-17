@@ -5,6 +5,11 @@ import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_con
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/my_button.dart';
+import 'package:fusion_workouts/features/user_auth/provider/tokenprovider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
@@ -18,6 +23,22 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  // Variable to track if the widget is mounted
+  bool _isMounted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isMounted = true;
+  }
+
+  @override
+  void dispose() {
+    _isMounted = false;
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,6 +118,32 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Future<void> fetchOAuthToken() async {
+    final url = Uri.parse('http://10.0.2.2:3000/get-token');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        debugPrint("fetchOAuthToken ${jsonData['access_token']}");
+
+        // Check if the widget is mounted before updating state
+        if (_isMounted) {
+          Provider.of<TokenProvider>(context, listen: false)
+              .updateToken(jsonData['access_token']);
+        }
+      } else {
+        FirebaseAuth.instance.signOut();
+        throw Exception('Failed to fetch OAuth2 token');
+      }
+    } catch (e) {
+      FirebaseAuth.instance.signOut();
+      if (_isMounted) {
+        throw Exception('Failed to connect to proxy server $e');
+      }
+    }
+  }
+
   void _login() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
@@ -115,13 +162,14 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await _auth.signInWithEmailAndPassword(email, password);
+      await fetchOAuthToken();
     } on FirebaseAuthException catch (e) {
-      if (mounted) {
+      if (_isMounted) {
         showAlertMessage(
             e.code); // Show alert only if the widget is still mounted
       }
     } finally {
-      if (mounted) {
+      if (_isMounted) {
         Navigator.pop(context); // Dismiss the dialog in the finally block
       }
     }
@@ -146,17 +194,19 @@ class _LoginPageState extends State<LoginPage> {
       message = message;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Color.fromARGB(237, 255, 134, 21),
-        title: Center(
-          child: Text(
-            message,
-            style: TextStyle(color: Colors.white),
+    if (_isMounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Color.fromARGB(237, 255, 134, 21),
+          title: Center(
+            child: Text(
+              message,
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
 }

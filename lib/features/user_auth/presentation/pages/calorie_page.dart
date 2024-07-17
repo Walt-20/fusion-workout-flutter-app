@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/apis/FatSecretAPI.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
+import 'package:fusion_workouts/features/user_auth/provider/tokenprovider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalorieTrackingPage extends StatefulWidget {
@@ -33,7 +34,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
 
   void _searchFoods(String query) async {
     try {
-      List<dynamic> results = await FatSecretAPI.searchFoods(query);
+      List<dynamic> results = [];
       debugPrint("Search results: $results");
       setState(() {
         _searchResults = results;
@@ -58,6 +59,8 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
 
   @override
   Widget build(BuildContext context) {
+    String accessToken = Provider.of<TokenProvider>(context).accessToken;
+    debugPrint("access token $accessToken");
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 85, 85, 85),

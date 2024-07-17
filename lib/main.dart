@@ -6,6 +6,8 @@ import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:fusion_workouts/features/user_auth/provider/tokenprovider.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -31,13 +33,16 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Fusion Workouts App',
-      debugShowCheckedModeBanner: false,
-      // home: SplashScreen(
-      //   child: AuthPage(),
-      // ),
-      home: AuthPage(),
+    return ChangeNotifierProvider<TokenProvider>(
+      create: (context) => TokenProvider(),
+      child: const MaterialApp(
+        title: 'Fusion Workouts App',
+        debugShowCheckedModeBanner: false,
+        // home: SplashScreen(
+        //   child: AuthPage(),
+        // ),
+        home: AuthPage(),
+      ),
     );
   }
 }
