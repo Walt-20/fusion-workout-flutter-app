@@ -21,6 +21,7 @@ let tokenExpiration = null;
 app.get('/get-token', (req, res) => {
     // check that the access token has been generated and is not expired.
     if (accessToken && tokenExpiration && tokenExpiration > Date.now()) {
+      console.log(`should not be expired ${tokenExpiration} `);
       return res.json({ access_token: accessToken });
     }
     // OAuth2 token request options
@@ -50,7 +51,8 @@ app.get('/get-token', (req, res) => {
         accessToken = body.access_token;
         console.log(`The access token is ${accessToken}`);
         console.log(`The expiration of the token is ${body.expires_in}`);
-        tokenExpiration = Date.now() + (body.expires_in);
+        tokenExpiration = Date.now() + (body.expires_in * 1000);
+        console.log(`The token will expire on ${tokenExpiration}`);
 
         // Return the OAuth2 token to the client (your Flutter app)
         res.json({ access_token: body.access_token });
@@ -61,6 +63,7 @@ app.get('/get-token', (req, res) => {
 app.get('/search-food', (req, res) => {
   // check that token is available and not expired
   if (!accessToken || !tokenExpiration || tokenExpiration < Date.now()) {
+    console.log(`Token expiration is ${tokenExpiration}`);
     return res.status(401).json({ error: 'Access token expired' });
   }
   
