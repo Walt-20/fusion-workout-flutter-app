@@ -34,12 +34,21 @@ class MealSummaryWidget extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                mealName,
-                style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(237, 255, 134, 21),
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    mealName,
+                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => debugPrint("Pressed Add"),
+                  )
+                ],
               ),
               SizedBox(height: 8.0),
               _buildNutritionalInfo('Calories', '${totalCalories} kcal'),

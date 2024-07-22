@@ -84,7 +84,6 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
               }
 
               meals.add(updatedFood);
-              debugPrint(meals.map((food) => food.toString()).join(', '));
             });
           },
         );
