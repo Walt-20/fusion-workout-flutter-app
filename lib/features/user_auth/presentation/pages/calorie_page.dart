@@ -32,6 +32,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
   double totalDinnerCarbs = 0;
   double totalDinnerProtein = 0;
   double totalDinnerFats = 0;
+  EdgeInsetsGeometry padding = EdgeInsets.all(8.0);
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
@@ -144,45 +145,45 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text("Select Day"),
-                      content: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        height: MediaQuery.of(context).size.height * 0.5,
-                        child: TableCalendar(
-                          availableGestures: AvailableGestures.all,
-                          selectedDayPredicate: (day) =>
-                              isSameDay(day, _focusedDay),
-                          focusedDay: _focusedDay,
-                          firstDay: DateTime.utc(2020, 10, 16),
-                          lastDay: DateTime.utc(2030, 3, 14),
-                          onDaySelected: _onDaySelected,
-                        ),
-                      ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text("Select Day"),
+                          content: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            child: TableCalendar(
+                              availableGestures: AvailableGestures.all,
+                              selectedDayPredicate: (day) =>
+                                  isSameDay(day, _focusedDay),
+                              focusedDay: _focusedDay,
+                              firstDay: DateTime.utc(2020, 10, 16),
+                              lastDay: DateTime.utc(2030, 3, 14),
+                              onDaySelected: _onDaySelected,
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
-                );
-              },
-              child: Text(
-                _selectedDay == null || isSameDay(_selectedDay!, DateTime.now())
-                    ? "Today"
-                    : DateFormat('yyyy-MM-dd').format(_selectedDay!),
-                style: TextStyle(),
+                  child: Text(
+                    _selectedDay == null ||
+                            isSameDay(_selectedDay!, DateTime.now())
+                        ? "Today"
+                        : DateFormat('yyyy-MM-dd').format(_selectedDay!),
+                    style: TextStyle(),
+                  ),
+                ),
               ),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
               MealSummaryWidget(
                 mealName: 'Breakfast',
                 totalCalories: totalBreakfastCalories,
@@ -193,6 +194,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                   _addViaFoodWidgetDialog(MealType.breakfast);
                 },
               ),
+              Padding(padding: padding),
               MealSummaryWidget(
                 mealName: 'Lunch',
                 totalCalories: totalLunchCalories,
@@ -203,6 +205,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                   _addViaFoodWidgetDialog(MealType.lunch);
                 },
               ),
+              Padding(padding: padding),
               MealSummaryWidget(
                 mealName: 'Dinner',
                 totalCalories: totalDinnerCalories,
@@ -215,7 +218,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
