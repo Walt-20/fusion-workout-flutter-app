@@ -50,6 +50,10 @@ class FirebaseAuthService {
       'weight': entry.weight,
       'height': entry.height,
       'availability': entry.availability,
+    }).then((value) {
+      debugPrint("success");
+    }).catchError((onError) {
+      debugPrint(onError.toString());
     });
   }
 

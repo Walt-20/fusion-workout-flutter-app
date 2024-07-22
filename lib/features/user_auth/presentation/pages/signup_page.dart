@@ -122,11 +122,15 @@ class _SignUpPageState extends State<SignUpPage> {
     try {
       if (_passwordController.text == _confirmPasswordController.text) {
         await _auth.signUpWithEmailAndPassword(email, password);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => OnBoarding()));
+        if (!mounted) return;
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => OnBoarding()));
       } else {
+        if (!mounted) return;
         showAlertMessage("Passwords do not match");
       }
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       Navigator.pop(context);
       showAlertMessage(e.code);
     }
