@@ -38,7 +38,7 @@ class MealSummaryWidget extends StatelessWidget {
                 mealName,
                 style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.deepOrange,
+                      color: Color.fromARGB(237, 255, 134, 21),
                     ),
               ),
               SizedBox(height: 8.0),
