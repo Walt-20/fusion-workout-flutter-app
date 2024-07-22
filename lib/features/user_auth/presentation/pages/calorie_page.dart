@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/meal_summary.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
@@ -33,6 +34,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
   double totalDinnerProtein = 0;
   double totalDinnerFats = 0;
   EdgeInsetsGeometry padding = EdgeInsets.all(8.0);
+  List<Food> meals = [];
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
@@ -49,10 +51,13 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
       builder: (BuildContext context) {
         return AddFoodDialog(
           mealType: mealType,
-          updateNutritionalValues: (double newTotalCalories,
-              double newTotalProtein,
-              double newTotalCarbs,
-              double newTotalFats) {
+          updateNutritionalValues: (
+            double newTotalCalories,
+            double newTotalProtein,
+            double newTotalCarbs,
+            double newTotalFats,
+            Food updatedFood,
+          ) {
             setState(() {
               switch (mealType) {
                 case MealType.breakfast:
@@ -77,6 +82,9 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                   debugPrint("Error: Invalid meal type");
                   break;
               }
+
+              meals.add(updatedFood);
+              debugPrint(meals.map((food) => food.toString()).join(', '));
             });
           },
         );

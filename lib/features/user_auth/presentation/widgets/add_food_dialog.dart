@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 enum MealType { breakfast, lunch, dinner, snack }
 
 typedef UpdateNutritionalValues = void Function(double totalCalories,
-    double totalProtein, double totalCarbs, double totalFats);
+    double totalProtein, double totalCarbs, double totalFats, Food updatedFood);
 
 class AddFoodDialog extends StatefulWidget {
   final MealType mealType;
@@ -149,6 +149,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
     double updatedTotalCarbs;
     double updatedTotalFats;
     double updatedTotalCalories;
+    Food updatedFood = foodData;
 
     switch (widget.mealType) {
       case MealType.breakfast:
@@ -174,10 +175,9 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
         return;
     }
 
-    // Call the callback to update the totals in CalorieTrackingPage
     widget.updateNutritionalValues(updatedTotalCalories, updatedTotalProtein,
-        updatedTotalCarbs, updatedTotalFats);
+        updatedTotalCarbs, updatedTotalFats, updatedFood);
 
-    Navigator.of(context).pop(); // Close the dialog
+    Navigator.of(context).pop();
   }
 }
