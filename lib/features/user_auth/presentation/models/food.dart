@@ -7,6 +7,7 @@ class Food {
   double fats;
   double carbs;
   double protein;
+  int servings;
 
   Food({
     required this.foodId,
@@ -17,6 +18,7 @@ class Food {
     this.fats = 0.0,
     this.carbs = 0.0,
     this.protein = 0.0,
+    this.servings = 1,
   });
 
   // Method to parse food_description and extract nutritional values
@@ -54,6 +56,7 @@ class Food {
       'fat': fats,
       'carbs': carbs,
       'protein': protein,
+      'servings': servings,
     };
   }
 
@@ -69,6 +72,6 @@ class Food {
 
   @override
   String toString() {
-    return '{food_id: $foodId, food_name: $foodName, food_description: $foodDescription, food_url: $foodUrl}';
+    return '{food_id: $foodId, food_name: $foodName, food_description: $foodDescription, servings: $servings, food_url: $foodUrl}';
   }
 }

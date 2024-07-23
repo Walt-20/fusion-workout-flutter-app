@@ -57,6 +57,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
             double newTotalCarbs,
             double newTotalFats,
             Food updatedFood,
+            int servings,
           ) {
             setState(() {
               switch (mealType) {
@@ -192,6 +193,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                 ),
               ),
               MealSummaryWidget(
+                meals: meals,
                 mealName: 'Breakfast',
                 totalCalories: totalBreakfastCalories,
                 proteinIntake: totalBreakfastProtein,
@@ -200,20 +202,31 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                 onTap: () {
                   _addViaFoodWidgetDialog(MealType.breakfast);
                 },
-              ),
-              Padding(padding: padding),
-              MealSummaryWidget(
-                mealName: 'Lunch',
-                totalCalories: totalLunchCalories,
-                proteinIntake: totalLunchProtein,
-                carbIntake: totalLunchCarbs,
-                fatIntake: totalLunchFats,
-                onTap: () {
-                  _addViaFoodWidgetDialog(MealType.lunch);
+                onUpdate: (updatedMeal) {
+                  setState(() {
+                    _calculateTotals(MealType.breakfast);
+                  });
                 },
               ),
               Padding(padding: padding),
               MealSummaryWidget(
+                  meals: meals,
+                  mealName: 'Lunch',
+                  totalCalories: totalLunchCalories,
+                  proteinIntake: totalLunchProtein,
+                  carbIntake: totalLunchCarbs,
+                  fatIntake: totalLunchFats,
+                  onTap: () {
+                    _addViaFoodWidgetDialog(MealType.lunch);
+                  },
+                  onUpdate: (updatedMeal) {
+                    setState(() {
+                      _calculateTotals(MealType.lunch);
+                    });
+                  }),
+              Padding(padding: padding),
+              MealSummaryWidget(
+                meals: meals,
                 mealName: 'Dinner',
                 totalCalories: totalDinnerCalories,
                 proteinIntake: totalDinnerProtein,
@@ -222,11 +235,60 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                 onTap: () {
                   _addViaFoodWidgetDialog(MealType.dinner);
                 },
+                onUpdate: (updatedMeal) {
+                  setState(() {
+                    _calculateTotals(MealType.dinner);
+                  });
+                },
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _calculateTotals(MealType mealType) {
+    totalBreakfastCalories = 0;
+    totalBreakfastProtein = 0;
+    totalBreakfastCarbs = 0;
+    totalBreakfastFats = 0;
+    totalLunchCalories = 0;
+    totalLunchProtein = 0;
+    totalLunchCarbs = 0;
+    totalLunchFats = 0;
+    totalDinnerCalories = 0;
+    totalDinnerProtein = 0;
+    totalDinnerCarbs = 0;
+    totalDinnerFats = 0;
+
+    for (var meal in meals) {
+      switch (mealType) {
+        case MealType.breakfast:
+          debugPrint("meal calories are ${meal.calories}");
+          debugPrint("meal servings are ${meal.servings}");
+          totalBreakfastCalories += meal.calories * meal.servings;
+          debugPrint("total breakfast calories is ${totalBreakfastCalories}");
+          totalBreakfastProtein += meal.protein * meal.servings;
+          totalBreakfastCarbs += meal.carbs * meal.servings;
+          totalBreakfastFats += meal.fats * meal.servings;
+          break;
+        case MealType.lunch:
+          totalLunchCalories += meal.calories * meal.servings;
+          totalLunchProtein += meal.protein * meal.servings;
+          totalLunchCarbs += meal.carbs * meal.servings;
+          totalLunchFats += meal.fats * meal.servings;
+          break;
+        case MealType.dinner:
+          totalDinnerCalories += meal.calories * meal.servings;
+          totalDinnerProtein += meal.protein * meal.servings;
+          totalDinnerCarbs += meal.carbs * meal.servings;
+          totalDinnerFats += meal.fats * meal.servings;
+          break;
+        default:
+          debugPrint("Error: Invalid meal type");
+          break;
+      }
+    }
   }
 }

@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/widgets/edit_food_dialog.dart';
 
 class MealSummaryWidget extends StatelessWidget {
+  final List<Food> meals;
   final String mealName;
   final num totalCalories;
   final double proteinIntake;
   final double carbIntake;
   final double fatIntake;
   final VoidCallback onTap;
+  final Function(List<Food>) onUpdate;
   final EdgeInsetsGeometry padding;
 
   const MealSummaryWidget({
     Key? key,
+    required this.meals,
     required this.mealName,
     required this.totalCalories,
     required this.proteinIntake,
     required this.carbIntake,
     required this.fatIntake,
     required this.onTap,
+    required this.onUpdate,
     this.padding = const EdgeInsets.all(8.0),
   }) : super(key: key);
 
@@ -46,7 +52,15 @@ class MealSummaryWidget extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.edit),
-                    onPressed: () => debugPrint("Pressed Add"),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) => EditFoodDialog(
+                          meals: meals,
+                          onUpdate: onUpdate,
+                        ),
+                      );
+                    },
                   )
                 ],
               ),

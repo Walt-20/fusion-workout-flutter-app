@@ -6,8 +6,13 @@ import 'package:http/http.dart' as http;
 
 enum MealType { breakfast, lunch, dinner, snack }
 
-typedef UpdateNutritionalValues = void Function(double totalCalories,
-    double totalProtein, double totalCarbs, double totalFats, Food updatedFood);
+typedef UpdateNutritionalValues = void Function(
+    double totalCalories,
+    double totalProtein,
+    double totalCarbs,
+    double totalFats,
+    Food updatedFood,
+    int servings);
 
 class AddFoodDialog extends StatefulWidget {
   final MealType mealType;
@@ -175,8 +180,10 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
         return;
     }
 
+    updatedFood.servings = multiplier;
+
     widget.updateNutritionalValues(updatedTotalCalories, updatedTotalProtein,
-        updatedTotalCarbs, updatedTotalFats, updatedFood);
+        updatedTotalCarbs, updatedTotalFats, updatedFood, multiplier);
 
     Navigator.of(context).pop();
   }
