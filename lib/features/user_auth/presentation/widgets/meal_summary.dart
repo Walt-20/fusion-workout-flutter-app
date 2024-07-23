@@ -50,17 +50,25 @@ class MealSummaryWidget extends StatelessWidget {
                           color: Color.fromARGB(237, 255, 134, 21),
                         ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) => EditFoodDialog(
-                          meals: meals,
-                          onUpdate: onUpdate,
-                        ),
-                      );
-                    },
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: onTap,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) => EditFoodDialog(
+                              meals: meals,
+                              onUpdate: onUpdate,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   )
                 ],
               ),

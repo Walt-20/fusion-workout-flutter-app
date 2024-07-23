@@ -2,10 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/meal_summary.dart';
+
 import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/add_food_dialog.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/widgets/meal_summary.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
