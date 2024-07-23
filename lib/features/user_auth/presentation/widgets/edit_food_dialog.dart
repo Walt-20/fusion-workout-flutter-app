@@ -13,6 +13,13 @@ class EditFoodDialog extends StatefulWidget {
 }
 
 class _EditFoodDialogState extends State<EditFoodDialog> {
+  void _deleteMeal(Food meal) {
+    setState(() {
+      widget.meals.remove(meal);
+    });
+    widget.onUpdate(widget.meals);
+  }
+
   void _editMeal(BuildContext context, Food meal) {
     int servings = meal.servings;
 
@@ -69,13 +76,29 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final meal in widget.meals)
-              ListTile(
-                title: Text(meal.foodName),
-                subtitle: Text(
-                    'Description: ${meal.foodDescription}\nServings: ${meal.servings}'),
-                onTap: () {
-                  _editMeal(context, meal);
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: ListTile(
+                      title: Text(meal.foodName),
+                      subtitle: Text(
+                          'Description: ${meal.foodDescription}\nServings: ${meal.servings}'),
+                      onTap: () {
+                        _editMeal(context, meal);
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: IconButton(
+                      onPressed: () {
+                        _deleteMeal(meal);
+                      },
+                      icon: const Icon(Icons.delete),
+                    ),
+                  ),
+                ],
               ),
           ],
         ),
