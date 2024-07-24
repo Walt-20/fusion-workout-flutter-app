@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 
 import 'auth_page.dart';
 
@@ -55,6 +56,46 @@ class FirebaseAuthService {
     }).catchError((onError) {
       debugPrint(onError.toString());
     });
+  }
+
+  void writeMealsToFirebase(Map<String, List<Food>> mealsByDate) async {
+    final userMealCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals');
+
+    try {
+      WriteBatch batch = FirebaseFirestore.instance.batch();
+
+      for (var mealEntry in mealsByDate.entries) {
+        String date = mealEntry.key;
+        List<Food> mealsList = mealEntry.value;
+
+        // Serialize each food item to a map
+        List<Map<String, dynamic>> serializedMeals = mealsList
+            .map((meal) => {
+                  'foodId': meal.foodId,
+                  'servingId': meal.servings,
+                })
+            .toList();
+
+        // Get a reference to the document
+        final docRef = userMealCollection.doc(date);
+
+        // Set the data
+        batch.set(docRef, {
+          'date': date,
+          'meals': serializedMeals,
+        });
+      }
+
+      // Commit the batch
+      await batch.commit();
+    } catch (e) {
+      print("Error saving meals: $e");
+      // Handle error appropriately
+      throw e;
+    }
   }
 
   Future<void> writeEventToFirestore(String userId,

@@ -122,6 +122,8 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
 
               // Recalculate totals based on the selected meal type
               _calculateTotals(_selectedDay!, mealType);
+
+              _auth.writeMealsToFirebase(mealsByDate);
             });
           },
         );
