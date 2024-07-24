@@ -21,7 +21,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
   final user = FirebaseAuth.instance.currentUser!;
   final _auth = FirebaseAuthService();
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
+  DateTime _selectedDay = DateTime.now();
   num totalBreakfastCalories = 0;
   double totalBreakfastProtein = 0;
   double totalBreakfastCarbs = 0;
@@ -36,11 +36,31 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
   double totalDinnerFats = 0;
   EdgeInsetsGeometry padding = EdgeInsets.all(8.0);
   List<Food> meals = [];
+  Map<String, List<Food>> mealsByDate = {};
+  MealType _selectedMealType = MealType.breakfast;
 
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
       _focusedDay = day;
       _selectedDay = day;
+
+      if (mealsByDate.isEmpty) {
+        totalBreakfastCalories = 0;
+        totalBreakfastProtein = 0;
+        totalBreakfastCarbs = 0;
+        totalBreakfastFats = 0;
+        totalLunchCalories = 0;
+        totalLunchProtein = 0;
+        totalLunchCarbs = 0;
+        totalLunchFats = 0;
+        totalDinnerCalories = 0;
+        totalDinnerCarbs = 0;
+        totalDinnerProtein = 0;
+        totalDinnerFats = 0;
+      } else {
+        // calculate the meals
+        _calculateTotals(_selectedDay, _selectedMealType);
+      }
     });
 
     Navigator.pop(context);
@@ -51,7 +71,7 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
       context: context,
       builder: (BuildContext context) {
         return AddFoodDialog(
-          mealType: mealType,
+          mealType: _selectedMealType,
           updateNutritionalValues: (
             double newTotalCalories,
             double newTotalProtein,
@@ -85,7 +105,23 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                   break;
               }
 
-              meals.add(updatedFood);
+              String selectedDay =
+                  DateFormat('yyyy-MM-dd').format(_selectedDay!);
+
+              // Assign the selected day to the updated food item
+              if (_selectedDay != null) {
+                updatedFood.day = selectedDay;
+              }
+
+              // Add or update the meals list for the selected day
+              if (mealsByDate.containsKey(selectedDay)) {
+                mealsByDate[selectedDay]!.add(updatedFood);
+              } else {
+                mealsByDate[selectedDay] = [updatedFood];
+              }
+
+              // Recalculate totals based on the selected meal type
+              _calculateTotals(_selectedDay!, mealType);
             });
           },
         );
@@ -93,8 +129,68 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
     );
   }
 
+  void _calculateTotals(DateTime selectedDay, MealType mealType) {
+    // Reset totals before calculating
+    totalBreakfastCalories = 0;
+    totalBreakfastProtein = 0;
+    totalBreakfastCarbs = 0;
+    totalBreakfastFats = 0;
+    totalLunchCalories = 0;
+    totalLunchProtein = 0;
+    totalLunchCarbs = 0;
+    totalLunchFats = 0;
+    totalDinnerCalories = 0;
+    totalDinnerProtein = 0;
+    totalDinnerCarbs = 0;
+    totalDinnerFats = 0;
+
+    // Format selected day to yyyy-MM-dd format
+    String selectedDayFormatted = DateFormat('yyyy-MM-dd').format(selectedDay);
+
+    // Fetch meals for the selected day from mealsByDate map
+    List<Food>? filteredMeals = mealsByDate[selectedDayFormatted];
+
+    // Calculate totals based on the meal type
+    if (filteredMeals != null) {
+      for (var meal in filteredMeals) {
+        switch (mealType) {
+          case MealType.breakfast:
+            totalBreakfastCalories += meal.calories * meal.servings;
+            totalBreakfastProtein += meal.protein * meal.servings;
+            totalBreakfastCarbs += meal.carbs * meal.servings;
+            totalBreakfastFats += meal.fats * meal.servings;
+            break;
+          case MealType.lunch:
+            totalLunchCalories += meal.calories * meal.servings;
+            totalLunchProtein += meal.protein * meal.servings;
+            totalLunchCarbs += meal.carbs * meal.servings;
+            totalLunchFats += meal.fats * meal.servings;
+            break;
+          case MealType.dinner:
+            totalDinnerCalories += meal.calories * meal.servings;
+            totalDinnerProtein += meal.protein * meal.servings;
+            totalDinnerCarbs += meal.carbs * meal.servings;
+            totalDinnerFats += meal.fats * meal.servings;
+            break;
+          default:
+            debugPrint("Error: Invalid meal type");
+            break;
+        }
+      }
+    }
+
+    // Force the UI to update after calculating totals
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Get formatted selected day
+    String selectedDayFormatted = DateFormat('yyyy-MM-dd').format(_selectedDay);
+
+    // Filter meals for the selected day
+    List<Food>? filteredMeals = mealsByDate[selectedDayFormatted];
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 85, 85, 85),
@@ -194,51 +290,64 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
                 ),
               ),
               MealSummaryWidget(
-                meals: meals,
+                key: Key('breakfast mealsummarywidget'),
+                meals: filteredMeals ?? [],
                 mealName: 'Breakfast',
                 totalCalories: totalBreakfastCalories,
                 proteinIntake: totalBreakfastProtein,
                 carbIntake: totalBreakfastCarbs,
                 fatIntake: totalBreakfastFats,
                 onTap: () {
-                  _addViaFoodWidgetDialog(MealType.breakfast);
+                  setState(() {
+                    _selectedMealType = MealType.breakfast;
+                  });
+                  _addViaFoodWidgetDialog(_selectedMealType);
                 },
                 onUpdate: (updatedMeal) {
                   setState(() {
-                    _calculateTotals(MealType.breakfast);
+                    _calculateTotals(_selectedDay!, _selectedMealType);
                   });
                 },
               ),
               Padding(padding: padding),
               MealSummaryWidget(
-                  meals: meals,
-                  mealName: 'Lunch',
-                  totalCalories: totalLunchCalories,
-                  proteinIntake: totalLunchProtein,
-                  carbIntake: totalLunchCarbs,
-                  fatIntake: totalLunchFats,
-                  onTap: () {
-                    _addViaFoodWidgetDialog(MealType.lunch);
-                  },
-                  onUpdate: (updatedMeal) {
-                    setState(() {
-                      _calculateTotals(MealType.lunch);
-                    });
-                  }),
+                key: Key('lunch mealsummarywidget'),
+                meals: filteredMeals ?? [],
+                mealName: 'Lunch',
+                totalCalories: totalLunchCalories,
+                proteinIntake: totalLunchProtein,
+                carbIntake: totalLunchCarbs,
+                fatIntake: totalLunchFats,
+                onTap: () {
+                  setState(() {
+                    _selectedMealType = MealType.lunch;
+                  });
+                  _addViaFoodWidgetDialog(_selectedMealType);
+                },
+                onUpdate: (updatedMeal) {
+                  setState(() {
+                    _calculateTotals(_selectedDay!, _selectedMealType);
+                  });
+                },
+              ),
               Padding(padding: padding),
               MealSummaryWidget(
-                meals: meals,
+                key: Key('dinner mealsummarywidget'),
+                meals: filteredMeals ?? [],
                 mealName: 'Dinner',
                 totalCalories: totalDinnerCalories,
                 proteinIntake: totalDinnerProtein,
                 carbIntake: totalDinnerCarbs,
                 fatIntake: totalDinnerFats,
                 onTap: () {
-                  _addViaFoodWidgetDialog(MealType.dinner);
+                  setState(() {
+                    _selectedMealType = MealType.dinner;
+                  });
+                  _addViaFoodWidgetDialog(_selectedMealType);
                 },
                 onUpdate: (updatedMeal) {
                   setState(() {
-                    _calculateTotals(MealType.dinner);
+                    _calculateTotals(_selectedDay!, _selectedMealType);
                   });
                 },
               ),
@@ -247,49 +356,5 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
         ),
       ),
     );
-  }
-
-  void _calculateTotals(MealType mealType) {
-    totalBreakfastCalories = 0;
-    totalBreakfastProtein = 0;
-    totalBreakfastCarbs = 0;
-    totalBreakfastFats = 0;
-    totalLunchCalories = 0;
-    totalLunchProtein = 0;
-    totalLunchCarbs = 0;
-    totalLunchFats = 0;
-    totalDinnerCalories = 0;
-    totalDinnerProtein = 0;
-    totalDinnerCarbs = 0;
-    totalDinnerFats = 0;
-
-    for (var meal in meals) {
-      switch (mealType) {
-        case MealType.breakfast:
-          debugPrint("meal calories are ${meal.calories}");
-          debugPrint("meal servings are ${meal.servings}");
-          totalBreakfastCalories += meal.calories * meal.servings;
-          debugPrint("total breakfast calories is ${totalBreakfastCalories}");
-          totalBreakfastProtein += meal.protein * meal.servings;
-          totalBreakfastCarbs += meal.carbs * meal.servings;
-          totalBreakfastFats += meal.fats * meal.servings;
-          break;
-        case MealType.lunch:
-          totalLunchCalories += meal.calories * meal.servings;
-          totalLunchProtein += meal.protein * meal.servings;
-          totalLunchCarbs += meal.carbs * meal.servings;
-          totalLunchFats += meal.fats * meal.servings;
-          break;
-        case MealType.dinner:
-          totalDinnerCalories += meal.calories * meal.servings;
-          totalDinnerProtein += meal.protein * meal.servings;
-          totalDinnerCarbs += meal.carbs * meal.servings;
-          totalDinnerFats += meal.fats * meal.servings;
-          break;
-        default:
-          debugPrint("Error: Invalid meal type");
-          break;
-      }
-    }
   }
 }

@@ -153,12 +153,12 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (context) => Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    // showDialog(
+    //   context: context,
+    //   builder: (context) => Center(
+    //     child: CircularProgressIndicator(),
+    //   ),
+    // );
 
     try {
       await _auth.signInWithEmailAndPassword(email, password);

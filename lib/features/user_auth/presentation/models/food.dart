@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class Food {
   String foodId;
   String foodName;
@@ -7,6 +9,7 @@ class Food {
   double fats;
   double carbs;
   double protein;
+  String day;
   int servings;
 
   Food({
@@ -19,7 +22,8 @@ class Food {
     this.carbs = 0.0,
     this.protein = 0.0,
     this.servings = 1,
-  });
+    String? day,
+  }) : this.day = day ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   // Method to parse food_description and extract nutritional values
   void parseNutritionalValues() {
@@ -57,6 +61,7 @@ class Food {
       'carbs': carbs,
       'protein': protein,
       'servings': servings,
+      'food_day': day,
     };
   }
 
@@ -67,6 +72,7 @@ class Food {
       foodName: map['food_name'],
       foodDescription: map['food_description'],
       foodUrl: map['food_url'],
+      day: map['food_day'],
     );
   }
 

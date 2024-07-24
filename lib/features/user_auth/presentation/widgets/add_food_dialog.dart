@@ -7,20 +7,23 @@ import 'package:http/http.dart' as http;
 enum MealType { breakfast, lunch, dinner, snack }
 
 typedef UpdateNutritionalValues = void Function(
-    double totalCalories,
-    double totalProtein,
-    double totalCarbs,
-    double totalFats,
-    Food updatedFood,
-    int servings);
+  double totalCalories,
+  double totalProtein,
+  double totalCarbs,
+  double totalFats,
+  Food updatedFood,
+  int servings,
+);
 
 class AddFoodDialog extends StatefulWidget {
   final MealType mealType;
   final UpdateNutritionalValues updateNutritionalValues;
 
-  const AddFoodDialog(
-      {Key? key, required this.mealType, required this.updateNutritionalValues})
-      : super(key: key);
+  const AddFoodDialog({
+    Key? key,
+    required this.mealType,
+    required this.updateNutritionalValues,
+  }) : super(key: key);
 
   @override
   _AddFoodDialogState createState() => _AddFoodDialogState();
@@ -42,6 +45,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextField(
+                key: Key('searchController'),
                 controller: _searchController,
                 decoration: InputDecoration(
                   labelText: 'Search for food',
@@ -114,6 +118,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
                       children: [
                         Text("Servings", style: TextStyle(fontSize: 16)),
                         DropdownButton<int>(
+                          key: Key('DropdownMenu'),
                           value: _multiplier,
                           items: List.generate(10, (index) => index + 1)
                               .map<DropdownMenuItem<int>>((int value) {
@@ -133,6 +138,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
               ),
               actions: <Widget>[
                 TextButton(
+                  key: Key('AddFoodButton'),
                   child: const Text('Add'),
                   onPressed: () {
                     _addToMeal(food, _multiplier);

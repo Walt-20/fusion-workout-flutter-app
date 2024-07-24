@@ -5,11 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/signup_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/widgets/add_food_dialog.dart';
 import 'package:fusion_workouts/firebase_options.dart';
 import 'package:fusion_workouts/main.dart';
 import 'package:integration_test/integration_test.dart';
@@ -431,5 +433,76 @@ void main() {
     expect(find.text('Chest'), findsOneWidget);
 
     expect(find.byType(ListTile), findsNWidgets(5));
+  });
+
+  testWidgets("Test calorie page functionality", (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
+
+    expect(find.byType(LoginPage), findsOneWidget);
+
+    await login(tester, 'test@example.com', 'test123');
+    // should find the dashboard page
+    expect(find.byType(DashboardPage), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+
+    final calories = find.text("Calorie Tracking");
+
+    expect(calories, findsOneWidget);
+
+    final calorieButton = find.byKey(Key('calorieButton'));
+
+    await tester.tap(calorieButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CalorieTrackingPage), findsOneWidget);
+
+    final breakfastWidget = find.byKey(Key('breakfast mealsummarywidget'));
+
+    await tester.tap(breakfastWidget);
+    await tester.pumpAndSettle();
+
+    final searchController = find.byKey(Key('searchController'));
+
+    await tester.tap(searchController);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(searchController, 'Hard Boiled Eggs');
+    await tester.pump();
+
+    final searchButton = find.byIcon(Icons.search);
+
+    await tester.tap(searchButton);
+    await tester.pumpAndSettle();
+
+    final thirdTileFinder = find.byType(ListTile).at(2);
+
+    await tester.tap(thirdTileFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add Food'), findsOneWidget);
+
+    final dropdownFinder = find.byKey(Key('DropdownMenu'));
+
+    await tester.tap(dropdownFinder);
+    await tester.pumpAndSettle();
+
+    final menuItemFinder = find.text('6').last;
+    await tester.tap(menuItemFinder);
+    await tester.pumpAndSettle();
+
+    final addFoodButton = find.byKey(Key('AddFoodButton'));
+    await tester.tap(addFoodButton);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AddFoodDialog), findsOneWidget);
+
+    final modalBarrierFinder = find.byType(ModalBarrier).last;
+
+    await tester.tap(modalBarrierFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CalorieTrackingPage), findsOneWidget);
   });
 }
