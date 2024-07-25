@@ -125,6 +125,54 @@ app.get('/search-food', (req, res) => {
   });
 });
 
+app.get('/fetch-foodId', (req, res) => {
+  // check that token is available and not expired
+  if (!accessToken || !tokenExpiration || tokenExpiration < Date.now()) {
+    console.log(`Token expiration is ${tokenExpiration}`);
+    return res.status(401).json({ error: 'Access token expired' });
+  }
+  
+
+  // Construct the request to FatSecret API
+  const baseURL = 'https://platform.fatsecret.com/rest/server.api';
+  const searchExpression = req.query.searchExpression;
+  const format = req.query.format || 'json';
+
+  const options = {
+    method: 'GET',
+    url: baseURL,
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    },
+    qs: {
+      method: 'food.get.v4',
+      food_id: searchExpression,
+      format: format,
+    }
+  };
+
+  request(options, function(error, response, body) {
+    if (error) {
+      console.error('Error fetching food ID:', error);
+      return res.status(500).json({ error: 'Failed to fetch Food ID' });
+    }
+
+    try {
+      const parsedBody = JSON.parse(body);
+
+      console.log(parsedBody);
+
+      const foods = parsedBody['food'];
+
+      console.log(foods);
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      res.status(500).json({ error: 'Error parsing JSON response' });
+    }
+  });
+});
+
 // Handle errors from the proxy
 proxy.on('error', (err, req, res) => {
   console.error('Proxy error:', err);

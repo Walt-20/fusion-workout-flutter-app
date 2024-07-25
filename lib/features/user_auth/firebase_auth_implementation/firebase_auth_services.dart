@@ -7,8 +7,9 @@ import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dar
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
-
+import 'package:http/http.dart' as http;
 import 'auth_page.dart';
+import 'dart:convert';
 
 class FirebaseAuthService {
   FirebaseAuth _auth = FirebaseAuth.instance;
@@ -248,7 +249,7 @@ class FirebaseAuthService {
         List<Map<String, dynamic>> serializedMeals = mealsList
             .map((meal) => {
                   'foodId': meal.foodId,
-                  'servingId': meal.servings,
+                  'servings': meal.servings,
                 })
             .toList();
 
@@ -268,6 +269,40 @@ class FirebaseAuthService {
       print("Error saving meals: $e");
       // Handle error appropriately
       throw e;
+    }
+  }
+
+  void fetchFoodIdFromFirestore(String date) async {
+    final userMealsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals')
+        .doc(date);
+
+    try {
+      DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
+
+      if (mealDocSnapshot.exists) {
+        Map<String, dynamic> data =
+            mealDocSnapshot.data() as Map<String, dynamic>;
+
+        debugPrint(data.toString());
+
+        List<dynamic> meals = data['meals'];
+
+        for (var meal in meals) {
+          String foodId = meal['foodId'];
+          int servings = meal['servings'];
+
+          await fetchFoodIdFromAPI(foodId);
+        }
+      } else {
+        // Handle the case where the document does not exist
+        debugPrint('No meals found for the given date.');
+      }
+    } catch (e) {
+      // Handle any errors that occur during the fetch
+      debugPrint('Error fetching meals: $e');
     }
   }
 
@@ -311,5 +346,17 @@ class FirebaseAuthService {
         (Route<dynamic> route) => false,
       );
     }
+  }
+
+  Future<void> fetchFoodIdFromAPI(String foodId) async {
+    final url = Uri.parse('http://10.0.2.2:3000/fetch-foodId');
+
+    try {
+      final response =
+          await http.get(Uri.parse('$url?searchExpression=$foodId'));
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+      }
+    } catch (e) {}
   }
 }

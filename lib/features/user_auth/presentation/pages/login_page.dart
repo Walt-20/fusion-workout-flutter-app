@@ -126,9 +126,10 @@ class _LoginPageState extends State<LoginPage> {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         debugPrint("fetchOAuthToken ${jsonData['access_token']}");
-
-        Provider.of<TokenProvider>(context, listen: false)
-            .updateToken(jsonData['access_token']);
+        if (mounted) {
+          Provider.of<TokenProvider>(context, listen: false)
+              .updateToken(jsonData['access_token']);
+        }
       } else {
         FirebaseAuth.instance.signOut();
         throw Exception('Failed to fetch OAuth2 token');
@@ -151,8 +152,7 @@ class _LoginPageState extends State<LoginPage> {
       await _auth.signInWithEmailAndPassword(email, password);
       await fetchOAuthToken();
     } on FirebaseAuthException catch (e) {
-      showAlertMessage(
-          e.code); // Show alert only if the widget is still mounted
+      showAlertMessage(e.code);
     }
   }
 

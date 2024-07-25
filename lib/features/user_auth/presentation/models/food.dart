@@ -25,6 +25,24 @@ class Food {
     String? day,
   }) : this.day = day ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
+  factory Food.fromJson(Map<String, dynamic> json) {
+    List<dynamic> servingsList = json['food']['servings']['serving'];
+    int defaultServings =
+        servingsList.isNotEmpty ? servingsList[0]['number'] : 1;
+
+    return Food(
+      foodId: json['food']['food_id'],
+      foodName: json['food']['food_name'],
+      foodDescription: '',
+      foodUrl: json['food']['food_url'],
+      calories: 0.0,
+      fats: 0.0,
+      carbs: 0.0,
+      protein: 0.0,
+      servings: 1,
+    );
+  }
+
   // Method to parse food_description and extract nutritional values
   void parseNutritionalValues() {
     // Extract nutritional values from food_description

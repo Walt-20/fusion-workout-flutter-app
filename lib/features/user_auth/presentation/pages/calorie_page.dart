@@ -39,10 +39,21 @@ class _CalorieTrackingPageState extends State<CalorieTrackingPage> {
   Map<String, List<Food>> mealsByDate = {};
   MealType _selectedMealType = MealType.breakfast;
 
+  @override
+  void initState() {
+    String selectedDay = DateFormat('yyyy-MM-dd').format(_selectedDay!);
+
+    _auth.fetchFoodIdFromFirestore(selectedDay);
+  }
+
   void _onDaySelected(DateTime day, DateTime focusedDay) {
     setState(() {
       _focusedDay = day;
       _selectedDay = day;
+
+      String selectedDay = DateFormat('yyyy-MM-dd').format(_selectedDay!);
+
+      _auth.fetchFoodIdFromFirestore(selectedDay);
 
       if (mealsByDate.isEmpty) {
         totalBreakfastCalories = 0;

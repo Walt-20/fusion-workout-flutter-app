@@ -18,6 +18,7 @@ class EditFoodDialog extends StatefulWidget {
 
 class _EditFoodDialogState extends State<EditFoodDialog> {
   final FirebaseAuthService _auth = FirebaseAuthService();
+
   void _deleteMeal(Food meal) {
     setState(() {
       widget.meals.remove(meal);
@@ -33,20 +34,22 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Edit ${meal.foodName}'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Current servings: ${meal.servings}'),
-                TextField(
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'New servings'),
-                  onChanged: (value) {
-                    servings = int.tryParse(value) ?? meal.servings;
-                  },
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Current servings: ${meal.servings}'),
+              SizedBox(height: 12),
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'New servings',
+                  border: OutlineInputBorder(),
                 ),
-              ],
-            ),
+                onChanged: (value) {
+                  servings = int.tryParse(value) ?? meal.servings;
+                },
+              ),
+            ],
           ),
           actions: <Widget>[
             TextButton(
@@ -81,31 +84,25 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final meal in widget.meals)
-              Row(
-                children: [
-                  Expanded(
-                    child: ListTile(
-                      title: Text(meal.foodName),
-                      subtitle: Text(
-                          'Description: ${meal.foodDescription}\nServings: ${meal.servings}'),
-                      onTap: () {
-                        _editMeal(context, meal);
-                      },
-                    ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: ListTile(
+                  title: Text(meal.foodName),
+                  subtitle: Text(
+                    'Description: ${meal.foodDescription}\nServings: ${meal.servings}',
                   ),
-                  SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: IconButton(
-                      onPressed: () {
-                        _deleteMeal(meal);
-                        _auth.removeMealFromFirestore(
-                            meal, meal.day.toString());
-                      },
-                      icon: const Icon(Icons.delete),
-                    ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      _deleteMeal(meal);
+                      _auth.removeMealFromFirestore(meal, meal.day.toString());
+                    },
+                    icon: Icon(Icons.delete),
+                    color: Colors.red,
                   ),
-                ],
+                  onTap: () {
+                    _editMeal(context, meal);
+                  },
+                ),
               ),
           ],
         ),
