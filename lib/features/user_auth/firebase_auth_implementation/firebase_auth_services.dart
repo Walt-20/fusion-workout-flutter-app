@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
 
 import 'auth_page.dart';
 
@@ -109,6 +110,124 @@ class FirebaseAuthService {
       print("Error saving events: $e");
       // Handle error appropriately
       throw e; // Rethrow the error to propagate it further if needed
+    }
+  }
+
+  Future<void> deleteEventsFromFirestore(
+      DateTime eventToDelete, String eventName) async {
+    String userUid = FirebaseAuth.instance.currentUser!.uid;
+    final userEventsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userUid)
+        .collection('events');
+
+    try {
+      String docId = eventToDelete.toIso8601String();
+
+      final querySnapshot = await userEventsCollection
+          .where('date', isEqualTo: docId)
+          .where('name', isEqualTo: eventName)
+          .get();
+
+      debugPrint('There is a querySnapshot $querySnapshot');
+
+      WriteBatch batch = FirebaseFirestore.instance.batch();
+      for (var doc in querySnapshot.docs) {
+        debugPrint('there is a doc $doc');
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+    } catch (e) {
+      print("Error removing event: $e");
+    }
+  }
+
+  Future<Map<DateTime, List<Event>>> fetchEventsFromFirestore() async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    final userEventsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .collection('events');
+
+    try {
+      final snapshot = await userEventsCollection.get();
+      final Map<DateTime, List<Event>> fetchedEvents = {};
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final date = DateTime.parse(data['date']);
+        final eventName = data['name'] as String;
+        final workoutsData = data['workouts'] as List<dynamic>? ?? [];
+
+        // Parse workouts
+        final workouts = workoutsData.map((w) {
+          final workoutData = w as Map<String, dynamic>;
+          // Assuming there's a method to parse workout data into Workout objects
+          return Workout.fromMap(workoutData);
+        }).toList();
+
+        // Create an Event object (assuming there's a constructor that takes the name and workouts)
+        final event = Event(name: eventName, workouts: workouts);
+
+        // Group events by date
+        if (!fetchedEvents.containsKey(date)) {
+          fetchedEvents[date] = [];
+        }
+        fetchedEvents[date]!.add(event);
+      }
+
+      return fetchedEvents;
+    } catch (e) {
+      print("Error fetching events: $e");
+      return {};
+    }
+  }
+
+  Future<void> deleteWorkoutFromFirestore(String eventName,
+      DateTime eventHoldingWorkout, Workout workoutToDelete) async {
+    String userUid = FirebaseAuth.instance.currentUser!.uid;
+    final eventCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userUid)
+        .collection('events');
+
+    try {
+      String eventDocId = eventHoldingWorkout.toIso8601String();
+      debugPrint("event doc id is $eventDocId");
+
+      final querySnapshot = await eventCollection
+          .where('date', isEqualTo: eventDocId)
+          .where('name', isEqualTo: eventName)
+          .get();
+
+      // Fetch the event document
+      debugPrint("event doc is $querySnapshot");
+      if (querySnapshot.docs.isNotEmpty) {
+        debugPrint("the doc exists");
+
+        final eventDoc = querySnapshot.docs.first;
+        // Get the workouts array from the document data
+        List<dynamic> workouts = eventDoc.data()['workouts'] ?? [];
+
+        // Convert to list of Workout objects
+        List<Workout> workoutList =
+            workouts.map((w) => Workout.fromMap(w)).toList();
+
+        // Remove the specific workout based on exercise (assuming 'exercise' is unique)
+        workoutList.removeWhere((w) => w.exercise == workoutToDelete.exercise);
+
+        // Convert back to list of maps
+        List<Map<String, dynamic>> updatedWorkouts =
+            workoutList.map((w) => w.toMap()).toList();
+
+        debugPrint("update workoutlist $updatedWorkouts");
+
+        // Update the document with the modified workouts array
+        await eventDoc.reference.update({'workouts': updatedWorkouts});
+      }
+    } catch (e) {
+      print("Error removing workout: $e");
     }
   }
 

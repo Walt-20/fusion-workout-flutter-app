@@ -38,9 +38,6 @@ class MyApp extends StatelessWidget {
       child: const MaterialApp(
         title: 'Fusion Workouts App',
         debugShowCheckedModeBanner: false,
-        // home: SplashScreen(
-        //   child: AuthPage(),
-        // ),
         home: AuthPage(),
       ),
     );

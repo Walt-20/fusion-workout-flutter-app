@@ -127,20 +127,14 @@ class _LoginPageState extends State<LoginPage> {
         final jsonData = json.decode(response.body);
         debugPrint("fetchOAuthToken ${jsonData['access_token']}");
 
-        // Check if the widget is mounted before updating state
-        if (_isMounted) {
-          Provider.of<TokenProvider>(context, listen: false)
-              .updateToken(jsonData['access_token']);
-        }
+        Provider.of<TokenProvider>(context, listen: false)
+            .updateToken(jsonData['access_token']);
       } else {
         FirebaseAuth.instance.signOut();
         throw Exception('Failed to fetch OAuth2 token');
       }
     } catch (e) {
       FirebaseAuth.instance.signOut();
-      if (_isMounted) {
-        throw Exception('Failed to connect to proxy server $e');
-      }
     }
   }
 
@@ -153,25 +147,12 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // showDialog(
-    //   context: context,
-    //   builder: (context) => Center(
-    //     child: CircularProgressIndicator(),
-    //   ),
-    // );
-
     try {
       await _auth.signInWithEmailAndPassword(email, password);
       await fetchOAuthToken();
     } on FirebaseAuthException catch (e) {
-      if (_isMounted) {
-        showAlertMessage(
-            e.code); // Show alert only if the widget is still mounted
-      }
-    } finally {
-      if (_isMounted) {
-        Navigator.pop(context); // Dismiss the dialog in the finally block
-      }
+      showAlertMessage(
+          e.code); // Show alert only if the widget is still mounted
     }
   }
 
@@ -194,19 +175,17 @@ class _LoginPageState extends State<LoginPage> {
       message = message;
     }
 
-    if (_isMounted) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Color.fromARGB(237, 255, 134, 21),
-          title: Center(
-            child: Text(
-              message,
-              style: TextStyle(color: Colors.white),
-            ),
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Color.fromARGB(237, 255, 134, 21),
+        title: Center(
+          child: Text(
+            message,
+            style: TextStyle(color: Colors.white),
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 }
