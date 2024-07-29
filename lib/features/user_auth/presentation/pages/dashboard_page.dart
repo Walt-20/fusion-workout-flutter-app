@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/search_exercise_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -148,16 +147,6 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
             ListTile(
-              key: const Key('workoutsButton'),
-              title: const Text('Workouts'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const WorkoutsPage()),
-                );
-              },
-            ),
-            ListTile(
               key: const Key('calorieButton'),
               title: const Text('Calorie Tracking'),
               onTap: () {
@@ -226,7 +215,10 @@ class _DashboardPageState extends State<DashboardPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SearchExercisePage()),
+                            builder: (context) => SearchExercisePage(
+                              selectedDate: _selectedDay ?? DateTime.now(),
+                            ),
+                          ),
                         );
                       },
                     ),

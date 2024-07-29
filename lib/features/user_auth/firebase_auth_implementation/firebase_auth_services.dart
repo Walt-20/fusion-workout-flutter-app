@@ -5,9 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'auth_page.dart';
 import 'dart:convert';
 
@@ -60,58 +62,25 @@ class FirebaseAuthService {
     });
   }
 
-  Future<void> writeEventToFirestore(String userId,
-      Map<DateTime, List<Event>> events, DateTime selectedDay) async {
-    final userEventsCollection = FirebaseFirestore.instance
-        .collection('Users')
-        .doc(userId)
-        .collection('events');
+  Future<void> addExerciseToFirestore(
+      DateTime date, Map<String, dynamic> exercises) async {
+    debugPrint("Is this being called");
+    final firestore = FirebaseFirestore.instance;
 
-    try {
-      WriteBatch batch = FirebaseFirestore.instance.batch();
+    // Format date to string
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
 
-      for (var entry in events.entries) {
-        DateTime date = entry.key;
-        List<Event> eventList = entry.value;
+    // Reference to the document in the Firestore collection
+    DocumentReference docRef = firestore
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('exercise')
+        .doc(dateString);
 
-        for (var event in eventList) {
-          final eventQuery = await userEventsCollection
-              .where('name', isEqualTo: event.name)
-              .where('date', isEqualTo: date.toIso8601String())
-              .limit(1)
-              .get();
-
-          if (eventQuery.docs.isNotEmpty) {
-            final eventDoc = eventQuery.docs.first;
-            batch.set(
-              eventDoc.reference,
-              {
-                'date': date.toIso8601String(),
-                'name': event.name,
-                'workouts': event.workouts.map((w) => w.toMap()).toList(),
-              },
-              SetOptions(merge: true),
-            );
-          } else {
-            final eventRef = userEventsCollection.doc();
-            batch.set(
-              eventRef,
-              {
-                'date': date.toIso8601String(),
-                'name': event.name,
-                'workouts': event.workouts.map((w) => w.toMap()).toList(),
-              },
-            );
-          }
-        }
-      }
-
-      await batch.commit();
-    } catch (e) {
-      print("Error saving events: $e");
-      // Handle error appropriately
-      throw e; // Rethrow the error to propagate it further if needed
-    }
+    // Add or update the document
+    await docRef.set({
+      'exercises': exercises,
+    }, SetOptions(merge: true));
   }
 
   Future<void> deleteEventsFromFirestore(

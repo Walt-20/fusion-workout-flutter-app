@@ -10,7 +10,6 @@ import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_
 import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/signup_page.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/workouts_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/add_food_dialog.dart';
 import 'package:fusion_workouts/firebase_options.dart';
 import 'package:fusion_workouts/main.dart';

@@ -1,12 +1,19 @@
 import 'dart:convert';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/add_exercise_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/exercise_details_dialog.dart';
 import 'package:http/http.dart' as http;
 
 class SearchExercisePage extends StatefulWidget {
-  const SearchExercisePage({super.key});
+  final DateTime selectedDate;
+
+  const SearchExercisePage({
+    super.key,
+    required this.selectedDate,
+  });
 
   @override
   State<SearchExercisePage> createState() => _SearchExercisePageState();
@@ -15,6 +22,8 @@ class SearchExercisePage extends StatefulWidget {
 class _SearchExercisePageState extends State<SearchExercisePage> {
   Future<List<Exercise>>? _exercises;
   List<Exercise> _selectedExercises = [];
+  Map<String, dynamic> exerciseMap = {};
+  FirebaseAuthService _auth = FirebaseAuthService();
 
   @override
   void initState() {
@@ -70,6 +79,17 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     ];
   }
 
+  Future<void> _addToDatabase(Exercise exercise) async {
+    Map<String, dynamic> exerciseMap = {
+      'name': exercise.name,
+      'muscle': exercise.muscle,
+      'reps': exercise.reps,
+      'sets': exercise.sets,
+      'weight': exercise.weight,
+    };
+    await _auth.addExerciseToFirestore(widget.selectedDate, exerciseMap);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,10 +123,12 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(8.0),
-              color: Colors.grey[200],
-              child: ListView.builder(
+              child: ListView.separated(
+                separatorBuilder: (context, index) =>
+                    const Divider(height: 8.0),
                 itemCount: _selectedExercises.length,
                 itemBuilder: (context, index) {
+                  _addToDatabase(_selectedExercises[index]);
                   final exercise = _selectedExercises[index];
                   return GestureDetector(
                     onTap: () async {
@@ -130,17 +152,37 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                             weight: result['weight'],
                             type: '',
                           );
+
+                          _addToDatabase(updatedExercise);
+
                           _selectedExercises[index] = updatedExercise;
                         });
                       }
                     },
                     child: ListTile(
-                      title: Text(exercise.name),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
+                      tileColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        side: BorderSide(color: Colors.grey[300]!, width: 1.0),
+                      ),
+                      title: Text(
+                        exercise.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.0,
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        ),
+                      ),
                       subtitle: Text(
                         'Muscle: ${exercise.muscle}\n'
-                        'Reps: ${exercise.reps ?? "N/A"}\n'
-                        'Sets: ${exercise.sets ?? "N/A"}\n'
-                        'Weight: ${exercise.weight ?? "N/A"}',
+                        'Reps: ${exercise.reps ?? ""}\n'
+                        'Sets: ${exercise.sets ?? ""}\n'
+                        'Weight: ${exercise.weight ?? ""}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                        ),
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.remove_circle_outline),
@@ -163,7 +205,9 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return const AddExercisePage();
+              return AddExercisePage(
+                selectedDate: widget.selectedDate,
+              );
             },
           );
         },
