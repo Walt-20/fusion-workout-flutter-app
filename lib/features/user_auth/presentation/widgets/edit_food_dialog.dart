@@ -3,8 +3,8 @@ import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 
 class EditFoodDialog extends StatefulWidget {
-  final List<Food> meals;
-  final Function(List<Food>) onUpdate;
+  final List<FoodItem> meals;
+  final Function(List<FoodItem>) onUpdate;
 
   const EditFoodDialog({
     Key? key,
@@ -19,15 +19,15 @@ class EditFoodDialog extends StatefulWidget {
 class _EditFoodDialogState extends State<EditFoodDialog> {
   final FirebaseAuthService _auth = FirebaseAuthService();
 
-  void _deleteMeal(Food meal) {
+  void _deleteMeal(FoodItem meal) {
     setState(() {
       widget.meals.remove(meal);
     });
     widget.onUpdate(widget.meals);
   }
 
-  void _editMeal(BuildContext context, Food meal) {
-    int servings = meal.servings;
+  void _editMeal(BuildContext context, FoodItem meal) {
+    int servings = 1;
 
     showDialog(
       context: context,
@@ -46,7 +46,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) {
-                  servings = int.tryParse(value) ?? meal.servings;
+                  servings = 1;
                 },
               ),
             ],
@@ -55,10 +55,6 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
             TextButton(
               child: Text('Update'),
               onPressed: () {
-                setState(() {
-                  meal.servings = servings;
-                });
-
                 widget.onUpdate(widget.meals);
                 Navigator.of(context).pop();
               },
@@ -88,13 +84,9 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: ListTile(
                   title: Text(meal.foodName),
-                  subtitle: Text(
-                    'Description: ${meal.foodDescription}\nServings: ${meal.servings}',
-                  ),
                   trailing: IconButton(
                     onPressed: () {
                       _deleteMeal(meal);
-                      _auth.removeMealFromFirestore(meal, meal.day.toString());
                     },
                     icon: Icon(Icons.delete),
                     color: Colors.red,
