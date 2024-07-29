@@ -61,7 +61,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
     };
 
     // Add exercise to Firestore
-    await _auth.addExerciseToFirestore(widget.selectedDate, exercise);
+    await _auth.addExerciseToFirestore(widget.selectedDate, [exercise]);
 
     // Close the dialog
     Navigator.of(context).pop();

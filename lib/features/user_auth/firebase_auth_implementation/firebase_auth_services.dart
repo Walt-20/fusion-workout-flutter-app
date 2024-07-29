@@ -63,7 +63,7 @@ class FirebaseAuthService {
   }
 
   Future<void> addExerciseToFirestore(
-      DateTime date, Map<String, dynamic> exercises) async {
+      DateTime date, List<Map<String, dynamic>> exercises) async {
     debugPrint("Is this being called");
     final firestore = FirebaseFirestore.instance;
 
@@ -79,37 +79,53 @@ class FirebaseAuthService {
 
     // Add or update the document
     await docRef.set({
-      'exercises': exercises,
+      'exercises': FieldValue.arrayUnion(exercises),
     }, SetOptions(merge: true));
   }
 
-  Future<void> deleteEventsFromFirestore(
-      DateTime eventToDelete, String eventName) async {
+  Future<void> removeExerciseFromFirebase(DateTime date, String name,
+      String muscle, int? reps, int? sets, double? weight) async {
+    debugPrint("made it to the auth service");
     String userUid = FirebaseAuth.instance.currentUser!.uid;
-    final userEventsCollection = FirebaseFirestore.instance
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    final firestore = FirebaseFirestore.instance;
+
+    // Reference to the document in the Firestore collection
+    DocumentReference docRef = firestore
         .collection('Users')
         .doc(userUid)
-        .collection('events');
+        .collection('exercise')
+        .doc(dateString);
 
     try {
-      String docId = eventToDelete.toIso8601String();
+      // Get the document
+      DocumentSnapshot docSnapshot = await docRef.get();
 
-      final querySnapshot = await userEventsCollection
-          .where('date', isEqualTo: docId)
-          .where('name', isEqualTo: eventName)
-          .get();
+      if (docSnapshot.exists) {
+        List<dynamic> exercises = docSnapshot['exercises'];
 
-      debugPrint('There is a querySnapshot $querySnapshot');
+        // Find the exercise to remove
+        Map<String, dynamic>? exerciseToRemove;
+        for (var exercise in exercises) {
+          if (exercise['name'] == name &&
+              exercise['muscle'] == muscle &&
+              exercise['reps'] == reps &&
+              exercise['sets'] == sets &&
+              exercise['weight'] == weight) {
+            exerciseToRemove = exercise;
+            break;
+          }
+        }
 
-      WriteBatch batch = FirebaseFirestore.instance.batch();
-      for (var doc in querySnapshot.docs) {
-        debugPrint('there is a doc $doc');
-        batch.delete(doc.reference);
+        if (exerciseToRemove != null) {
+          // Remove the exercise
+          await docRef.update({
+            'exercises': FieldValue.arrayRemove([exerciseToRemove])
+          });
+        }
       }
-
-      await batch.commit();
     } catch (e) {
-      print("Error removing event: $e");
+      print("Error removing exercise: $e");
     }
   }
 
@@ -164,7 +180,6 @@ class FirebaseAuthService {
 
     try {
       String eventDocId = eventHoldingWorkout.toIso8601String();
-      debugPrint("event doc id is $eventDocId");
 
       final querySnapshot = await eventCollection
           .where('date', isEqualTo: eventDocId)
@@ -172,10 +187,7 @@ class FirebaseAuthService {
           .get();
 
       // Fetch the event document
-      debugPrint("event doc is $querySnapshot");
       if (querySnapshot.docs.isNotEmpty) {
-        debugPrint("the doc exists");
-
         final eventDoc = querySnapshot.docs.first;
         // Get the workouts array from the document data
         List<dynamic> workouts = eventDoc.data()['workouts'] ?? [];
@@ -190,8 +202,6 @@ class FirebaseAuthService {
         // Convert back to list of maps
         List<Map<String, dynamic>> updatedWorkouts =
             workoutList.map((w) => w.toMap()).toList();
-
-        debugPrint("update workoutlist $updatedWorkouts");
 
         // Update the document with the modified workouts array
         await eventDoc.reference.update({'workouts': updatedWorkouts});
@@ -255,8 +265,6 @@ class FirebaseAuthService {
         Map<String, dynamic> data =
             mealDocSnapshot.data() as Map<String, dynamic>;
 
-        debugPrint(data.toString());
-
         List<dynamic> meals = data['meals'];
 
         for (var meal in meals) {
@@ -267,11 +275,9 @@ class FirebaseAuthService {
         }
       } else {
         // Handle the case where the document does not exist
-        debugPrint('No meals found for the given date.');
       }
     } catch (e) {
       // Handle any errors that occur during the fetch
-      debugPrint('Error fetching meals: $e');
     }
   }
 

@@ -87,7 +87,15 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'sets': exercise.sets,
       'weight': exercise.weight,
     };
-    await _auth.addExerciseToFirestore(widget.selectedDate, exerciseMap);
+    await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
+  }
+
+  Future<void> _removeFromDatabase(
+      String name, String muscle, int? reps, int? sets, double? weight) async {
+    debugPrint(
+        "name $name\nmuscle $muscle\nreps $reps\nsets $sets\nweight $weight");
+    await _auth.removeExerciseFromFirebase(
+        widget.selectedDate, name, muscle, reps, sets, weight);
   }
 
   @override
@@ -188,6 +196,13 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         icon: const Icon(Icons.remove_circle_outline),
                         onPressed: () {
                           setState(() {
+                            debugPrint("should remove from db");
+                            _removeFromDatabase(
+                                _selectedExercises[index].name,
+                                _selectedExercises[index].muscle,
+                                _selectedExercises[index].reps,
+                                _selectedExercises[index].sets,
+                                _selectedExercises[index].weight);
                             _selectedExercises.removeAt(index);
                           });
                         },
