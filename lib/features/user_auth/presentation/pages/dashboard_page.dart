@@ -18,8 +18,15 @@ class _DashboardPageState extends State<DashboardPage> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  List<Map<String, dynamic>> exercises = [];
 
   final _auth = FirebaseAuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchExercisesFromDatabase();
+  }
 
   void _showCalendarDialog() {
     showDialog(
@@ -79,7 +86,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    // Update the selected date after dialog closes
                     if (_selectedDay != null) {
                       setState(() {
                         _focusedDay = _selectedDay!;
@@ -103,6 +109,17 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       },
     );
+  }
+
+  Future<void> _fetchExercisesFromDatabase() async {
+    try {
+      final fetchedExercises = await _auth.fetchExercises(_focusedDay!);
+      setState(() {
+        exercises = fetchedExercises;
+      });
+    } catch (e) {
+      debugPrint("Error fetching exercises: $e");
+    }
   }
 
   @override
@@ -198,8 +215,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   borderRadius: BorderRadius.circular(4.0),
                   border: Border.all(color: Colors.grey[400]!),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       "Add Workout",
@@ -208,19 +225,70 @@ class _DashboardPageState extends State<DashboardPage> {
                         color: Colors.black87,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      iconSize: 32.0,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SearchExercisePage(
-                              selectedDate: _selectedDay ?? DateTime.now(),
-                            ),
+                    if (exercises.isNotEmpty)
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: exercises.map((exercise) {
+                              return Container(
+                                margin: const EdgeInsets.only(right: 8.0),
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  border: Border.all(color: Colors.grey[300]!),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      exercise['name'] ?? 'No Name',
+                                      style: const TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      exercise['muscle'] ?? 'No Muscle',
+                                      style: const TextStyle(
+                                        fontSize: 14.0,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           ),
-                        );
-                      },
+                        ),
+                      )
+                    else
+                      const Center(
+                        child: Text(
+                          "No workouts for this day.",
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.add),
+                        iconSize: 32.0,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SearchExercisePage(
+                                selectedDate: _selectedDay ?? DateTime.now(),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),

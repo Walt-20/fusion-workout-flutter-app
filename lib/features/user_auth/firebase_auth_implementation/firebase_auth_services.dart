@@ -174,44 +174,28 @@ class FirebaseAuthService {
     }
   }
 
-  Future<Map<DateTime, List<Event>>> fetchEventsFromFirestore() async {
-    String userId = FirebaseAuth.instance.currentUser!.uid;
-    final userEventsCollection = FirebaseFirestore.instance
+  Future<List<Map<String, dynamic>>> fetchExercises(DateTime date) async {
+    String userUid = FirebaseAuth.instance.currentUser!.uid;
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    final firestore = FirebaseFirestore.instance;
+    DocumentReference docRef = firestore
         .collection('Users')
-        .doc(userId)
-        .collection('events');
+        .doc(userUid)
+        .collection('exercise')
+        .doc(dateString);
 
     try {
-      final snapshot = await userEventsCollection.get();
-      final Map<DateTime, List<Event>> fetchedEvents = {};
+      DocumentSnapshot snapshot = await docRef.get();
 
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final date = DateTime.parse(data['date']);
-        final eventName = data['name'] as String;
-        final workoutsData = data['workouts'] as List<dynamic>? ?? [];
+      if (snapshot.exists && snapshot.data() != null) {
+        List<dynamic> exerciseList = snapshot.get('exercises');
 
-        // Parse workouts
-        final workouts = workoutsData.map((w) {
-          final workoutData = w as Map<String, dynamic>;
-          // Assuming there's a method to parse workout data into Workout objects
-          return Workout.fromMap(workoutData);
-        }).toList();
-
-        // Create an Event object (assuming there's a constructor that takes the name and workouts)
-        final event = Event(name: eventName, workouts: workouts);
-
-        // Group events by date
-        if (!fetchedEvents.containsKey(date)) {
-          fetchedEvents[date] = [];
-        }
-        fetchedEvents[date]!.add(event);
+        return exerciseList.map((e) => e as Map<String, dynamic>).toList();
+      } else {
+        return [];
       }
-
-      return fetchedEvents;
     } catch (e) {
-      print("Error fetching events: $e");
-      return {};
+      throw Exception('Failed to load exercises: $e');
     }
   }
 
