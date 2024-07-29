@@ -64,7 +64,6 @@ class FirebaseAuthService {
 
   Future<void> addExerciseToFirestore(
       DateTime date, List<Map<String, dynamic>> exercises) async {
-    debugPrint("Is this being called");
     final firestore = FirebaseFirestore.instance;
 
     // Format date to string
@@ -81,6 +80,52 @@ class FirebaseAuthService {
     await docRef.set({
       'exercises': FieldValue.arrayUnion(exercises),
     }, SetOptions(merge: true));
+  }
+
+  Future<void> updateExerciseInFirebase(
+      DateTime date, List<Map<String, dynamic>> exercises) async {
+    final firestore = FirebaseFirestore.instance;
+
+    // Format date to string
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+
+    // Reference to the document in the Firestore collection
+    DocumentReference docRef = firestore
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('exercise')
+        .doc(dateString);
+
+    // Get the existing document
+    DocumentSnapshot docSnapshot = await docRef.get();
+
+    if (docSnapshot.exists) {
+      List<dynamic> existingExercises = docSnapshot['exercises'];
+
+      for (var newExercise in exercises) {
+        bool found = false;
+        for (int i = 0; i < existingExercises.length; i++) {
+          var existingExercise = existingExercises[i];
+          if (existingExercise['name'] == newExercise['name'] &&
+              existingExercise['muscle'] == newExercise['muscle']) {
+            // Update the existing exercise
+            existingExercises[i] = newExercise;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          // Add the new exercise if no match was found
+          existingExercises.add(newExercise);
+        }
+      }
+
+      // Update the document with the modified exercises list
+      await docRef.update({'exercises': existingExercises});
+    } else {
+      // If the document does not exist, create it with the new exercises
+      await docRef.set({'exercises': exercises});
+    }
   }
 
   Future<void> removeExerciseFromFirebase(DateTime date, String name,

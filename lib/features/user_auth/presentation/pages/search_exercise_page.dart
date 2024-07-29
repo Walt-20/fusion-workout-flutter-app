@@ -90,6 +90,17 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
   }
 
+  Future<void> _updateExerciseInDatabase(Exercise exercise) async {
+    Map<String, dynamic> exerciseMap = {
+      'name': exercise.name,
+      'muscle': exercise.muscle,
+      'reps': exercise.reps,
+      'sets': exercise.sets,
+      'weight': exercise.weight,
+    };
+    await _auth.updateExerciseInFirebase(widget.selectedDate, [exerciseMap]);
+  }
+
   Future<void> _removeFromDatabase(
       String name, String muscle, int? reps, int? sets, double? weight) async {
     debugPrint(
@@ -161,7 +172,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                             type: '',
                           );
 
-                          _addToDatabase(updatedExercise);
+                          _updateExerciseInDatabase(updatedExercise);
 
                           _selectedExercises[index] = updatedExercise;
                         });
@@ -196,7 +207,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         icon: const Icon(Icons.remove_circle_outline),
                         onPressed: () {
                           setState(() {
-                            debugPrint("should remove from db");
                             _removeFromDatabase(
                                 _selectedExercises[index].name,
                                 _selectedExercises[index].muscle,
