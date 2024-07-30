@@ -15,7 +15,8 @@ class DashboardPage extends StatefulWidget {
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class _DashboardPageState extends State<DashboardPage>
+    with WidgetsBindingObserver {
   final user = FirebaseAuth.instance.currentUser!;
   FirebaseAuthService _auth = FirebaseAuthService();
   CalendarFormat _calendarFormat = CalendarFormat.month;
@@ -26,7 +27,22 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchExercisesFromDatabase();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      await _fetchExercisesFromDatabase();
+    }
   }
 
   void _showCalendarDialog() {
@@ -121,18 +137,24 @@ class _DashboardPageState extends State<DashboardPage> {
       'weight': exercise.weight,
     };
     await _auth.updateExerciseInFirebase(_focusedDay, [exerciseMap]);
-    _fetchExercisesFromDatabase();
+    await _fetchExercisesFromDatabase();
   }
 
   Future<void> _fetchExercisesFromDatabase() async {
     try {
-      final fetchedExercises = await _auth.fetchExercises(_focusedDay!);
+      final fetchedExercises = await _auth.fetchExercises(_focusedDay);
       setState(() {
         exercises = fetchedExercises;
       });
     } catch (e) {
       debugPrint("Error fetching exercises: $e");
     }
+  }
+
+  void _updateDashboard() {
+    setState(() {
+      _fetchExercisesFromDatabase();
+    });
   }
 
   @override
@@ -350,6 +372,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                             SearchExercisePage(
                                           selectedDate:
                                               _selectedDay ?? DateTime.now(),
+                                          onExerciseAdded: _updateDashboard,
                                         ),
                                       ),
                                     );
@@ -388,6 +411,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                       builder: (context) => SearchExercisePage(
                                         selectedDate:
                                             _selectedDay ?? DateTime.now(),
+                                        onExerciseAdded:
+                                            _fetchExercisesFromDatabase,
                                       ),
                                     ),
                                   );

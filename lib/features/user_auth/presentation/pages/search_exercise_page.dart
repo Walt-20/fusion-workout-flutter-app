@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
@@ -9,10 +8,12 @@ import 'package:http/http.dart' as http;
 
 class SearchExercisePage extends StatefulWidget {
   final DateTime selectedDate;
+  final VoidCallback onExerciseAdded;
 
   const SearchExercisePage({
     super.key,
     required this.selectedDate,
+    required this.onExerciseAdded,
   });
 
   @override
@@ -29,6 +30,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
   void initState() {
     super.initState();
     _exercises = fetchSuggestions();
+    _fetchExercisesFromDatabase();
   }
 
   Future<List<Exercise>> fetchSuggestions() async {
@@ -79,6 +81,29 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     ];
   }
 
+  Future<void> _fetchExercisesFromDatabase() async {
+    try {
+      final fetchedExercises = await _auth.fetchExercises(widget.selectedDate);
+      setState(() {
+        _selectedExercises = fetchedExercises.map((exerciseMap) {
+          return Exercise(
+            name: exerciseMap['name'],
+            type: exerciseMap['type'] ?? '',
+            muscle: exerciseMap['muscle'],
+            equipment: exerciseMap['equipment'] ?? '',
+            difficulty: exerciseMap['difficulty'] ?? '',
+            instructions: exerciseMap['instructions'] ?? '',
+            reps: exerciseMap['reps'],
+            sets: exerciseMap['sets'],
+            weight: exerciseMap['weight'],
+          );
+        }).toList();
+      });
+    } catch (e) {
+      debugPrint("Error fetching exercises: $e");
+    }
+  }
+
   Future<void> _addToDatabase(Exercise exercise) async {
     Map<String, dynamic> exerciseMap = {
       'name': exercise.name,
@@ -88,6 +113,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'weight': exercise.weight,
     };
     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
+    widget.onExerciseAdded();
   }
 
   Future<void> _updateExerciseInDatabase(Exercise exercise) async {
@@ -99,6 +125,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'weight': exercise.weight,
     };
     await _auth.updateExerciseInFirebase(widget.selectedDate, [exerciseMap]);
+    widget.onExerciseAdded();
   }
 
   Future<void> _removeFromDatabase(
@@ -107,6 +134,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
         "name $name\nmuscle $muscle\nreps $reps\nsets $sets\nweight $weight");
     await _auth.removeExerciseFromFirebase(
         widget.selectedDate, name, muscle, reps, sets, weight);
+    widget.onExerciseAdded();
   }
 
   @override
