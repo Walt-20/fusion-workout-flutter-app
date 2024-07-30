@@ -30,12 +30,12 @@ class Exercise {
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
-      name: json['name'],
-      type: json['type'],
-      muscle: json['muscle'],
-      equipment: json['equipment'],
-      difficulty: json['difficulty'],
-      instructions: json['instructions'],
+      name: json['name'] ?? '',
+      type: json['type'] ?? '',
+      muscle: json['muscle'] ?? '',
+      equipment: json['equipment'] ?? '',
+      difficulty: json['difficulty'] ?? '',
+      instructions: json['instructions'] ?? '',
     );
   }
 }

@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/search_exercise_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/widgets/exercise_details_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -15,12 +17,11 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   final user = FirebaseAuth.instance.currentUser!;
+  FirebaseAuthService _auth = FirebaseAuthService();
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   List<Map<String, dynamic>> exercises = [];
-
-  final _auth = FirebaseAuthService();
 
   @override
   void initState() {
@@ -109,6 +110,18 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       },
     );
+  }
+
+  Future<void> _updateExerciseInDatabase(Exercise exercise) async {
+    Map<String, dynamic> exerciseMap = {
+      'name': exercise.name,
+      'muscle': exercise.muscle,
+      'reps': exercise.reps,
+      'sets': exercise.sets,
+      'weight': exercise.weight,
+    };
+    await _auth.updateExerciseInFirebase(_focusedDay, [exerciseMap]);
+    _fetchExercisesFromDatabase();
   }
 
   Future<void> _fetchExercisesFromDatabase() async {
@@ -217,79 +230,173 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Add Workout",
-                      style: TextStyle(
-                        fontSize: 24.0,
-                        color: Colors.black87,
-                      ),
-                    ),
                     if (exercises.isNotEmpty)
                       Expanded(
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: exercises.map((exercise) {
-                              return Container(
+                            children: [
+                              // Display existing exercises
+                              ...exercises.map((exercise) {
+                                return GestureDetector(
+                                  onTap: () async {
+                                    final updateExercise =
+                                        Exercise.fromJson(exercise);
+
+                                    final result =
+                                        await showDialog<Map<String, dynamic>?>(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return ExerciseDetailsDialog(
+                                            exercise: updateExercise);
+                                      },
+                                    );
+
+                                    if (result != null) {
+                                      setState(() {
+                                        final updatedExercise = Exercise(
+                                          name: exercise['name'],
+                                          muscle: exercise['muscle'],
+                                          equipment:
+                                              exercise['equipment'] ?? '',
+                                          difficulty:
+                                              exercise['difficulty'] ?? '',
+                                          instructions:
+                                              exercise['instructions'] ?? '',
+                                          reps: result['reps'],
+                                          sets: result['sets'],
+                                          weight: result['weight'],
+                                          type: '',
+                                        );
+
+                                        _updateExerciseInDatabase(
+                                            updatedExercise);
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.25,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.25,
+                                    margin: const EdgeInsets.only(right: 8.0),
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      border:
+                                          Border.all(color: Colors.grey[300]!),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          exercise['name'] ?? 'No Name',
+                                          style: const TextStyle(
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          exercise['muscle'] ?? 'No Muscle',
+                                          style: const TextStyle(
+                                            fontSize: 14.0,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Reps: ${exercise['reps'].toString()}" ??
+                                              'Reps: ',
+                                          style: const TextStyle(
+                                            fontSize: 14.0,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Sets: ${exercise['sets'].toString()}" ??
+                                              'Sets: ',
+                                          style: const TextStyle(
+                                            fontSize: 14.0,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        Text(
+                                          "Weight: ${exercise['weight'].toString()}" ??
+                                              'Weight: ',
+                                          style: const TextStyle(
+                                            fontSize: 14.0,
+                                            color: Colors.grey,
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              // Add button at the end of the list
+                              Container(
                                 margin: const EdgeInsets.only(right: 8.0),
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  border: Border.all(color: Colors.grey[300]!),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      exercise['name'] ?? 'No Name',
-                                      style: const TextStyle(
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.bold,
+                                child: IconButton(
+                                  icon: Icon(Icons.add),
+                                  iconSize: 32.0,
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            SearchExercisePage(
+                                          selectedDate:
+                                              _selectedDay ?? DateTime.now(),
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      exercise['muscle'] ?? 'No Muscle',
-                                      style: const TextStyle(
-                                        fontSize: 14.0,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                            ],
                           ),
                         ),
                       )
                     else
-                      const Center(
-                        child: Text(
-                          "No workouts for this day.",
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            color: Colors.grey,
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Add Workout",
+                                style: TextStyle(
+                                  fontSize: 24.0,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              SizedBox(
+                                width:
+                                    16.0, // Adds spacing between the text and the icon
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.add),
+                                iconSize: 32.0,
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SearchExercisePage(
+                                        selectedDate:
+                                            _selectedDay ?? DateTime.now(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: IconButton(
-                        icon: const Icon(Icons.add),
-                        iconSize: 32.0,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SearchExercisePage(
-                                selectedDate: _selectedDay ?? DateTime.now(),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
                   ],
                 ),
               ),
