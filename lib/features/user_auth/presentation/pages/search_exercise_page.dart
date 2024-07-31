@@ -77,7 +77,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                 onTap: () {
                   setState(() {
                     if (!_selectedExercises.contains(item)) {
-                      _selectedExercises.add(item);
+                      _selectedExercises.insert(0, item);
                     }
                     controller.closeView(item.name);
                   });
@@ -163,7 +163,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
             child: SearchAnchor(
               builder: (BuildContext context, SearchController controller) {
                 return SearchBar(
-                  hintText: "Exercise name, muscle, type, and difficulty",
+                  hintText: "Search by exercise name",
                   controller: controller,
                   padding: const WidgetStatePropertyAll<EdgeInsets>(
                     EdgeInsets.symmetric(horizontal: 16.0),
