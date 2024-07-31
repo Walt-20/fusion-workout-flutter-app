@@ -152,6 +152,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
+<<<<<<< HEAD
             child: SearchAnchor.bar(suggestionsBuilder: (context, controller) {
               final searchFuture = fetchSuggestions(controller.text);
               return [
@@ -184,6 +185,20 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                       }
                     }
                     return const LinearProgressIndicator();
+=======
+            child: SearchAnchor(
+              builder: (BuildContext context, SearchController controller) {
+                return SearchBar(
+                  hintText: "Search with exercise name",
+                  controller: controller,
+                  padding: const WidgetStatePropertyAll<EdgeInsets>(
+                    EdgeInsets.symmetric(horizontal: 16.0),
+                  ),
+                  onSubmitted: (query) {
+                    debugPrint("$query submited");
+                    _queryAPI(query);
+                    controller.openView();
+>>>>>>> production
                   },
                 )
               ];
@@ -275,20 +290,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AddExercisePage(
-                selectedDate: widget.selectedDate,
-              );
-            },
-          );
-        },
-        tooltip: 'Add Custom Workout',
-        child: const Icon(Icons.add),
       ),
     );
   }

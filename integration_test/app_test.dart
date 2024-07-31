@@ -23,8 +23,6 @@ void main() {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     await FirebaseAuth.instance.signOut();
-    FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-    FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
   });
 
   tearDown(() async {
