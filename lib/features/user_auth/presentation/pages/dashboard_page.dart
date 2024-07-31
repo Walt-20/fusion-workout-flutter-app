@@ -158,6 +158,14 @@ class _DashboardPageState extends State<DashboardPage>
     });
   }
 
+  Future<void> _removeFromDatabase(
+      String name, String muscle, int? reps, int? sets, double? weight) async {
+    debugPrint(
+        "name $name\nmuscle $muscle\nreps $reps\nsets $sets\nweight $weight");
+    await _auth.removeExerciseFromFirebase(
+        _focusedDay, name, muscle, reps, sets, weight);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -318,6 +326,8 @@ class _DashboardPageState extends State<DashboardPage>
                                       children: [
                                         Text(
                                           exercise['name'] ?? 'No Name',
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
                                           style: const TextStyle(
                                             fontSize: 16.0,
                                             fontWeight: FontWeight.bold,
@@ -352,6 +362,29 @@ class _DashboardPageState extends State<DashboardPage>
                                           style: const TextStyle(
                                             fontSize: 14.0,
                                             color: Colors.grey,
+                                          ),
+                                        ),
+                                        Spacer(),
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: IconButton(
+                                            icon: const Icon(
+                                                Icons.remove_circle_outline),
+                                            onPressed: () {
+                                              setState(() {
+                                                _removeFromDatabase(
+                                                  exercise['name'],
+                                                  exercise['muscle'],
+                                                  exercise['reps'],
+                                                  exercise['sets'],
+                                                  exercise['weight'],
+                                                );
+
+                                                exercises.removeWhere((item) =>
+                                                    item['name'] ==
+                                                    exercise['name']);
+                                              });
+                                            },
                                           ),
                                         )
                                       ],
