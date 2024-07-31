@@ -29,19 +29,28 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
   @override
   void initState() {
     super.initState();
-    _exercises = fetchSuggestions();
     _fetchExercisesFromDatabase();
   }
 
-  Future<List<Exercise>> fetchSuggestions() async {
-    final response =
-        await http.get(Uri.parse('http://10.0.2.2:3000/api/exercises'));
+  Future<List<Exercise>> fetchSuggestions(String query) async {
+    debugPrint("The query is $query");
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.api-ninjas.com/v1/exercises?name=$query'),
+        headers: {'x-api-key': 'HOsWIdXrBsEI1nCv0p6TWQ==jijyLwr69j7eonaL'},
+      );
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonResponse = json.decode(response.body);
-      return jsonResponse.map((item) => Exercise.fromJson(item)).toList();
-    } else {
-      throw Exception('Failed to load suggestions');
+      debugPrint("The response is ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = json.decode(response.body);
+        return data.map((json) => Exercise.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load exercises');
+      }
+    } catch (e) {
+      print('Error fetching exercises: $e');
+      rethrow; // Rethrow if you want to handle it further up the call stack
     }
   }
 
@@ -137,6 +146,12 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     widget.onExerciseAdded();
   }
 
+  Future<void> _queryAPI(String query) async {
+    setState(() {
+      _exercises = fetchSuggestions(query);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,14 +163,20 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
             child: SearchAnchor(
               builder: (BuildContext context, SearchController controller) {
                 return SearchBar(
+                  hintText: "Exercise name, muscle, type, and difficulty",
                   controller: controller,
                   padding: const WidgetStatePropertyAll<EdgeInsets>(
                     EdgeInsets.symmetric(horizontal: 16.0),
                   ),
-                  onTap: () {
-                    controller.openView();
-                  },
-                  onChanged: (_) {
+                  // onTap: () {
+                  //   controller.openView();
+                  // },
+                  // onChanged: (_) {
+                  //   controller.openView();
+                  // },
+                  onSubmitted: (query) {
+                    debugPrint("$query submited");
+                    _queryAPI(query);
                     controller.openView();
                   },
                   leading: const Icon(Icons.search),
@@ -236,11 +257,12 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         onPressed: () {
                           setState(() {
                             _removeFromDatabase(
-                                _selectedExercises[index].name,
-                                _selectedExercises[index].muscle,
-                                _selectedExercises[index].reps,
-                                _selectedExercises[index].sets,
-                                _selectedExercises[index].weight);
+                              _selectedExercises[index].name,
+                              _selectedExercises[index].muscle,
+                              _selectedExercises[index].reps,
+                              _selectedExercises[index].sets,
+                              _selectedExercises[index].weight,
+                            );
                             _selectedExercises.removeAt(index);
                           });
                         },

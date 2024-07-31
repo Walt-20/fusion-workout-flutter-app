@@ -106,6 +106,7 @@ class _DashboardPageState extends State<DashboardPage>
                     if (_selectedDay != null) {
                       setState(() {
                         _focusedDay = _selectedDay!;
+                        _fetchExercisesFromDatabase();
                       });
                     }
                   },
