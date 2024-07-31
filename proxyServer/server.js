@@ -192,7 +192,7 @@ proxy.on('error', (err, req, res) => {
 });
 
 // Start the server
-const PORT = 3000;
+const PORT = 8080;
 app.listen(PORT, () => {
   console.log(`OAuth Proxy Server running on port ${PORT}`);
 });

@@ -1,10 +1,10 @@
 {
-  "name": "proxyserver",
+  "name": "proxyserver-fusion-app",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "node server.js"
   },
   "type": "module",
   "keywords": [],
@@ -17,8 +17,5 @@
     "http-proxy": "^1.18.1",
     "node-fetch": "^3.3.2",
     "request": "^2.88.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.4"
   }
 }
