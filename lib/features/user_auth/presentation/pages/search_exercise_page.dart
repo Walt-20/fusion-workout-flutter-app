@@ -74,14 +74,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
               final Exercise item = exercises[index];
               return ListTile(
                 title: Text(item.name),
-                onTap: () {
-                  setState(() {
-                    if (!_selectedExercises.contains(item)) {
-                      _selectedExercises.add(item);
-                    }
-                    controller.closeView(item.name);
-                  });
-                },
               );
             }),
           );
@@ -160,6 +152,40 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
+<<<<<<< HEAD
+            child: SearchAnchor.bar(suggestionsBuilder: (context, controller) {
+              final searchFuture = fetchSuggestions(controller.text);
+              return [
+                FutureBuilder(
+                  future: searchFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      final list = snapshot.data;
+                      if (list != null) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: list.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return ListTile(
+                              title: Text(list[index].name),
+                              onTap: () {
+                                setState(() {
+                                  if (!_selectedExercises
+                                      .contains(list[index])) {
+                                    _selectedExercises.insert(0, list[index]);
+                                  }
+                                  _exercises = Future.value([]);
+                                  controller.closeView("");
+                                });
+                              },
+                            );
+                          },
+                        );
+                      }
+                    }
+                    return const LinearProgressIndicator();
+=======
             child: SearchAnchor(
               builder: (BuildContext context, SearchController controller) {
                 return SearchBar(
@@ -172,15 +198,11 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                     debugPrint("$query submited");
                     _queryAPI(query);
                     controller.openView();
+>>>>>>> production
                   },
-                  leading: const Icon(Icons.search),
-                );
-              },
-              suggestionsBuilder:
-                  (BuildContext context, SearchController controller) {
-                return _buildSuggestions(controller);
-              },
-            ),
+                )
+              ];
+            }),
           ),
           Expanded(
             child: Container(
