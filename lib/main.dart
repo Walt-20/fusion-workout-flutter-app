@@ -13,16 +13,12 @@ import 'firebase_options.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  if (kDebugMode) {
-    try {
-      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-      FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-    } catch (e) {
-      print('Failed to connect to the emulator: $e');
-    }
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Failed to initalize Firebase: $e');
   }
   runApp(const MyApp());
 }
@@ -39,7 +35,7 @@ class MyApp extends StatelessWidget {
       create: (context) => TokenProvider(),
       child: const MaterialApp(
         title: 'Fusion Workouts App',
-        debugShowCheckedModeBanner: false,
+        debugShowCheckedModeBanner: true,
         home: AuthPage(),
       ),
     );

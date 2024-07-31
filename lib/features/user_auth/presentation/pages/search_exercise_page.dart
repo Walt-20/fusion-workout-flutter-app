@@ -163,17 +163,11 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
             child: SearchAnchor(
               builder: (BuildContext context, SearchController controller) {
                 return SearchBar(
-                  hintText: "Exercise name, muscle, type, and difficulty",
+                  hintText: "Search with exercise name",
                   controller: controller,
                   padding: const WidgetStatePropertyAll<EdgeInsets>(
                     EdgeInsets.symmetric(horizontal: 16.0),
                   ),
-                  // onTap: () {
-                  //   controller.openView();
-                  // },
-                  // onChanged: (_) {
-                  //   controller.openView();
-                  // },
                   onSubmitted: (query) {
                     debugPrint("$query submited");
                     _queryAPI(query);
@@ -274,20 +268,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AddExercisePage(
-                selectedDate: widget.selectedDate,
-              );
-            },
-          );
-        },
-        tooltip: 'Add Custom Workout',
-        child: const Icon(Icons.add),
       ),
     );
   }

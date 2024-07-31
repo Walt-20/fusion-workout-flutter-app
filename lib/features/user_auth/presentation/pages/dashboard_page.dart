@@ -426,36 +426,6 @@ class _DashboardPageState extends State<DashboardPage>
                   ],
                 ),
               ),
-              const SizedBox(
-                height: 16.0,
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width * 0.95,
-                height: MediaQuery.of(context).size.height * 0.25,
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4.0),
-                  border: Border.all(color: Colors.grey[400]!),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Add Meal",
-                      style: TextStyle(
-                        fontSize: 24.0,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      iconSize: 32.0,
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
