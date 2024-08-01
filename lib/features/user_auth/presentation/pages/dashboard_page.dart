@@ -252,7 +252,7 @@ class _DashboardPageState extends State<DashboardPage>
               ),
               Container(
                 width: MediaQuery.of(context).size.width * 0.95,
-                height: MediaQuery.of(context).size.height * 0.25,
+                height: MediaQuery.of(context).size.height * 0.35,
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -300,6 +300,7 @@ class _DashboardPageState extends State<DashboardPage>
                                           sets: result['sets'],
                                           weight: result['weight'],
                                           type: '',
+                                          completed: false,
                                         );
 
                                         _updateExerciseInDatabase(

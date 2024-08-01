@@ -44,42 +44,21 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
 
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
+        debugPrint("data is ${data.toList()}");
         return data.map((json) => Exercise.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load exercises');
       }
     } catch (e) {
-      print('Error fetching exercises: $e');
-      rethrow; // Rethrow if you want to handle it further up the call stack
+      debugPrint('Error fetching exercises: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to load exercises. Please try again later.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      throw Exception('Failed to load exercies');
     }
-  }
-
-  Iterable<Widget> _buildSuggestions(SearchController controller) {
-    return [
-      FutureBuilder<List<Exercise>>(
-        future: _exercises,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No suggestions available'));
-          }
-
-          final exercises = snapshot.data!;
-          return ListView(
-            shrinkWrap: true,
-            children: List.generate(exercises.length, (int index) {
-              final Exercise item = exercises[index];
-              return ListTile(
-                title: Text(item.name),
-              );
-            }),
-          );
-        },
-      )
-    ];
   }
 
   Future<void> _fetchExercisesFromDatabase() async {
@@ -97,6 +76,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
             reps: exerciseMap['reps'],
             sets: exerciseMap['sets'],
             weight: exerciseMap['weight'],
+            completed: exerciseMap['completed'],
           );
         }).toList();
       });
@@ -112,6 +92,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'reps': exercise.reps,
       'sets': exercise.sets,
       'weight': exercise.weight,
+      'completed': false,
     };
     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
     widget.onExerciseAdded();
@@ -124,6 +105,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'reps': exercise.reps,
       'sets': exercise.sets,
       'weight': exercise.weight,
+      'completed': exercise.completed,
     };
     await _auth.updateExerciseInFirebase(widget.selectedDate, [exerciseMap]);
     widget.onExerciseAdded();
@@ -152,7 +134,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-<<<<<<< HEAD
             child: SearchAnchor.bar(suggestionsBuilder: (context, controller) {
               final searchFuture = fetchSuggestions(controller.text);
               return [
@@ -185,20 +166,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                       }
                     }
                     return const LinearProgressIndicator();
-=======
-            child: SearchAnchor(
-              builder: (BuildContext context, SearchController controller) {
-                return SearchBar(
-                  hintText: "Search with exercise name",
-                  controller: controller,
-                  padding: const WidgetStatePropertyAll<EdgeInsets>(
-                    EdgeInsets.symmetric(horizontal: 16.0),
-                  ),
-                  onSubmitted: (query) {
-                    debugPrint("$query submited");
-                    _queryAPI(query);
-                    controller.openView();
->>>>>>> production
                   },
                 )
               ];
@@ -208,6 +175,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               child: ListView.separated(
+                shrinkWrap: true,
                 separatorBuilder: (context, index) =>
                     const Divider(height: 8.0),
                 itemCount: _selectedExercises.length,
@@ -234,6 +202,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                             reps: result['reps'],
                             sets: result['sets'],
                             weight: result['weight'],
+                            completed: result['completed'],
                             type: '',
                           );
 
@@ -253,10 +222,15 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                       ),
                       title: Text(
                         exercise.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16.0,
-                          color: Color.fromARGB(237, 255, 134, 21),
+                          color: exercise.completed == true
+                              ? Colors.grey[600]
+                              : const Color.fromARGB(237, 255, 134, 21),
+                          decoration: exercise.completed == true
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
                         ),
                       ),
                       subtitle: Text(
@@ -265,23 +239,61 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         'Sets: ${exercise.sets ?? ""}\n'
                         'Weight: ${exercise.weight ?? ""}',
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: exercise.completed == true
+                              ? Colors.grey[500]
+                              : Colors.grey[600],
+                          decoration: exercise.completed == true
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: () {
-                          setState(() {
-                            _removeFromDatabase(
-                              _selectedExercises[index].name,
-                              _selectedExercises[index].muscle,
-                              _selectedExercises[index].reps,
-                              _selectedExercises[index].sets,
-                              _selectedExercises[index].weight,
-                            );
-                            _selectedExercises.removeAt(index);
-                          });
-                        },
+                      trailing: SizedBox(
+                        width: 120,
+                        child: Row(
+                          children: [
+                            Checkbox(
+                                fillColor: WidgetStateProperty.resolveWith(
+                                    (Set<WidgetState> states) {
+                                  if (states.contains(WidgetState.selected)) {
+                                    return const Color.fromARGB(
+                                        237, 255, 134, 21);
+                                  }
+                                  return Colors.white;
+                                }),
+                                value: exercise.completed,
+                                onChanged: (bool? value) {
+                                  setState(
+                                    () {
+                                      exercise.completed = value ?? false;
+                                      _updateExerciseInDatabase(exercise);
+
+                                      if (exercise.completed == true) {
+                                        _selectedExercises.removeAt(index);
+                                        _selectedExercises.add(exercise);
+                                      } else if (exercise.completed == false) {
+                                        _selectedExercises.removeAt(index);
+                                        _selectedExercises.insert(0, exercise);
+                                      }
+                                    },
+                                  );
+                                }),
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline),
+                              onPressed: () {
+                                setState(() {
+                                  _removeFromDatabase(
+                                    _selectedExercises[index].name,
+                                    _selectedExercises[index].muscle,
+                                    _selectedExercises[index].reps,
+                                    _selectedExercises[index].sets,
+                                    _selectedExercises[index].weight,
+                                  );
+                                  _selectedExercises.removeAt(index);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );

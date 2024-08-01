@@ -15,6 +15,7 @@ class Exercise {
   int? reps;
   int? sets;
   double? weight;
+  bool? completed;
 
   Exercise({
     required this.name,
@@ -26,6 +27,7 @@ class Exercise {
     this.reps,
     this.sets,
     this.weight,
+    this.completed = false,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
