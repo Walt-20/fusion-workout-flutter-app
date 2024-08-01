@@ -159,12 +159,8 @@ class _DashboardPageState extends State<DashboardPage>
     });
   }
 
-  Future<void> _removeFromDatabase(
-      String name, String muscle, int? reps, int? sets, double? weight) async {
-    debugPrint(
-        "name $name\nmuscle $muscle\nreps $reps\nsets $sets\nweight $weight");
-    await _auth.removeExerciseFromFirebase(
-        _focusedDay, name, muscle, reps, sets, weight);
+  Future<void> _removeFromDatabase(String uid) async {
+    await _auth.removeExerciseFromFirebase(_focusedDay, uid);
   }
 
   Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
@@ -177,6 +173,7 @@ class _DashboardPageState extends State<DashboardPage>
       'completed': exercise.completed,
     };
     await _auth.updateExerciseInFirebase(_focusedDay, [exerciseMap]);
+
     try {
       final fetchedExercises = await _auth.fetchExercises(_focusedDay);
 
@@ -392,7 +389,7 @@ class _DashboardPageState extends State<DashboardPage>
                                           ),
                                         ),
                                         Text(
-                                          "Reps: ${exercise['reps'].toString()}" ??
+                                          "Reps: ${exercise['reps']?.join(',').toString() ?? "Add reps"}" ??
                                               'Reps: ',
                                           style: TextStyle(
                                             fontSize: 14.0,
@@ -407,7 +404,7 @@ class _DashboardPageState extends State<DashboardPage>
                                           ),
                                         ),
                                         Text(
-                                          "Sets: ${exercise['sets'].toString()}" ??
+                                          "Sets: ${exercise['sets']?.toString() ?? "Add sets"}" ??
                                               'Sets: ',
                                           style: TextStyle(
                                             fontSize: 14.0,
@@ -422,7 +419,7 @@ class _DashboardPageState extends State<DashboardPage>
                                           ),
                                         ),
                                         Text(
-                                          "Weight: ${exercise['weight'].toString()}" ??
+                                          "Weight: ${exercise['weight']?.join(',').toString() ?? "Add weights"}" ??
                                               'Weight: ',
                                           style: TextStyle(
                                             fontSize: 14.0,
@@ -449,12 +446,7 @@ class _DashboardPageState extends State<DashboardPage>
                                                   onPressed: () {
                                                     setState(() {
                                                       _removeFromDatabase(
-                                                        exercise['name'],
-                                                        exercise['muscle'],
-                                                        exercise['reps'],
-                                                        exercise['sets'],
-                                                        exercise['weight'],
-                                                      );
+                                                          exercise['uid']);
 
                                                       exercises.removeWhere(
                                                           (item) =>

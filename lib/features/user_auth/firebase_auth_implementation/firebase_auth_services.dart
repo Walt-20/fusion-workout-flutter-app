@@ -64,19 +64,13 @@ class FirebaseAuthService {
 
   Future<void> addExerciseToFirestore(
       DateTime date, List<Map<String, dynamic>> exercises) async {
-    final firestore = FirebaseFirestore.instance;
+    final dateString = DateFormat('yyyy-MM-dd').format(date);
 
-    // Format date to string
-    String dateString = DateFormat('yyyy-MM-dd').format(date);
-
-    // Reference to the document in the Firestore collection
-    DocumentReference docRef = firestore
-        .collection("Users")
+    final docRef = FirebaseFirestore.instance
+        .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('exercise')
+        .collection('exercises')
         .doc(dateString);
-
-    // Add or update the document
     await docRef.set({
       'exercises': FieldValue.arrayUnion(exercises),
     }, SetOptions(merge: true));
@@ -84,59 +78,24 @@ class FirebaseAuthService {
 
   Future<void> updateExerciseInFirebase(
       DateTime date, List<Map<String, dynamic>> exercises) async {
-    final firestore = FirebaseFirestore.instance;
+    final batch = FirebaseFirestore.instance.batch();
 
-    // Format date to string
-    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    for (var exercise in exercises) {
+      final exerciseRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection('exercises')
+          .doc(date.toIso8601String())
+          .collection('exercise_list')
+          .doc(exercise['id']);
 
-    // Reference to the document in the Firestore collection
-    DocumentReference docRef = firestore
-        .collection("Users")
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('exercise')
-        .doc(dateString);
-
-    // Get the existing document
-    DocumentSnapshot docSnapshot = await docRef.get();
-
-    List<Map<String, dynamic>> updatedExercises = [];
-
-    if (docSnapshot.exists) {
-      List<dynamic> existingExercises = docSnapshot['exercises'];
-
-      // Convert existingExercises to a map for easier lookup
-      Map<String, Map<String, dynamic>> existingMap = {};
-      for (var ex in existingExercises) {
-        String key = '${ex['name']}|${ex['muscle']}'; // Unique key
-        existingMap[key] = ex;
-      }
-
-      // Process new exercises
-      for (var newExercise in exercises) {
-        String key =
-            '${newExercise['name']}|${newExercise['muscle']}'; // Unique key
-        if (existingMap.containsKey(key)) {
-          // Update existing exercise
-          existingMap[key] = newExercise;
-        } else {
-          // Add new exercise
-          existingMap[key] = newExercise;
-        }
-      }
-
-      // Convert map back to list
-      updatedExercises = existingMap.values.toList();
-    } else {
-      // If the document does not exist, create it with the new exercises
-      updatedExercises = exercises;
+      batch.update(exerciseRef, exercise);
     }
 
-    // Update the document with the modified exercises list
-    await docRef.set({'exercises': updatedExercises});
+    await batch.commit();
   }
 
-  Future<void> removeExerciseFromFirebase(DateTime date, String name,
-      String muscle, int? reps, int? sets, double? weight) async {
+  Future<void> removeExerciseFromFirebase(DateTime date, String uid) async {
     debugPrint("made it to the auth service");
     String userUid = FirebaseAuth.instance.currentUser!.uid;
     String dateString = DateFormat('yyyy-MM-dd').format(date);
@@ -159,11 +118,7 @@ class FirebaseAuthService {
         // Find the exercise to remove
         Map<String, dynamic>? exerciseToRemove;
         for (var exercise in exercises) {
-          if (exercise['name'] == name &&
-              exercise['muscle'] == muscle &&
-              exercise['reps'] == reps &&
-              exercise['sets'] == sets &&
-              exercise['weight'] == weight) {
+          if (exercise['id'] == uid) {
             exerciseToRemove = exercise;
             break;
           }
@@ -185,24 +140,53 @@ class FirebaseAuthService {
     String userUid = FirebaseAuth.instance.currentUser!.uid;
     String dateString = DateFormat('yyyy-MM-dd').format(date);
     final firestore = FirebaseFirestore.instance;
-    DocumentReference docRef = firestore
+    DocumentReference exerciseDetailsRef = firestore
         .collection('Users')
         .doc(userUid)
-        .collection('exercise')
+        .collection('exercises')
         .doc(dateString);
 
     try {
-      DocumentSnapshot snapshot = await docRef.get();
+      DocumentSnapshot<Object?> querySnapshot = await exerciseDetailsRef.get();
 
-      if (snapshot.exists && snapshot.data() != null) {
-        List<dynamic> exerciseList = snapshot.get('exercises');
+      if (querySnapshot.exists) {
+        var data = querySnapshot.data();
+        debugPrint("whats that data! it's $data");
+        if (data != null && data is Map<String, dynamic>) {
+          debugPrint("these are the data you are looking for");
+          List<Map<String, dynamic>> exerciseList =
+              (data['exercises'] as List<dynamic>).map((entry) {
+            return entry as Map<String, dynamic>;
+          }).toList();
 
-        return exerciseList.map((e) => e as Map<String, dynamic>).toList();
+          return exerciseList;
+        } else {
+          return [];
+        }
       } else {
         return [];
       }
     } catch (e) {
       throw Exception('Failed to load exercises: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getExerciseFromFirestore(
+      DateTime date, String exerciseId) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection('exercises')
+          .doc(date.toIso8601String())
+          .collection('exercise_list')
+          .doc(exerciseId)
+          .get();
+
+      return snapshot.data();
+    } catch (e) {
+      debugPrint("Error fetching exercise: $e");
+      return null;
     }
   }
 

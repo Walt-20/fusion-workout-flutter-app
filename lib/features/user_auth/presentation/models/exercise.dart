@@ -12,14 +12,15 @@ class Exercise {
   final String equipment;
   final String difficulty;
   final String instructions;
-  int? reps;
+  List<int>? reps;
   int? sets;
-  double? weight;
+  List<double>? weight;
   bool? completed;
+  String? uid;
 
   Exercise({
     required this.name,
-    required this.type,
+    this.type = '',
     required this.muscle,
     required this.equipment,
     required this.difficulty,
@@ -28,6 +29,7 @@ class Exercise {
     this.sets,
     this.weight,
     this.completed = false,
+    this.uid,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {

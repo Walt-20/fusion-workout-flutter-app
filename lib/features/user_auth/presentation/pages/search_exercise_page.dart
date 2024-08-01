@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/add_exercise_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/exercise_details_dialog.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 
 class SearchExercisePage extends StatefulWidget {
   final DateTime selectedDate;
@@ -23,7 +23,7 @@ class SearchExercisePage extends StatefulWidget {
 class _SearchExercisePageState extends State<SearchExercisePage> {
   Future<List<Exercise>>? _exercises;
   List<Exercise> _selectedExercises = [];
-  Map<String, dynamic> exerciseMap = {};
+  Set<String> _existingExerciseIds = {}; // Track existing exercise IDs
   FirebaseAuthService _auth = FirebaseAuthService();
 
   @override
@@ -57,36 +57,61 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
           backgroundColor: Colors.red,
         ),
       );
-      throw Exception('Failed to load exercies');
+      throw Exception('Failed to load exercises');
     }
   }
 
   Future<void> _fetchExercisesFromDatabase() async {
+    debugPrint("fetching exercises from db");
     try {
       final fetchedExercises = await _auth.fetchExercises(widget.selectedDate);
+
+      debugPrint("$fetchedExercises");
+
       setState(() {
+        // _existingExerciseIds = fetchedExercises.map((exerciseMap) {
+        //   return exerciseMap['uid'] as dynamic;
+        // }).toSet();
+
+        // debugPrint("$_existingExerciseIds");
+
         _selectedExercises = fetchedExercises.map((exerciseMap) {
           return Exercise(
+            uid: exerciseMap['uid'],
             name: exerciseMap['name'],
-            type: exerciseMap['type'] ?? '',
             muscle: exerciseMap['muscle'],
             equipment: exerciseMap['equipment'] ?? '',
             difficulty: exerciseMap['difficulty'] ?? '',
             instructions: exerciseMap['instructions'] ?? '',
-            reps: exerciseMap['reps'],
+            reps: (exerciseMap['reps'] as List<dynamic>?)
+                ?.map((e) => e as int? ?? 0)
+                .toList(),
             sets: exerciseMap['sets'],
-            weight: exerciseMap['weight'],
+            weight: (exerciseMap['weight'] as List<dynamic>?)
+                ?.map((e) => e as double? ?? 0.0)
+                .toList(),
             completed: exerciseMap['completed'],
           );
         }).toList();
       });
+
+      debugPrint("$_selectedExercises");
+      debugPrint("$_existingExerciseIds");
     } catch (e) {
       debugPrint("Error fetching exercises: $e");
     }
   }
 
-  Future<void> _addToDatabase(Exercise exercise) async {
+  Future<void> _addOrUpdateExerciseInDatabase(Exercise exercise) async {
+    Map<String, dynamic>? existingExercise = {};
+    if (exercise.uid != null) {
+      existingExercise = await _auth.getExerciseFromFirestore(
+          widget.selectedDate, exercise.uid!);
+    }
+
+    String uid = Uuid().v4();
     Map<String, dynamic> exerciseMap = {
+      'id': uid,
       'name': exercise.name,
       'muscle': exercise.muscle,
       'reps': exercise.reps,
@@ -94,36 +119,22 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'weight': exercise.weight,
       'completed': exercise.completed,
     };
-    await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
+
+    if (existingExercise != null) {
+      await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
+    } else {
+      await _auth.updateExerciseInFirebase(widget.selectedDate, [exerciseMap]);
+    }
+
     widget.onExerciseAdded();
   }
 
-  Future<void> _updateExerciseInDatabase(Exercise exercise) async {
-    Map<String, dynamic> exerciseMap = {
-      'name': exercise.name,
-      'muscle': exercise.muscle,
-      'reps': exercise.reps,
-      'sets': exercise.sets,
-      'weight': exercise.weight,
-      'completed': exercise.completed,
-    };
-    await _auth.updateExerciseInFirebase(widget.selectedDate, [exerciseMap]);
-    widget.onExerciseAdded();
-  }
-
-  Future<void> _removeFromDatabase(
-      String name, String muscle, int? reps, int? sets, double? weight) async {
-    debugPrint(
-        "name $name\nmuscle $muscle\nreps $reps\nsets $sets\nweight $weight");
-    await _auth.removeExerciseFromFirebase(
-        widget.selectedDate, name, muscle, reps, sets, weight);
-    widget.onExerciseAdded();
-  }
-
-  Future<void> _queryAPI(String query) async {
+  Future<void> _removeFromDatabase(String uid) async {
+    await _auth.removeExerciseFromFirebase(widget.selectedDate, uid);
     setState(() {
-      _exercises = fetchSuggestions(query);
+      _existingExerciseIds.remove(uid);
     });
+    widget.onExerciseAdded();
   }
 
   @override
@@ -155,6 +166,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                   if (!_selectedExercises
                                       .contains(list[index])) {
                                     _selectedExercises.insert(0, list[index]);
+                                    _addOrUpdateExerciseInDatabase(list[index]);
                                   }
                                   _exercises = Future.value([]);
                                   controller.closeView("");
@@ -180,7 +192,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                     const Divider(height: 8.0),
                 itemCount: _selectedExercises.length,
                 itemBuilder: (context, index) {
-                  _addToDatabase(_selectedExercises[index]);
                   final exercise = _selectedExercises[index];
                   return GestureDetector(
                     onTap: () async {
@@ -206,7 +217,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                             type: '',
                           );
 
-                          _updateExerciseInDatabase(updatedExercise);
+                          _addOrUpdateExerciseInDatabase(updatedExercise);
 
                           _selectedExercises[index] = updatedExercise;
                         });
@@ -235,9 +246,9 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                       ),
                       subtitle: Text(
                         'Muscle: ${exercise.muscle}\n'
-                        'Reps: ${exercise.reps ?? ""}\n'
-                        'Sets: ${exercise.sets ?? ""}\n'
-                        'Weight: ${exercise.weight ?? ""}',
+                        'Reps: ${exercise.reps?.join(',') ?? "Click to add reps"}\n'
+                        'Sets: ${exercise.sets ?? "Click to add sets"}\n'
+                        'Weight: ${exercise.weight?.join(',') ?? "Click to add weights"}',
                         style: TextStyle(
                           color: exercise.completed == true
                               ? Colors.grey[500]
@@ -264,11 +275,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                               onChanged: (bool? value) {
                                 setState(
                                   () {
-                                    debugPrint(
-                                        "exercise is ${exercise.completed}");
                                     exercise.completed = value ?? false;
-                                    debugPrint(
-                                        "exercise is ${exercise.completed}");
 
                                     if (exercise.completed == true) {
                                       _selectedExercises.removeAt(index);
@@ -278,7 +285,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                       _selectedExercises.insert(0, exercise);
                                     }
 
-                                    _updateExerciseInDatabase(exercise);
+                                    _addOrUpdateExerciseInDatabase(exercise);
                                   },
                                 );
                               },
@@ -288,12 +295,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                               onPressed: () {
                                 setState(() {
                                   _removeFromDatabase(
-                                    _selectedExercises[index].name,
-                                    _selectedExercises[index].muscle,
-                                    _selectedExercises[index].reps,
-                                    _selectedExercises[index].sets,
-                                    _selectedExercises[index].weight,
-                                  );
+                                      _selectedExercises[index].uid!);
                                   _selectedExercises.removeAt(index);
                                 });
                               },
