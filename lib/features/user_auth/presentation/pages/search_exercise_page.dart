@@ -252,36 +252,37 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         child: Row(
                           children: [
                             Checkbox(
-                                fillColor: WidgetStateProperty.resolveWith(
-                                    (Set<WidgetState> states) {
-                                  if (states.contains(WidgetState.selected)) {
-                                    return const Color.fromARGB(
-                                        237, 255, 134, 21);
-                                  }
-                                  return Colors.white;
-                                }),
-                                value: exercise.completed,
-                                onChanged: (bool? value) {
-                                  setState(
-                                    () {
-                                      debugPrint(
-                                          "exercise is ${exercise.completed}");
-                                      exercise.completed = value ?? false;
-                                      debugPrint(
-                                          "exercise is ${exercise.completed}");
+                              fillColor: WidgetStateProperty.resolveWith(
+                                  (Set<WidgetState> states) {
+                                if (states.contains(WidgetState.selected)) {
+                                  return const Color.fromARGB(
+                                      237, 255, 134, 21);
+                                }
+                                return Colors.white;
+                              }),
+                              value: exercise.completed,
+                              onChanged: (bool? value) {
+                                setState(
+                                  () {
+                                    debugPrint(
+                                        "exercise is ${exercise.completed}");
+                                    exercise.completed = value ?? false;
+                                    debugPrint(
+                                        "exercise is ${exercise.completed}");
 
-                                      if (exercise.completed == true) {
-                                        _selectedExercises.removeAt(index);
-                                        _selectedExercises.add(exercise);
-                                      } else if (exercise.completed == false) {
-                                        _selectedExercises.removeAt(index);
-                                        _selectedExercises.insert(0, exercise);
-                                      }
+                                    if (exercise.completed == true) {
+                                      _selectedExercises.removeAt(index);
+                                      _selectedExercises.add(exercise);
+                                    } else if (exercise.completed == false) {
+                                      _selectedExercises.removeAt(index);
+                                      _selectedExercises.insert(0, exercise);
+                                    }
 
-                                      _updateExerciseInDatabase(exercise);
-                                    },
-                                  );
-                                }),
+                                    _updateExerciseInDatabase(exercise);
+                                  },
+                                );
+                              },
+                            ),
                             IconButton(
                               icon: const Icon(Icons.remove_circle_outline),
                               onPressed: () {

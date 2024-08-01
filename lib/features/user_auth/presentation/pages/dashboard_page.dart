@@ -136,6 +136,7 @@ class _DashboardPageState extends State<DashboardPage>
       'reps': exercise.reps,
       'sets': exercise.sets,
       'weight': exercise.weight,
+      'completed': exercise.completed,
     };
     await _auth.updateExerciseInFirebase(_focusedDay, [exerciseMap]);
     await _fetchExercisesFromDatabase();
@@ -164,6 +165,40 @@ class _DashboardPageState extends State<DashboardPage>
         "name $name\nmuscle $muscle\nreps $reps\nsets $sets\nweight $weight");
     await _auth.removeExerciseFromFirebase(
         _focusedDay, name, muscle, reps, sets, weight);
+  }
+
+  Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
+    Map<String, dynamic> exerciseMap = {
+      'name': exercise.name,
+      'muscle': exercise.muscle,
+      'reps': exercise.reps,
+      'sets': exercise.sets,
+      'weight': exercise.weight,
+      'completed': exercise.completed,
+    };
+    await _auth.updateExerciseInFirebase(_focusedDay, [exerciseMap]);
+    try {
+      final fetchedExercises = await _auth.fetchExercises(_focusedDay);
+
+      List<Map<String, dynamic>> updatedExercises = List.from(fetchedExercises);
+
+      updatedExercises.sort((a, b) {
+        bool aCompleted = a['completed'] ?? false;
+        bool bCompleted = b['completed'] ?? false;
+
+        if (aCompleted && !bCompleted) return 1;
+        if (!aCompleted && bCompleted) return -1;
+        return 0;
+      });
+
+      await _auth.updateExerciseInFirebase(_focusedDay, updatedExercises);
+
+      setState(() {
+        exercises = updatedExercises;
+      });
+    } catch (e) {
+      debugPrint("Error updated exercies: $e");
+    }
   }
 
   @override
@@ -310,7 +345,7 @@ class _DashboardPageState extends State<DashboardPage>
                                   },
                                   child: Container(
                                     width: MediaQuery.of(context).size.width *
-                                        0.25,
+                                        0.35,
                                     height: MediaQuery.of(context).size.height *
                                         0.25,
                                     margin: const EdgeInsets.only(right: 8.0),
@@ -329,63 +364,177 @@ class _DashboardPageState extends State<DashboardPage>
                                           exercise['name'] ?? 'No Name',
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 2,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16.0,
                                             fontWeight: FontWeight.bold,
+                                            color: exercise['completed'] == true
+                                                ? Colors.grey[600]
+                                                : const Color.fromARGB(
+                                                    237, 255, 134, 21),
+                                            decoration:
+                                                exercise['completed'] == true
+                                                    ? TextDecoration.lineThrough
+                                                    : TextDecoration.none,
                                           ),
                                         ),
                                         Text(
                                           exercise['muscle'] ?? 'No Muscle',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14.0,
-                                            color: Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                            color: exercise['completed'] == true
+                                                ? Colors.grey[500]
+                                                : Colors.grey[600],
+                                            decoration:
+                                                exercise['completed'] == true
+                                                    ? TextDecoration.lineThrough
+                                                    : TextDecoration.none,
                                           ),
                                         ),
                                         Text(
                                           "Reps: ${exercise['reps'].toString()}" ??
                                               'Reps: ',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14.0,
-                                            color: Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                            color: exercise['completed'] == true
+                                                ? Colors.grey[500]
+                                                : Colors.grey[600],
+                                            decoration:
+                                                exercise['completed'] == true
+                                                    ? TextDecoration.lineThrough
+                                                    : TextDecoration.none,
                                           ),
                                         ),
                                         Text(
                                           "Sets: ${exercise['sets'].toString()}" ??
                                               'Sets: ',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14.0,
-                                            color: Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                            color: exercise['completed'] == true
+                                                ? Colors.grey[500]
+                                                : Colors.grey[600],
+                                            decoration:
+                                                exercise['completed'] == true
+                                                    ? TextDecoration.lineThrough
+                                                    : TextDecoration.none,
                                           ),
                                         ),
                                         Text(
                                           "Weight: ${exercise['weight'].toString()}" ??
                                               'Weight: ',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14.0,
-                                            color: Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                            color: exercise['completed'] == true
+                                                ? Colors.grey[500]
+                                                : Colors.grey[600],
+                                            decoration:
+                                                exercise['completed'] == true
+                                                    ? TextDecoration.lineThrough
+                                                    : TextDecoration.none,
                                           ),
                                         ),
                                         Spacer(),
                                         Align(
                                           alignment: Alignment.centerRight,
-                                          child: IconButton(
-                                            icon: const Icon(
-                                                Icons.remove_circle_outline),
-                                            onPressed: () {
-                                              setState(() {
-                                                _removeFromDatabase(
-                                                  exercise['name'],
-                                                  exercise['muscle'],
-                                                  exercise['reps'],
-                                                  exercise['sets'],
-                                                  exercise['weight'],
-                                                );
+                                          child: SizedBox(
+                                            width: 120,
+                                            child: Row(
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(Icons
+                                                      .remove_circle_outline),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _removeFromDatabase(
+                                                        exercise['name'],
+                                                        exercise['muscle'],
+                                                        exercise['reps'],
+                                                        exercise['sets'],
+                                                        exercise['weight'],
+                                                      );
 
-                                                exercises.removeWhere((item) =>
-                                                    item['name'] ==
-                                                    exercise['name']);
-                                              });
-                                            },
+                                                      exercises.removeWhere(
+                                                          (item) =>
+                                                              item['name'] ==
+                                                              exercise['name']);
+                                                    });
+                                                  },
+                                                ),
+                                                Checkbox(
+                                                  fillColor: WidgetStateProperty
+                                                      .resolveWith(
+                                                          (Set<WidgetState>
+                                                              states) {
+                                                    if (states.contains(
+                                                        WidgetState.selected)) {
+                                                      return const Color
+                                                          .fromARGB(
+                                                          237, 255, 134, 21);
+                                                    }
+                                                    return Colors.white;
+                                                  }),
+                                                  value:
+                                                      exercise['completed'] ??
+                                                          false,
+                                                  onChanged: (bool? value) {
+                                                    setState(
+                                                      () {
+                                                        debugPrint(
+                                                            "exercise is ${exercise['completed']}");
+                                                        exercise['completed'] =
+                                                            value ?? false;
+                                                        debugPrint(
+                                                            "exercise is ${exercise['completed']}");
+
+                                                        if (exercise[
+                                                            'completed']) {
+                                                          exercises.removeWhere(
+                                                              (item) =>
+                                                                  item[
+                                                                      'name'] ==
+                                                                  exercise[
+                                                                      'name']);
+                                                          exercises
+                                                              .add(exercise);
+                                                        }
+
+                                                        final updatedExercise =
+                                                            Exercise(
+                                                          name:
+                                                              exercise['name'],
+                                                          muscle: exercise[
+                                                              'muscle'],
+                                                          equipment: exercise[
+                                                                  'equipment'] ??
+                                                              '',
+                                                          difficulty: exercise[
+                                                                  'difficulty'] ??
+                                                              '',
+                                                          instructions: exercise[
+                                                                  'instructions'] ??
+                                                              '',
+                                                          reps:
+                                                              exercise['reps'],
+                                                          sets:
+                                                              exercise['sets'],
+                                                          weight: exercise[
+                                                              'weight'],
+                                                          type: '',
+                                                          completed: exercise[
+                                                              'completed'],
+                                                        );
+
+                                                        _moveCheckedExerciseToEndOfList(
+                                                            updatedExercise);
+                                                      },
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         )
                                       ],
@@ -393,7 +542,6 @@ class _DashboardPageState extends State<DashboardPage>
                                   ),
                                 );
                               }).toList(),
-                              // Add button at the end of the list
                               Container(
                                 margin: const EdgeInsets.only(right: 8.0),
                                 child: IconButton(
