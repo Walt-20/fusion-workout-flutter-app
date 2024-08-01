@@ -92,7 +92,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'reps': exercise.reps,
       'sets': exercise.sets,
       'weight': exercise.weight,
-      'completed': false,
+      'completed': exercise.completed,
     };
     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
     widget.onExerciseAdded();
@@ -264,8 +264,11 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                 onChanged: (bool? value) {
                                   setState(
                                     () {
+                                      debugPrint(
+                                          "exercise is ${exercise.completed}");
                                       exercise.completed = value ?? false;
-                                      _updateExerciseInDatabase(exercise);
+                                      debugPrint(
+                                          "exercise is ${exercise.completed}");
 
                                       if (exercise.completed == true) {
                                         _selectedExercises.removeAt(index);
@@ -274,6 +277,8 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                         _selectedExercises.removeAt(index);
                                         _selectedExercises.insert(0, exercise);
                                       }
+
+                                      _updateExerciseInDatabase(exercise);
                                     },
                                   );
                                 }),

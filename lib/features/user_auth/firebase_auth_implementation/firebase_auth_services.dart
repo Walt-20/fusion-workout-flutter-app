@@ -99,33 +99,40 @@ class FirebaseAuthService {
     // Get the existing document
     DocumentSnapshot docSnapshot = await docRef.get();
 
+    List<Map<String, dynamic>> updatedExercises = [];
+
     if (docSnapshot.exists) {
       List<dynamic> existingExercises = docSnapshot['exercises'];
 
+      // Convert existingExercises to a map for easier lookup
+      Map<String, Map<String, dynamic>> existingMap = {};
+      for (var ex in existingExercises) {
+        String key = '${ex['name']}|${ex['muscle']}'; // Unique key
+        existingMap[key] = ex;
+      }
+
+      // Process new exercises
       for (var newExercise in exercises) {
-        bool found = false;
-        for (int i = 0; i < existingExercises.length; i++) {
-          var existingExercise = existingExercises[i];
-          if (existingExercise['name'] == newExercise['name'] &&
-              existingExercise['muscle'] == newExercise['muscle']) {
-            // Update the existing exercise
-            existingExercises[i] = newExercise;
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          // Add the new exercise if no match was found
-          existingExercises.add(newExercise);
+        String key =
+            '${newExercise['name']}|${newExercise['muscle']}'; // Unique key
+        if (existingMap.containsKey(key)) {
+          // Update existing exercise
+          existingMap[key] = newExercise;
+        } else {
+          // Add new exercise
+          existingMap[key] = newExercise;
         }
       }
 
-      // Update the document with the modified exercises list
-      await docRef.update({'exercises': existingExercises});
+      // Convert map back to list
+      updatedExercises = existingMap.values.toList();
     } else {
       // If the document does not exist, create it with the new exercises
-      await docRef.set({'exercises': exercises});
+      updatedExercises = exercises;
     }
+
+    // Update the document with the modified exercises list
+    await docRef.set({'exercises': updatedExercises});
   }
 
   Future<void> removeExerciseFromFirebase(DateTime date, String name,
