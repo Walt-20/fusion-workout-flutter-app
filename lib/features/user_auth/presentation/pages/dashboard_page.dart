@@ -130,7 +130,10 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Future<void> _updateExerciseInDatabase(Exercise exercise) async {
+    debugPrint(
+        "_updateExerciseInDatabase dashboard page, uid is ${exercise.uid}");
     Map<String, dynamic> exerciseMap = {
+      'id': exercise.uid,
       'name': exercise.name,
       'muscle': exercise.muscle,
       'reps': exercise.reps,
@@ -138,7 +141,9 @@ class _DashboardPageState extends State<DashboardPage>
       'weight': exercise.weight,
       'completed': exercise.completed,
     };
-    await _auth.updateExerciseInFirebase(_focusedDay, [exerciseMap]);
+    debugPrint("Exercise map is: ${exerciseMap.toString()}");
+    debugPrint("the id is ${exerciseMap['id']}");
+    await _auth.updateExerciseInFirebase(_focusedDay, exerciseMap);
     await _fetchExercisesFromDatabase();
   }
 
@@ -160,43 +165,45 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Future<void> _removeFromDatabase(String uid) async {
+    debugPrint("the uid is $uid");
     await _auth.removeExerciseFromFirebase(_focusedDay, uid);
   }
 
-  Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
-    Map<String, dynamic> exerciseMap = {
-      'name': exercise.name,
-      'muscle': exercise.muscle,
-      'reps': exercise.reps,
-      'sets': exercise.sets,
-      'weight': exercise.weight,
-      'completed': exercise.completed,
-    };
-    await _auth.updateExerciseInFirebase(_focusedDay, [exerciseMap]);
+  // Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
+  //   Map<String, dynamic> exerciseMap = {
+  //     'id': exercise.uid,
+  //     'name': exercise.name,
+  //     'muscle': exercise.muscle,
+  //     'reps': exercise.reps,
+  //     'sets': exercise.sets,
+  //     'weight': exercise.weight,
+  //     'completed': exercise.completed,
+  //   };
+  //   await _auth.updateExerciseInFirebase(_focusedDay, exerciseMap);
 
-    try {
-      final fetchedExercises = await _auth.fetchExercises(_focusedDay);
+  //   try {
+  //     final fetchedExercises = await _auth.fetchExercises(_focusedDay);
 
-      List<Map<String, dynamic>> updatedExercises = List.from(fetchedExercises);
+  //     List<Map<String, dynamic>> updatedExercises = List.from(fetchedExercises);
 
-      updatedExercises.sort((a, b) {
-        bool aCompleted = a['completed'] ?? false;
-        bool bCompleted = b['completed'] ?? false;
+  //     updatedExercises.sort((a, b) {
+  //       bool aCompleted = a['completed'] ?? false;
+  //       bool bCompleted = b['completed'] ?? false;
 
-        if (aCompleted && !bCompleted) return 1;
-        if (!aCompleted && bCompleted) return -1;
-        return 0;
-      });
+  //       if (aCompleted && !bCompleted) return 1;
+  //       if (!aCompleted && bCompleted) return -1;
+  //       return 0;
+  //     });
 
-      await _auth.updateExerciseInFirebase(_focusedDay, updatedExercises);
+  //     await _auth.updateExerciseInFirebase(_focusedDay, updatedExercises);
 
-      setState(() {
-        exercises = updatedExercises;
-      });
-    } catch (e) {
-      debugPrint("Error updated exercies: $e");
-    }
-  }
+  //     setState(() {
+  //       exercises = updatedExercises;
+  //     });
+  //   } catch (e) {
+  //     debugPrint("Error updated exercies: $e");
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -320,6 +327,7 @@ class _DashboardPageState extends State<DashboardPage>
                                     if (result != null) {
                                       setState(() {
                                         final updatedExercise = Exercise(
+                                          uid: exercise['id'],
                                           name: exercise['name'],
                                           muscle: exercise['muscle'],
                                           equipment:
@@ -334,6 +342,9 @@ class _DashboardPageState extends State<DashboardPage>
                                           type: '',
                                           completed: false,
                                         );
+
+                                        debugPrint(
+                                            'updatedExercise uid: ${updatedExercise.uid}');
 
                                         _updateExerciseInDatabase(
                                             updatedExercise);
@@ -443,16 +454,14 @@ class _DashboardPageState extends State<DashboardPage>
                                                 IconButton(
                                                   icon: const Icon(Icons
                                                       .remove_circle_outline),
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      _removeFromDatabase(
-                                                          exercise['uid']);
-
-                                                      exercises.removeWhere(
-                                                          (item) =>
-                                                              item['name'] ==
-                                                              exercise['name']);
-                                                    });
+                                                  onPressed: () async {
+                                                    await _removeFromDatabase(
+                                                        exercise['id']);
+                                                    exercises.removeWhere(
+                                                        (item) =>
+                                                            item['id'] ==
+                                                            exercise['id']);
+                                                    setState(() {});
                                                   },
                                                 ),
                                                 Checkbox(
@@ -519,8 +528,8 @@ class _DashboardPageState extends State<DashboardPage>
                                                               'completed'],
                                                         );
 
-                                                        _moveCheckedExerciseToEndOfList(
-                                                            updatedExercise);
+                                                        // _moveCheckedExerciseToEndOfList(
+                                                        //     updatedExercise);
                                                       },
                                                     );
                                                   },

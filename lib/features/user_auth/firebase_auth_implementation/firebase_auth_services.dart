@@ -64,6 +64,7 @@ class FirebaseAuthService {
 
   Future<void> addExerciseToFirestore(
       DateTime date, List<Map<String, dynamic>> exercises) async {
+    debugPrint("what is the list of exercises ${exercises.toString()}");
     final dateString = DateFormat('yyyy-MM-dd').format(date);
 
     final docRef = FirebaseFirestore.instance
@@ -77,26 +78,56 @@ class FirebaseAuthService {
   }
 
   Future<void> updateExerciseInFirebase(
-      DateTime date, List<Map<String, dynamic>> exercises) async {
-    final batch = FirebaseFirestore.instance.batch();
+      DateTime date, Map<String, dynamic> exercises) async {
+    final dateString = DateFormat('yyyy-MM-dd').format(date);
 
-    for (var exercise in exercises) {
-      final exerciseRef = FirebaseFirestore.instance
-          .collection('Users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .collection('exercises')
-          .doc(date.toIso8601String())
-          .collection('exercise_list')
-          .doc(exercise['id']);
+    final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('exercises')
+        .doc(dateString);
 
-      batch.update(exerciseRef, exercise);
+    final docSnapshot = await docRef.get();
+
+    debugPrint("the doc snapshot is $docSnapshot");
+
+    if (docSnapshot.exists) {
+      debugPrint("the docSnapshot does exist");
+      List<dynamic> existingExercises = docSnapshot.data()?['exercises'] ?? [];
+
+      debugPrint("existingExercises is ${existingExercises.toString()}");
+
+      for (var updatedExercise in existingExercises) {
+        bool found = false;
+
+        for (var i = 0; i < existingExercises.length; i++) {
+          debugPrint(
+              "the existingExercises id is ${existingExercises[i]['id']}");
+          debugPrint("the updatedExercise id is ${updatedExercise['id']}");
+          if (existingExercises[i]['id'] == updatedExercise['id']) {
+            existingExercises[i] = updatedExercise;
+            found = true;
+            break;
+          }
+
+          if (!found) {
+            debugPrint("what is found? $found");
+            existingExercises.add(updatedExercise);
+          }
+        }
+      }
+      await docRef.set({
+        'exercises': existingExercises,
+      }, SetOptions(merge: true));
+    } else {
+      await docRef.set({
+        'exercises': exercises,
+      }, SetOptions(merge: true));
     }
-
-    await batch.commit();
   }
 
   Future<void> removeExerciseFromFirebase(DateTime date, String uid) async {
-    debugPrint("made it to the auth service");
+    debugPrint("should be in removeExerciseFromFirebase menu");
     String userUid = FirebaseAuth.instance.currentUser!.uid;
     String dateString = DateFormat('yyyy-MM-dd').format(date);
     final firestore = FirebaseFirestore.instance;
@@ -105,34 +136,24 @@ class FirebaseAuthService {
     DocumentReference docRef = firestore
         .collection('Users')
         .doc(userUid)
-        .collection('exercise')
+        .collection('exercises')
         .doc(dateString);
+
+    debugPrint("the doc ref is $docRef");
 
     try {
       // Get the document
       DocumentSnapshot docSnapshot = await docRef.get();
 
       if (docSnapshot.exists) {
-        List<dynamic> exercises = docSnapshot['exercises'];
+        List<dynamic> exercises = docSnapshot.get('exercises');
 
-        // Find the exercise to remove
-        Map<String, dynamic>? exerciseToRemove;
-        for (var exercise in exercises) {
-          if (exercise['id'] == uid) {
-            exerciseToRemove = exercise;
-            break;
-          }
-        }
+        exercises.removeWhere((exercise) => exercise['id'] == uid);
 
-        if (exerciseToRemove != null) {
-          // Remove the exercise
-          await docRef.update({
-            'exercises': FieldValue.arrayRemove([exerciseToRemove])
-          });
-        }
+        await docRef.update({'exercises': exercises});
       }
     } catch (e) {
-      print("Error removing exercise: $e");
+      debugPrint("Error removing exercise: $e");
     }
   }
 
@@ -168,25 +189,6 @@ class FirebaseAuthService {
       }
     } catch (e) {
       throw Exception('Failed to load exercises: $e');
-    }
-  }
-
-  Future<Map<String, dynamic>?> getExerciseFromFirestore(
-      DateTime date, String exerciseId) async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .collection('exercises')
-          .doc(date.toIso8601String())
-          .collection('exercise_list')
-          .doc(exerciseId)
-          .get();
-
-      return snapshot.data();
-    } catch (e) {
-      debugPrint("Error fetching exercise: $e");
-      return null;
     }
   }
 

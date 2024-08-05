@@ -102,13 +102,34 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     }
   }
 
-  Future<void> _addOrUpdateExerciseInDatabase(Exercise exercise) async {
-    Map<String, dynamic>? existingExercise = {};
-    if (exercise.uid != null) {
-      existingExercise = await _auth.getExerciseFromFirestore(
-          widget.selectedDate, exercise.uid!);
-    }
+  // Future<void> _addOrUpdateExerciseInDatabase(Exercise exercise) async {
+  //   Map<String, dynamic>? existingExercise = {};
+  //   if (exercise.uid != null) {
+  //     existingExercise = await _auth.getExerciseFromFirestore(
+  //         widget.selectedDate, exercise.uid!);
+  //   }
 
+  //   String uid = Uuid().v4();
+  //   Map<String, dynamic> exerciseMap = {
+  //     'id': uid,
+  //     'name': exercise.name,
+  //     'muscle': exercise.muscle,
+  //     'reps': exercise.reps,
+  //     'sets': exercise.sets,
+  //     'weight': exercise.weight,
+  //     'completed': exercise.completed,
+  //   };
+
+  //   if (existingExercise == null) {
+  //     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
+  //   } else {
+  //     await _auth.updateExerciseInFirebase(widget.selectedDate, [exerciseMap]);
+  //   }
+
+  //   widget.onExerciseAdded();
+  // }
+
+  Future<void> _addExerciseToFirebase(Exercise exercise) async {
     String uid = Uuid().v4();
     Map<String, dynamic> exerciseMap = {
       'id': uid,
@@ -120,11 +141,22 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'completed': exercise.completed,
     };
 
-    if (existingExercise != null) {
-      await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
-    } else {
-      await _auth.updateExerciseInFirebase(widget.selectedDate, [exerciseMap]);
-    }
+    await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
+
+    widget.onExerciseAdded();
+  }
+
+  Future<void> _updateExerciseInDatabase(Exercise exercise) async {
+    Map<String, dynamic> exerciseMap = {
+      'id': exercise.uid,
+      'name': exercise.name,
+      'muscle': exercise.muscle,
+      'reps': exercise.reps,
+      'sets': exercise.sets,
+      'weight': exercise.weight,
+      'completed': exercise.completed,
+    };
+    await _auth.updateExerciseInFirebase(widget.selectedDate, exerciseMap);
 
     widget.onExerciseAdded();
   }
@@ -166,7 +198,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                   if (!_selectedExercises
                                       .contains(list[index])) {
                                     _selectedExercises.insert(0, list[index]);
-                                    _addOrUpdateExerciseInDatabase(list[index]);
+                                    _addExerciseToFirebase(list[index]);
                                   }
                                   _exercises = Future.value([]);
                                   controller.closeView("");
@@ -217,7 +249,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                             type: '',
                           );
 
-                          _addOrUpdateExerciseInDatabase(updatedExercise);
+                          _updateExerciseInDatabase(updatedExercise);
 
                           _selectedExercises[index] = updatedExercise;
                         });
@@ -271,7 +303,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                 }
                                 return Colors.white;
                               }),
-                              value: exercise.completed,
+                              value: exercise.completed ?? false,
                               onChanged: (bool? value) {
                                 setState(
                                   () {
@@ -285,7 +317,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                       _selectedExercises.insert(0, exercise);
                                     }
 
-                                    _addOrUpdateExerciseInDatabase(exercise);
+                                    _updateExerciseInDatabase(exercise);
                                   },
                                 );
                               },

@@ -12,9 +12,9 @@ class Exercise {
   final String equipment;
   final String difficulty;
   final String instructions;
-  List<int>? reps;
+  List<dynamic>? reps;
   int? sets;
-  List<double>? weight;
+  List<dynamic>? weight;
   bool? completed;
   String? uid;
 

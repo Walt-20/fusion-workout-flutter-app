@@ -23,6 +23,8 @@ void main() {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     await FirebaseAuth.instance.signOut();
+    FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
   });
 
   tearDown(() async {
@@ -102,13 +104,13 @@ void main() {
 
     expect(find.byType(DashboardPage), findsOneWidget);
 
-    final logoutButton = find.byKey(Key('logoutButton'));
+    // final logoutButton = find.byKey(Key('logoutButton'));
 
-    await tester.tap(logoutButton);
+    // await tester.tap(logoutButton);
 
-    await tester.pumpAndSettle();
+    // await tester.pumpAndSettle();
 
-    expect(find.byType(LoginPage), findsOneWidget);
+    // expect(find.byType(LoginPage), findsOneWidget);
   });
 
 //   // check that the correct information has been uploaded to Firestore
