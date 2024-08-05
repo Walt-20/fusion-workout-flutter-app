@@ -169,41 +169,43 @@ class _DashboardPageState extends State<DashboardPage>
     await _auth.removeExerciseFromFirebase(_focusedDay, uid);
   }
 
-  // Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
-  //   Map<String, dynamic> exerciseMap = {
-  //     'id': exercise.uid,
-  //     'name': exercise.name,
-  //     'muscle': exercise.muscle,
-  //     'reps': exercise.reps,
-  //     'sets': exercise.sets,
-  //     'weight': exercise.weight,
-  //     'completed': exercise.completed,
-  //   };
-  //   await _auth.updateExerciseInFirebase(_focusedDay, exerciseMap);
+  Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
+    debugPrint("moving checked exercise to end of list");
+    debugPrint("what is completed? ${exercise.completed}");
+    debugPrint("what is uid ${exercise.uid}");
+    Map<String, dynamic> exerciseMap = {
+      'id': exercise.uid,
+      'name': exercise.name,
+      'muscle': exercise.muscle,
+      'reps': exercise.reps,
+      'sets': exercise.sets,
+      'weight': exercise.weight,
+      'completed': exercise.completed,
+    };
 
-  //   try {
-  //     final fetchedExercises = await _auth.fetchExercises(_focusedDay);
+    await _auth.updateMoveExerciseInFirebase(_focusedDay, [exerciseMap]);
 
-  //     List<Map<String, dynamic>> updatedExercises = List.from(fetchedExercises);
+    // try {
+    //   final fetchedExercises = await _auth.fetchExercises(_focusedDay);
 
-  //     updatedExercises.sort((a, b) {
-  //       bool aCompleted = a['completed'] ?? false;
-  //       bool bCompleted = b['completed'] ?? false;
+    //   List<Map<String, dynamic>> updatedExercises = List.from(fetchedExercises);
 
-  //       if (aCompleted && !bCompleted) return 1;
-  //       if (!aCompleted && bCompleted) return -1;
-  //       return 0;
-  //     });
+    //   updatedExercises.sort((a, b) {
+    //     bool aCompleted = a['completed'] ?? false;
+    //     bool bCompleted = b['completed'] ?? false;
 
-  //     await _auth.updateExerciseInFirebase(_focusedDay, updatedExercises);
+    //     if (aCompleted && !bCompleted) return 1;
+    //     if (!aCompleted && bCompleted) return -1;
+    //     return 0;
+    //   });
 
-  //     setState(() {
-  //       exercises = updatedExercises;
-  //     });
-  //   } catch (e) {
-  //     debugPrint("Error updated exercies: $e");
-  //   }
-  // }
+    //   setState(() {
+    //     exercises = updatedExercises;
+    //   });
+    // } catch (e) {
+    //   debugPrint("Error updated exercies: $e");
+    // }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -482,56 +484,49 @@ class _DashboardPageState extends State<DashboardPage>
                                                       exercise['completed'] ??
                                                           false,
                                                   onChanged: (bool? value) {
+                                                    debugPrint(
+                                                        "exercise is ${exercise['completed']}");
+                                                    exercise['completed'] =
+                                                        value ?? false;
+                                                    debugPrint(
+                                                        "exercise is ${exercise['completed']}");
+
+                                                    if (exercise['completed']) {
+                                                      exercises.removeWhere(
+                                                          (item) =>
+                                                              item['name'] ==
+                                                              exercise['name']);
+                                                      exercises.add(exercise);
+                                                    }
+
+                                                    final updatedExercise =
+                                                        Exercise(
+                                                      uid: exercise['id'],
+                                                      name: exercise['name'],
+                                                      muscle:
+                                                          exercise['muscle'],
+                                                      equipment: exercise[
+                                                              'equipment'] ??
+                                                          '',
+                                                      difficulty: exercise[
+                                                              'difficulty'] ??
+                                                          '',
+                                                      instructions: exercise[
+                                                              'instructions'] ??
+                                                          '',
+                                                      reps: exercise['reps'],
+                                                      sets: exercise['sets'],
+                                                      weight:
+                                                          exercise['weight'],
+                                                      type: '',
+                                                      completed:
+                                                          exercise['completed'],
+                                                    );
+
+                                                    _moveCheckedExerciseToEndOfList(
+                                                        updatedExercise);
                                                     setState(
-                                                      () {
-                                                        debugPrint(
-                                                            "exercise is ${exercise['completed']}");
-                                                        exercise['completed'] =
-                                                            value ?? false;
-                                                        debugPrint(
-                                                            "exercise is ${exercise['completed']}");
-
-                                                        if (exercise[
-                                                            'completed']) {
-                                                          exercises.removeWhere(
-                                                              (item) =>
-                                                                  item[
-                                                                      'name'] ==
-                                                                  exercise[
-                                                                      'name']);
-                                                          exercises
-                                                              .add(exercise);
-                                                        }
-
-                                                        final updatedExercise =
-                                                            Exercise(
-                                                          name:
-                                                              exercise['name'],
-                                                          muscle: exercise[
-                                                              'muscle'],
-                                                          equipment: exercise[
-                                                                  'equipment'] ??
-                                                              '',
-                                                          difficulty: exercise[
-                                                                  'difficulty'] ??
-                                                              '',
-                                                          instructions: exercise[
-                                                                  'instructions'] ??
-                                                              '',
-                                                          reps:
-                                                              exercise['reps'],
-                                                          sets:
-                                                              exercise['sets'],
-                                                          weight: exercise[
-                                                              'weight'],
-                                                          type: '',
-                                                          completed: exercise[
-                                                              'completed'],
-                                                        );
-
-                                                        // _moveCheckedExerciseToEndOfList(
-                                                        //     updatedExercise);
-                                                      },
+                                                      () {},
                                                     );
                                                   },
                                                 ),

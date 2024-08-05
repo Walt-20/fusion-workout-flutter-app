@@ -114,6 +114,38 @@ class FirebaseAuthService {
     }
   }
 
+  Future<void> updateMoveExerciseInFirebase(
+      DateTime date, List<Map<String, dynamic>> newExercises) async {
+    final dateString = DateFormat('yyyy-MM-dd').format(date);
+
+    final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('exercises')
+        .doc(dateString);
+
+    final docSnapshot = await docRef.get();
+
+    List<Map<String, dynamic>> exercises = [];
+    if (docSnapshot.exists) {
+      exercises =
+          List<Map<String, dynamic>>.from(docSnapshot.data()!['exercises']);
+    }
+
+    // Merge new exercises with existing ones
+    for (var newExercise in newExercises) {
+      final index = exercises
+          .indexWhere((exercise) => exercise['id'] == newExercise['id']);
+      if (index != -1) {
+        exercises[index] = newExercise; // Update existing exercise
+      } else {
+        exercises.add(newExercise); // Add new exercise
+      }
+    }
+
+    await docRef.set({'exercises': exercises}, SetOptions(merge: true));
+  }
+
   Future<void> removeExerciseFromFirebase(DateTime date, String uid) async {
     debugPrint("should be in removeExerciseFromFirebase menu");
     String userUid = FirebaseAuth.instance.currentUser!.uid;
