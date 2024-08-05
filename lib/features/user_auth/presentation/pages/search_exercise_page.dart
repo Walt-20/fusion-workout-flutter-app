@@ -33,24 +33,19 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
   }
 
   Future<List<Exercise>> fetchSuggestions(String query) async {
-    debugPrint("The query is $query");
     try {
       final response = await http.get(
         Uri.parse('https://api.api-ninjas.com/v1/exercises?name=$query'),
         headers: {'x-api-key': 'HOsWIdXrBsEI1nCv0p6TWQ==jijyLwr69j7eonaL'},
       );
 
-      debugPrint("The response is ${response.statusCode}");
-
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
-        debugPrint("data is ${data.toList()}");
         return data.map((json) => Exercise.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load exercises');
       }
     } catch (e) {
-      debugPrint('Error fetching exercises: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to load exercises. Please try again later.'),
@@ -62,11 +57,8 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
   }
 
   Future<void> _fetchExercisesFromDatabase() async {
-    debugPrint("fetching exercises from db");
     try {
       final fetchedExercises = await _auth.fetchExercises(widget.selectedDate);
-
-      debugPrint("$fetchedExercises");
 
       setState(() {
         // _existingExerciseIds = fetchedExercises.map((exerciseMap) {
@@ -94,9 +86,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
           );
         }).toList();
       });
-
-      debugPrint("$_selectedExercises");
-      debugPrint("$_existingExerciseIds");
     } catch (e) {
       debugPrint("Error fetching exercises: $e");
     }
@@ -146,7 +135,9 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     widget.onExerciseAdded();
   }
 
-  Future<void> _updateExerciseInDatabase(Exercise exercise) async {
+  Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
+    debugPrint("the exercise uid is ${exercise.uid}");
+    debugPrint("exercise completed is ${exercise.completed}");
     Map<String, dynamic> exerciseMap = {
       'id': exercise.uid,
       'name': exercise.name,
@@ -156,7 +147,25 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'weight': exercise.weight,
       'completed': exercise.completed,
     };
-    debugPrint("the exercise id is ${exerciseMap['id']}");
+
+    await _auth
+        .updateMoveExerciseInFirebase(widget.selectedDate, [exerciseMap]);
+
+    widget.onExerciseAdded();
+  }
+
+  Future<void> _updateExerciseInDatabase(Exercise exercise) async {
+    debugPrint("the exercise uid is ${exercise.uid}");
+    debugPrint("exercise completed is ${exercise.completed}");
+    Map<String, dynamic> exerciseMap = {
+      'id': exercise.uid,
+      'name': exercise.name,
+      'muscle': exercise.muscle,
+      'reps': exercise.reps,
+      'sets': exercise.sets,
+      'weight': exercise.weight,
+      'completed': exercise.completed,
+    };
     await _auth.updateExerciseInFirebase(widget.selectedDate, exerciseMap);
 
     widget.onExerciseAdded();
@@ -246,14 +255,19 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                           reps: result['reps'],
                           sets: result['sets'],
                           weight: result['weight'],
-                          completed: result['completed'],
+                          completed: exercise.completed,
                           type: '',
                         );
 
-                        _updateExerciseInDatabase(updatedExercise);
+                        setState(() {
+                          debugPrint("the exercise id is ${exercise.uid}");
+                          debugPrint(
+                              "the exercise completed is ${exercise.completed}");
 
-                        _selectedExercises[index] = updatedExercise;
-                        setState(() {});
+                          _updateExerciseInDatabase(updatedExercise);
+
+                          _selectedExercises[index] = updatedExercise;
+                        });
                       }
                     },
                     child: ListTile(
@@ -295,33 +309,44 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         width: 120,
                         child: Row(
                           children: [
-                            Checkbox(
-                              fillColor: WidgetStateProperty.resolveWith(
-                                  (Set<WidgetState> states) {
-                                if (states.contains(WidgetState.selected)) {
-                                  return const Color.fromARGB(
-                                      237, 255, 134, 21);
-                                }
-                                return Colors.white;
-                              }),
-                              value: exercise.completed ?? false,
-                              onChanged: (bool? value) {
-                                exercise.completed = value ?? false;
+                            // Checkbox(
+                            //   fillColor: WidgetStateProperty.resolveWith(
+                            //       (Set<WidgetState> states) {
+                            //     if (states.contains(WidgetState.selected)) {
+                            //       return const Color.fromARGB(
+                            //           237, 255, 134, 21);
+                            //     }
+                            //     return Colors.white;
+                            //   }),
+                            //   value: exercise.completed ?? false,
+                            //   onChanged: (bool? value) {
+                            //     exercise.completed = value ?? false;
+                            //     debugPrint(
+                            //         "exercise completed is ${exercise.completed}");
+                            //     setState(
+                            //       () {
+                            //         exercise.completed = value ?? false;
 
-                                if (exercise.completed == true) {
-                                  _selectedExercises.removeAt(index);
-                                  _selectedExercises.add(exercise);
-                                } else if (exercise.completed == false) {
-                                  _selectedExercises.removeAt(index);
-                                  _selectedExercises.insert(0, exercise);
-                                }
+                            //         final index = _selectedExercises.indexWhere(
+                            //             (e) => e.uid == exercise.uid);
 
-                                _updateExerciseInDatabase(exercise);
-                                setState(
-                                  () {},
-                                );
-                              },
-                            ),
+                            //         if (index != -1) {
+                            //           _selectedExercises.removeAt(index);
+
+                            //           if (exercise.completed!) {
+                            //             _selectedExercises.add(exercise);
+                            //           } else {
+                            //             _selectedExercises.insert(0, exercise);
+                            //           }
+                            //           _selectedExercises[index].completed =
+                            //               value;
+                            //           _moveCheckedExerciseToEndOfList(
+                            //               _selectedExercises[index]);
+                            //         }
+                            //       },
+                            //     );
+                            //   },
+                            // ),
                             IconButton(
                               icon: const Icon(Icons.remove_circle_outline),
                               onPressed: () {

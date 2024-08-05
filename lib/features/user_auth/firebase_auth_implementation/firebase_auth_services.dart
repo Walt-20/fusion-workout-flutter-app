@@ -100,6 +100,8 @@ class FirebaseAuthService {
       bool found = false;
       for (var i = 0; i < existingExercises.length; i++) {
         if (existingExercises[i]['id'] == exercise['id']) {
+          debugPrint("exercise is ${exercise['id']}");
+          debugPrint("exercise completed is ${exercise['completed']}");
           existingExercises[i] = exercise;
           found = true;
           break;
@@ -113,6 +115,45 @@ class FirebaseAuthService {
       }
     }
   }
+
+  // Future<void> updateFromSearchExerciseInFirebase(
+  //     DateTime date, Map<String, dynamic> exerciseMap) async {
+  //   final dateString = DateFormat('yyyy-MM-dd').format(date);
+  //   final docRef = FirebaseFirestore.instance
+  //       .collection('Users')
+  //       .doc(FirebaseAuth.instance.currentUser!.uid)
+  //       .collection('exercises')
+  //       .doc(dateString);
+
+  //   final docSnapshot = await docRef.get();
+
+  //   if (docSnapshot.exists) {
+  //     List<dynamic> existingExercisesDynamic =
+  //         docSnapshot.data()?['exercises'] ?? [];
+  //     List<Map<String, dynamic>> existingExercises = existingExercisesDynamic
+  //         .map((e) => Map<String, dynamic>.from(e))
+  //         .toList();
+  //     final WriteBatch batch = FirebaseFirestore.instance.batch();
+
+  //     for (var exercise in exerciseMap) {
+  //       bool found = false;
+  //       for (int i = 0; i < existingExercises.length; i++) {
+  //         if (existingExercises[i]['id'] == exercise['id']) {
+  //           existingExercises[i] = exercise;
+  //           found = true;
+  //           break;
+  //         }
+  //       }
+
+  //       if (!found) {
+  //         debugPrint("Exercise with id ${exercise['id']} is not found");
+  //       } else {
+  //         batch.update(docRef, {'exercises': existingExercises});
+  //       }
+  //     }
+  //     await batch.commit();
+  //   }
+  // }
 
   Future<void> updateMoveExerciseInFirebase(
       DateTime date, List<Map<String, dynamic>> newExercises) async {
