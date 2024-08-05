@@ -77,7 +77,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
 
         _selectedExercises = fetchedExercises.map((exerciseMap) {
           return Exercise(
-            uid: exerciseMap['uid'],
+            uid: exerciseMap['id'],
             name: exerciseMap['name'],
             muscle: exerciseMap['muscle'],
             equipment: exerciseMap['equipment'] ?? '',
@@ -156,6 +156,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'weight': exercise.weight,
       'completed': exercise.completed,
     };
+    debugPrint("the exercise id is ${exerciseMap['id']}");
     await _auth.updateExerciseInFirebase(widget.selectedDate, exerciseMap);
 
     widget.onExerciseAdded();
@@ -235,24 +236,24 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                       );
 
                       if (result != null) {
-                        setState(() {
-                          final updatedExercise = Exercise(
-                            name: exercise.name,
-                            muscle: exercise.muscle,
-                            equipment: exercise.equipment,
-                            difficulty: exercise.difficulty,
-                            instructions: exercise.instructions,
-                            reps: result['reps'],
-                            sets: result['sets'],
-                            weight: result['weight'],
-                            completed: result['completed'],
-                            type: '',
-                          );
+                        final updatedExercise = Exercise(
+                          uid: exercise.uid,
+                          name: exercise.name,
+                          muscle: exercise.muscle,
+                          equipment: exercise.equipment,
+                          difficulty: exercise.difficulty,
+                          instructions: exercise.instructions,
+                          reps: result['reps'],
+                          sets: result['sets'],
+                          weight: result['weight'],
+                          completed: result['completed'],
+                          type: '',
+                        );
 
-                          _updateExerciseInDatabase(updatedExercise);
+                        _updateExerciseInDatabase(updatedExercise);
 
-                          _selectedExercises[index] = updatedExercise;
-                        });
+                        _selectedExercises[index] = updatedExercise;
+                        setState(() {});
                       }
                     },
                     child: ListTile(
@@ -305,20 +306,19 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                               }),
                               value: exercise.completed ?? false,
                               onChanged: (bool? value) {
+                                exercise.completed = value ?? false;
+
+                                if (exercise.completed == true) {
+                                  _selectedExercises.removeAt(index);
+                                  _selectedExercises.add(exercise);
+                                } else if (exercise.completed == false) {
+                                  _selectedExercises.removeAt(index);
+                                  _selectedExercises.insert(0, exercise);
+                                }
+
+                                _updateExerciseInDatabase(exercise);
                                 setState(
-                                  () {
-                                    exercise.completed = value ?? false;
-
-                                    if (exercise.completed == true) {
-                                      _selectedExercises.removeAt(index);
-                                      _selectedExercises.add(exercise);
-                                    } else if (exercise.completed == false) {
-                                      _selectedExercises.removeAt(index);
-                                      _selectedExercises.insert(0, exercise);
-                                    }
-
-                                    _updateExerciseInDatabase(exercise);
-                                  },
+                                  () {},
                                 );
                               },
                             ),
