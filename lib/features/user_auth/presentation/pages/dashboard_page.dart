@@ -325,30 +325,31 @@ class _DashboardPageState extends State<DashboardPage>
                                     );
 
                                     if (result != null) {
-                                      setState(() {
-                                        final updatedExercise = Exercise(
-                                          uid: exercise['id'],
-                                          name: exercise['name'],
-                                          muscle: exercise['muscle'],
-                                          equipment:
-                                              exercise['equipment'] ?? '',
-                                          difficulty:
-                                              exercise['difficulty'] ?? '',
-                                          instructions:
-                                              exercise['instructions'] ?? '',
-                                          reps: result['reps'],
-                                          sets: result['sets'],
-                                          weight: result['weight'],
-                                          type: '',
-                                          completed: false,
-                                        );
+                                      final updatedExercise = Exercise(
+                                        uid: exercise['id'],
+                                        name: exercise['name'],
+                                        muscle: exercise['muscle'],
+                                        equipment: exercise['equipment'] ?? '',
+                                        difficulty:
+                                            exercise['difficulty'] ?? '',
+                                        instructions:
+                                            exercise['instructions'] ?? '',
+                                        reps: result['reps'],
+                                        sets: result['sets'],
+                                        weight: result['weight'],
+                                        type: '',
+                                        completed: false,
+                                      );
 
-                                        debugPrint(
-                                            'updatedExercise uid: ${updatedExercise.uid}');
+                                      debugPrint(
+                                          'updatedExercise uid: ${updatedExercise.uid}');
 
-                                        _updateExerciseInDatabase(
-                                            updatedExercise);
-                                      });
+                                      debugPrint(
+                                          "the updatedExercise reps: ${updatedExercise.reps}");
+
+                                      _updateExerciseInDatabase(
+                                          updatedExercise);
+                                      setState(() {});
                                     }
                                   },
                                   child: Container(

@@ -78,7 +78,7 @@ class FirebaseAuthService {
   }
 
   Future<void> updateExerciseInFirebase(
-      DateTime date, Map<String, dynamic> exercises) async {
+      DateTime date, Map<String, dynamic> exercise) async {
     final dateString = DateFormat('yyyy-MM-dd').format(date);
 
     final docRef = FirebaseFirestore.instance
@@ -97,32 +97,20 @@ class FirebaseAuthService {
 
       debugPrint("existingExercises is ${existingExercises.toString()}");
 
-      for (var updatedExercise in existingExercises) {
-        bool found = false;
-
-        for (var i = 0; i < existingExercises.length; i++) {
-          debugPrint(
-              "the existingExercises id is ${existingExercises[i]['id']}");
-          debugPrint("the updatedExercise id is ${updatedExercise['id']}");
-          if (existingExercises[i]['id'] == updatedExercise['id']) {
-            existingExercises[i] = updatedExercise;
-            found = true;
-            break;
-          }
-
-          if (!found) {
-            debugPrint("what is found? $found");
-            existingExercises.add(updatedExercise);
-          }
+      bool found = false;
+      for (var i = 0; i < existingExercises.length; i++) {
+        if (existingExercises[i]['id'] == exercise['id']) {
+          existingExercises[i] = exercise;
+          found = true;
+          break;
         }
       }
-      await docRef.set({
-        'exercises': existingExercises,
-      }, SetOptions(merge: true));
-    } else {
-      await docRef.set({
-        'exercises': exercises,
-      }, SetOptions(merge: true));
+
+      if (!found) {
+        debugPrint("Exercise with id ${exercise['id']} is not found");
+      } else {
+        await docRef.update({'exercises': existingExercises});
+      }
     }
   }
 
