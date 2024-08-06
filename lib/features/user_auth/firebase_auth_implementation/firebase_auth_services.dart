@@ -294,6 +294,7 @@ class FirebaseAuthService {
     }
   }
 
+  // user can add food
   Future<void> addFoodToDatabase(
       Map<String, List<Food>> food, DateTime date) async {
     String dateString = DateFormat('yyyy-MM-dd').format(date);

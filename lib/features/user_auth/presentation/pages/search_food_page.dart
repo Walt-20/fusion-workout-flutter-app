@@ -59,6 +59,12 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   FirebaseAuthService _auth = FirebaseAuthService();
 
   @override
+  void initState() {
+    // TODO: implement initState
+    // _fetchFoodFromDatabase();
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -67,6 +73,11 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   Future<void> _addFoodIdToDatabase(Map<String, List<Food>> food) async {
     await _auth.addFoodToDatabase(food, widget.selectedDate);
   }
+
+  // Future<void> _fetchFoodFromDatabase() async {
+  //   _selectedFoodsByMeal =
+  //       await _auth.fetchFoodFromDatabase(widget.selectedDate);
+  // }
 
   @override
   Widget build(BuildContext context) {
