@@ -294,7 +294,7 @@ class FirebaseAuthService {
     }
   }
 
-  void writeMealsToFirebase(Map<String, List<FoodItem>> mealsByDate) async {
+  void writeMealsToFirebase(Map<String, List<Food>> mealsByDate) async {
     final userMealCollection = FirebaseFirestore.instance
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -305,7 +305,7 @@ class FirebaseAuthService {
 
       for (var mealEntry in mealsByDate.entries) {
         String date = mealEntry.key;
-        List<FoodItem> mealsList = mealEntry.value;
+        List<Food> mealsList = mealEntry.value;
 
         // Serialize each food item to a map
         List<Map<String, dynamic>> serializedMeals = mealsList
@@ -364,7 +364,7 @@ class FirebaseAuthService {
     }
   }
 
-  void removeMealFromFirestore(FoodItem meal, String date) async {
+  void removeMealFromFirestore(Food meal, String date) async {
     final userMealsCollection = FirebaseFirestore.instance
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)

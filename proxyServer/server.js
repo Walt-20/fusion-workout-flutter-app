@@ -86,7 +86,7 @@ app.get('/search-food', (req, res) => {
       'Content-Type': 'application/json'
     },
     qs: {
-      method: 'foods.search.v3',
+      method: 'foods.search',
       search_expression: searchExpression,
       page_number: pageNumber,
       max_results: maxResults,
@@ -103,21 +103,29 @@ app.get('/search-food', (req, res) => {
 
       // Parse the response body if it's JSON
       try {
+          console.log("the parsed body is " + JSON.parse(body));
           const parsedBody = JSON.parse(body);
 
           // Extract relevant data from the FatSecret API response
           const foods = parsedBody.foods && parsedBody.foods.food ? parsedBody.foods.food : [];
 
-          // Map the data to fit Flutter's expected format (List<dynamic>)
-          const foodList = foods.map(food => ({
-              food_id: food.food_id,
-              food_name: food.food_name,
-              food_description: food.food_description,
-              food_url: food.food_url,
-              // Add any other fields you want to include
-          }));
+          console.log("the foods is " + foods[0].food_name);
 
-          console.log(`The results are ${foodList}`);
+          const foodList = foods.map(food => {
+            if (food.food_id && food.food_name && food.food_description && food.food_url) {
+              return {
+                food_id: food.food_id,
+                food_name: food.food_name,
+                food_description: food.food_description,
+                food_url: food.food_url,
+              };
+            } else {
+              console.warn("Invalid food item: ", food);
+              return null;
+            }
+          }).filter(item => item !== null);
+
+          console.log(`The results are ${foodList[0].food_id}`);
 
           // Send the processed data back to the client (Flutter app)
           res.json(foodList);

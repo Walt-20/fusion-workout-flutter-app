@@ -61,12 +61,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       final fetchedExercises = await _auth.fetchExercises(widget.selectedDate);
 
       setState(() {
-        // _existingExerciseIds = fetchedExercises.map((exerciseMap) {
-        //   return exerciseMap['uid'] as dynamic;
-        // }).toSet();
-
-        // debugPrint("$_existingExerciseIds");
-
         _selectedExercises = fetchedExercises.map((exerciseMap) {
           return Exercise(
             uid: exerciseMap['id'],
@@ -90,33 +84,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       debugPrint("Error fetching exercises: $e");
     }
   }
-
-  // Future<void> _addOrUpdateExerciseInDatabase(Exercise exercise) async {
-  //   Map<String, dynamic>? existingExercise = {};
-  //   if (exercise.uid != null) {
-  //     existingExercise = await _auth.getExerciseFromFirestore(
-  //         widget.selectedDate, exercise.uid!);
-  //   }
-
-  //   String uid = Uuid().v4();
-  //   Map<String, dynamic> exerciseMap = {
-  //     'id': uid,
-  //     'name': exercise.name,
-  //     'muscle': exercise.muscle,
-  //     'reps': exercise.reps,
-  //     'sets': exercise.sets,
-  //     'weight': exercise.weight,
-  //     'completed': exercise.completed,
-  //   };
-
-  //   if (existingExercise == null) {
-  //     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
-  //   } else {
-  //     await _auth.updateExerciseInFirebase(widget.selectedDate, [exerciseMap]);
-  //   }
-
-  //   widget.onExerciseAdded();
-  // }
 
   Future<void> _addExerciseToFirebase(Exercise exercise) async {
     String uid = Uuid().v4();
@@ -309,44 +276,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         width: 120,
                         child: Row(
                           children: [
-                            // Checkbox(
-                            //   fillColor: WidgetStateProperty.resolveWith(
-                            //       (Set<WidgetState> states) {
-                            //     if (states.contains(WidgetState.selected)) {
-                            //       return const Color.fromARGB(
-                            //           237, 255, 134, 21);
-                            //     }
-                            //     return Colors.white;
-                            //   }),
-                            //   value: exercise.completed ?? false,
-                            //   onChanged: (bool? value) {
-                            //     exercise.completed = value ?? false;
-                            //     debugPrint(
-                            //         "exercise completed is ${exercise.completed}");
-                            //     setState(
-                            //       () {
-                            //         exercise.completed = value ?? false;
-
-                            //         final index = _selectedExercises.indexWhere(
-                            //             (e) => e.uid == exercise.uid);
-
-                            //         if (index != -1) {
-                            //           _selectedExercises.removeAt(index);
-
-                            //           if (exercise.completed!) {
-                            //             _selectedExercises.add(exercise);
-                            //           } else {
-                            //             _selectedExercises.insert(0, exercise);
-                            //           }
-                            //           _selectedExercises[index].completed =
-                            //               value;
-                            //           _moveCheckedExerciseToEndOfList(
-                            //               _selectedExercises[index]);
-                            //         }
-                            //       },
-                            //     );
-                            //   },
-                            // ),
                             IconButton(
                               icon: const Icon(Icons.remove_circle_outline),
                               onPressed: () {

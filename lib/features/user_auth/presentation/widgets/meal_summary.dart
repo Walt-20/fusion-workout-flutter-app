@@ -3,14 +3,14 @@ import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/edit_food_dialog.dart';
 
 class MealSummaryWidget extends StatelessWidget {
-  final List<FoodItem> meals;
+  final List<Food> meals;
   final String mealName;
   final num totalCalories;
   final double proteinIntake;
   final double carbIntake;
   final double fatIntake;
   final VoidCallback onTap;
-  final Function(List<FoodItem>) onUpdate;
+  final Function(List<Food>) onUpdate;
   final EdgeInsetsGeometry padding;
 
   const MealSummaryWidget({

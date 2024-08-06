@@ -3,8 +3,8 @@ import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 
 class EditFoodDialog extends StatefulWidget {
-  final List<FoodItem> meals;
-  final Function(List<FoodItem>) onUpdate;
+  final List<Food> meals;
+  final Function(List<Food>) onUpdate;
 
   const EditFoodDialog({
     Key? key,
@@ -19,14 +19,14 @@ class EditFoodDialog extends StatefulWidget {
 class _EditFoodDialogState extends State<EditFoodDialog> {
   final FirebaseAuthService _auth = FirebaseAuthService();
 
-  void _deleteMeal(FoodItem meal) {
+  void _deleteMeal(Food meal) {
     setState(() {
       widget.meals.remove(meal);
     });
     widget.onUpdate(widget.meals);
   }
 
-  void _editMeal(BuildContext context, FoodItem meal) {
+  void _editMeal(BuildContext context, Food meal) {
     int servings = 1;
 
     showDialog(

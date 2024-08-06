@@ -53,6 +53,9 @@ class _FormContainerWidgetState extends State<FormContainerWidget> {
         onSaved: widget.onSaved,
         validator: widget.validator,
         onFieldSubmitted: widget.onFieldSubmitted,
+        autofillHints: widget.isPasswordField == true
+            ? [AutofillHints.password]
+            : [AutofillHints.email],
         decoration: InputDecoration(
           border: InputBorder.none,
           filled: true,

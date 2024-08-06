@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/search_food_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';

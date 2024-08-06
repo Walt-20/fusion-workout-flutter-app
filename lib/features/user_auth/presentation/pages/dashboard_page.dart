@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/search_exercise_page.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/calorie_page.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/pages/search_food_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/exercise_details_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -226,7 +226,7 @@ class _DashboardPageState extends State<DashboardPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CalorieTrackingPage(),
+                    builder: (context) => const SearchFoodPage(),
                   ),
                 );
               },
@@ -564,6 +564,49 @@ class _DashboardPageState extends State<DashboardPage>
                         ),
                       ),
                   ],
+                ),
+              ),
+              SizedBox(
+                height: 16.0,
+              ),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.95,
+                height: MediaQuery.of(context).size.height * 0.35,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4.0),
+                  border: Border.all(color: Colors.grey[400]!),
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Add Calories",
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(
+                        width:
+                            16.0, // Adds spacing between the text and the icon
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.add),
+                        iconSize: 32.0,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SearchFoodPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
