@@ -294,43 +294,26 @@ class FirebaseAuthService {
     }
   }
 
-  void writeMealsToFirebase(Map<String, List<Food>> mealsByDate) async {
-    final userMealCollection = FirebaseFirestore.instance
+  Future<void> addFoodToDatabase(
+      Map<String, List<Food>> food, DateTime date) async {
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    final userMealsCollection = FirebaseFirestore.instance
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('meals');
+        .collection('meals')
+        .doc(dateString);
 
     try {
-      WriteBatch batch = FirebaseFirestore.instance.batch();
+      Map<String, dynamic> foodData = {};
 
-      for (var mealEntry in mealsByDate.entries) {
-        String date = mealEntry.key;
-        List<Food> mealsList = mealEntry.value;
+      food.forEach((mealType, foodList) {
+        foodData[mealType] =
+            foodList.map((foodItem) => foodItem.foodId).toList();
+      });
 
-        // Serialize each food item to a map
-        List<Map<String, dynamic>> serializedMeals = mealsList
-            .map((meal) => {
-                  'foodId': meal.foodId,
-                  'servings': meal.servings,
-                })
-            .toList();
-
-        // Get a reference to the document
-        final docRef = userMealCollection.doc(date);
-
-        // Set the data
-        batch.set(docRef, {
-          'date': date,
-          'meals': serializedMeals,
-        });
-      }
-
-      // Commit the batch
-      await batch.commit();
+      await userMealsCollection.set(foodData, SetOptions(merge: true));
     } catch (e) {
-      print("Error saving meals: $e");
-      // Handle error appropriately
-      throw e;
+      debugPrint("error $e");
     }
   }
 

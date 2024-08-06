@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/search_exercise_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/search_food_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/exercise_details_dialog.dart';
@@ -23,6 +24,14 @@ class _DashboardPageState extends State<DashboardPage>
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   List<Map<String, dynamic>> exercises = [];
+
+  // variables for food
+  Map<String, List<Food>> _selectedFoodsByMeal = {
+    'Breakfast': [],
+    'Lunch': [],
+    'Dinner': [],
+    'Snacks': [],
+  };
 
   @override
   void initState() {
@@ -219,18 +228,6 @@ class _DashboardPageState extends State<DashboardPage>
                 );
               },
             ),
-            ListTile(
-              key: const Key('calorieButton'),
-              title: const Text('Calorie Tracking'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SearchFoodPage(),
-                  ),
-                );
-              },
-            ),
           ],
         ),
       ),
@@ -322,8 +319,6 @@ class _DashboardPageState extends State<DashboardPage>
                                   child: Container(
                                     width: MediaQuery.of(context).size.width *
                                         0.35,
-                                    height: MediaQuery.of(context).size.height *
-                                        0.25,
                                     margin: const EdgeInsets.only(right: 8.0),
                                     padding: const EdgeInsets.all(8.0),
                                     decoration: BoxDecoration(
@@ -539,8 +534,7 @@ class _DashboardPageState extends State<DashboardPage>
                                 ),
                               ),
                               SizedBox(
-                                width:
-                                    16.0, // Adds spacing between the text and the icon
+                                width: 16.0,
                               ),
                               IconButton(
                                 icon: Icon(Icons.add),
@@ -566,9 +560,7 @@ class _DashboardPageState extends State<DashboardPage>
                   ],
                 ),
               ),
-              SizedBox(
-                height: 16.0,
-              ),
+              const SizedBox(height: 16.0),
               Container(
                 width: MediaQuery.of(context).size.width * 0.95,
                 height: MediaQuery.of(context).size.height * 0.35,
@@ -590,8 +582,7 @@ class _DashboardPageState extends State<DashboardPage>
                         ),
                       ),
                       SizedBox(
-                        width:
-                            16.0, // Adds spacing between the text and the icon
+                        width: 16.0,
                       ),
                       IconButton(
                         icon: Icon(Icons.add),
@@ -600,7 +591,9 @@ class _DashboardPageState extends State<DashboardPage>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => SearchFoodPage(),
+                              builder: (context) => SearchFoodPage(
+                                selectedDate: _focusedDay,
+                              ),
                             ),
                           );
                         },
