@@ -136,62 +136,62 @@ app.get('/search-food', (req, res) => {
   });
 });
 
-app.get('/fetch-foodId', (req, res) => {
-  // check that token is available and not expired
-  if (!fatApiAccessToken || !fatApiTokenExpiration || fatApiTokenExpiration < Date.now()) {
-    console.log(`Token expiration is ${fatApiTokenExpiration}`);
-    return res.status(401).json({ error: 'Access token expired' });
-  }
+// app.get('/fetch-foodId', (req, res) => {
+//   // check that token is available and not expired
+//   if (!fatApiAccessToken || !fatApiTokenExpiration || fatApiTokenExpiration < Date.now()) {
+//     console.log(`Token expiration is ${fatApiTokenExpiration}`);
+//     return res.status(401).json({ error: 'Access token expired' });
+//   }
   
 
-  // Construct the request to FatSecret API
-  const baseURL = 'https://platform.fatsecret.com/rest/server.api';
-  const searchExpression = req.query.searchExpression;
-  const format = req.query.format || 'json';
+//   // Construct the request to FatSecret API
+//   const baseURL = 'https://platform.fatsecret.com/rest/server.api';
+//   const searchExpression = req.query.searchExpression;
+//   const format = req.query.format || 'json';
 
-  const options = {
-    method: 'GET',
-    url: baseURL,
-    headers: {
-      'Authorization': `Bearer ${fatApiAccessToken}`,
-      'Content-Type': 'application/json'
-    },
-    qs: {
-      method: 'food.get.v4',
-      food_id: searchExpression,
-      format: format,
-    }
-  };
+//   const options = {
+//     method: 'GET',
+//     url: baseURL,
+//     headers: {
+//       'Authorization': `Bearer ${fatApiAccessToken}`,
+//       'Content-Type': 'application/json'
+//     },
+//     qs: {
+//       method: 'food.get.v4',
+//       food_id: searchExpression,
+//       format: format,
+//     }
+//   };
 
-  request(options, function(error, response, body) {
-    if (error) {
-      console.error('Error fetching food ID:', error);
-      return res.status(500).json({ error: 'Failed to fetch Food ID' });
-    }
+//   request(options, function(error, response, body) {
+//     if (error) {
+//       console.error('Error fetching food ID:', error);
+//       return res.status(500).json({ error: 'Failed to fetch Food ID' });
+//     }
 
-    try {
-      const parsedBody = JSON.parse(body);
+//     try {
+//       const parsedBody = JSON.parse(body);
 
-      const foods = parsedBody['food'];
+//       const foods = parsedBody['food'];
 
-      const servings = food.servings;
+//       const serving = food.serving;
 
-      console.log(servings);
+//       console.log(serving);
 
-      // Map the data to fit Flutter's expected format (List<dynamic>)
-      const foodList = foods.map(food => ({
-        food_id: food.food_id,
-        food_name: food.food_name,
-        food_description: food.food_description,
-        food_url: food.food_url,
-        // Add any other fields you want to include
-    }));
-    } catch (error) {
-      console.error('Error parsing JSON response:', error);
-      res.status(500).json({ error: 'Error parsing JSON response' });
-    }
-  });
-});
+//       // Map the data to fit Flutter's expected format (List<dynamic>)
+//       const foodList = foods.map(food => ({
+//         food_id: food.food_id,
+//         food_name: food.food_name,
+//         food_description: food.food_description,
+//         food_url: food.food_url,
+//         // Add any other fields you want to include
+//     }));
+//     } catch (error) {
+//       console.error('Error parsing JSON response:', error);
+//       res.status(500).json({ error: 'Error parsing JSON response' });
+//     }
+//   });
+// });
 
 // Handle errors from the proxy
 proxy.on('error', (err, req, res) => {

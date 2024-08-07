@@ -61,6 +61,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   @override
   void initState() {
     // TODO: implement initState
+    debugPrint("search food page is initialized");
     // _fetchFoodFromDatabase();
   }
 
@@ -70,14 +71,17 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     super.dispose();
   }
 
-  Future<void> _addFoodIdToDatabase(Map<String, List<Food>> food) async {
+  Future<void> _addFoodMapToDatabase(Map<String, List<Food>> food) async {
     await _auth.addFoodToDatabase(food, widget.selectedDate);
   }
 
-  // Future<void> _fetchFoodFromDatabase() async {
-  //   _selectedFoodsByMeal =
-  //       await _auth.fetchFoodFromDatabase(widget.selectedDate);
-  // }
+  Future<void> _fetchFoodFromDatabase() async {
+    debugPrint("fetch food from database within search food page");
+    _selectedFoodsByMeal =
+        await _auth.fetchFoodIdFromFirestore(widget.selectedDate);
+
+    _selectedFoodsByMeal = {};
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +162,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                   _selectedFoodsByMeal[_selectedMeal]!
                                       .add(list[index]);
                                 });
-                                _addFoodIdToDatabase(_selectedFoodsByMeal);
+                                _addFoodMapToDatabase(_selectedFoodsByMeal);
                                 // Hide keyboard and close the search bar
                                 FocusScope.of(context).unfocus();
                                 _searchController.clear(); // Clear search field

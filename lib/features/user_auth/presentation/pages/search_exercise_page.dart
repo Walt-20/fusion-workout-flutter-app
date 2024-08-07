@@ -152,6 +152,113 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       appBar: AppBar(title: const Text('Search Exercises')),
       body: Column(
         children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 8.0),
+                  itemCount: _selectedExercises.length,
+                  itemBuilder: (context, index) {
+                    final exercise = _selectedExercises[index];
+                    return GestureDetector(
+                      onTap: () async {
+                        final result = await showDialog<Map<String, dynamic>?>(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return ExerciseDetailsDialog(exercise: exercise);
+                          },
+                        );
+
+                        if (result != null) {
+                          final updatedExercise = Exercise(
+                            uid: exercise.uid,
+                            name: exercise.name,
+                            muscle: exercise.muscle,
+                            equipment: exercise.equipment,
+                            difficulty: exercise.difficulty,
+                            instructions: exercise.instructions,
+                            reps: result['reps'],
+                            sets: result['sets'],
+                            weight: result['weight'],
+                            completed: exercise.completed,
+                            type: '',
+                          );
+
+                          setState(() {
+                            debugPrint("the exercise id is ${exercise.uid}");
+                            debugPrint(
+                                "the exercise completed is ${exercise.completed}");
+
+                            _updateExerciseInDatabase(updatedExercise);
+
+                            _selectedExercises[index] = updatedExercise;
+                          });
+                        }
+                      },
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        tileColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          side:
+                              BorderSide(color: Colors.grey[300]!, width: 1.0),
+                        ),
+                        title: Text(
+                          exercise.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.0,
+                            color: exercise.completed == true
+                                ? Colors.grey[600]
+                                : const Color.fromARGB(237, 255, 134, 21),
+                            decoration: exercise.completed == true
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Muscle: ${exercise.muscle}\n'
+                          'Reps: ${exercise.reps?.join(',') ?? "Click to add reps"}\n'
+                          'Sets: ${exercise.sets ?? "Click to add sets"}\n'
+                          'Weight: ${exercise.weight?.join(',') ?? "Click to add weights"}',
+                          style: TextStyle(
+                            color: exercise.completed == true
+                                ? Colors.grey[500]
+                                : Colors.grey[600],
+                            decoration: exercise.completed == true
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none,
+                          ),
+                        ),
+                        trailing: SizedBox(
+                          width: 120,
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.remove_circle_outline),
+                                onPressed: () {
+                                  setState(() {
+                                    _removeFromDatabase(
+                                        _selectedExercises[index].uid!);
+                                    _selectedExercises.removeAt(index);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: SearchAnchor.bar(suggestionsBuilder: (context, controller) {
@@ -191,109 +298,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                 )
               ];
             }),
-          ),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.separated(
-                shrinkWrap: true,
-                separatorBuilder: (context, index) =>
-                    const Divider(height: 8.0),
-                itemCount: _selectedExercises.length,
-                itemBuilder: (context, index) {
-                  final exercise = _selectedExercises[index];
-                  return GestureDetector(
-                    onTap: () async {
-                      final result = await showDialog<Map<String, dynamic>?>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return ExerciseDetailsDialog(exercise: exercise);
-                        },
-                      );
-
-                      if (result != null) {
-                        final updatedExercise = Exercise(
-                          uid: exercise.uid,
-                          name: exercise.name,
-                          muscle: exercise.muscle,
-                          equipment: exercise.equipment,
-                          difficulty: exercise.difficulty,
-                          instructions: exercise.instructions,
-                          reps: result['reps'],
-                          sets: result['sets'],
-                          weight: result['weight'],
-                          completed: exercise.completed,
-                          type: '',
-                        );
-
-                        setState(() {
-                          debugPrint("the exercise id is ${exercise.uid}");
-                          debugPrint(
-                              "the exercise completed is ${exercise.completed}");
-
-                          _updateExerciseInDatabase(updatedExercise);
-
-                          _selectedExercises[index] = updatedExercise;
-                        });
-                      }
-                    },
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      tileColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        side: BorderSide(color: Colors.grey[300]!, width: 1.0),
-                      ),
-                      title: Text(
-                        exercise.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.0,
-                          color: exercise.completed == true
-                              ? Colors.grey[600]
-                              : const Color.fromARGB(237, 255, 134, 21),
-                          decoration: exercise.completed == true
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Muscle: ${exercise.muscle}\n'
-                        'Reps: ${exercise.reps?.join(',') ?? "Click to add reps"}\n'
-                        'Sets: ${exercise.sets ?? "Click to add sets"}\n'
-                        'Weight: ${exercise.weight?.join(',') ?? "Click to add weights"}',
-                        style: TextStyle(
-                          color: exercise.completed == true
-                              ? Colors.grey[500]
-                              : Colors.grey[600],
-                          decoration: exercise.completed == true
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
-                        ),
-                      ),
-                      trailing: SizedBox(
-                        width: 120,
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove_circle_outline),
-                              onPressed: () {
-                                setState(() {
-                                  _removeFromDatabase(
-                                      _selectedExercises[index].uid!);
-                                  _selectedExercises.removeAt(index);
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
           ),
         ],
       ),

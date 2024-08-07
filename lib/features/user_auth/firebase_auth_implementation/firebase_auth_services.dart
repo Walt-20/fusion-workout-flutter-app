@@ -304,12 +304,16 @@ class FirebaseAuthService {
         .collection('meals')
         .doc(dateString);
 
+    debugPrint("${food.toString()}");
+
     try {
       Map<String, dynamic> foodData = {};
 
       food.forEach((mealType, foodList) {
-        foodData[mealType] =
-            foodList.map((foodItem) => foodItem.foodId).toList();
+        foodData[mealType] = foodList.map((foodItem) {
+          foodItem.parseNutritionalValues();
+          return foodItem.toJson();
+        }).toList();
       });
 
       await userMealsCollection.set(foodData, SetOptions(merge: true));
@@ -318,27 +322,39 @@ class FirebaseAuthService {
     }
   }
 
-  void fetchFoodIdFromFirestore(String date) async {
+  Future<Map<String, List<Food>>> fetchFoodIdFromFirestore(
+      DateTime date) async {
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
     final userMealsCollection = FirebaseFirestore.instance
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('meals')
-        .doc(date);
+        .doc(dateString);
 
+    Map<String, List<Food>> retFoods = {};
     try {
       DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
 
       if (mealDocSnapshot.exists) {
+        debugPrint("there exists a mealDocSnapshot ");
         Map<String, dynamic> data =
             mealDocSnapshot.data() as Map<String, dynamic>;
 
-        List<dynamic> meals = data['meals'];
+        debugPrint("the data within firebase is ${data.toString()}");
 
-        for (var meal in meals) {
-          String foodId = meal['foodId'];
-          int servings = meal['servings'];
+        for (var entry in data.entries) {
+          String mealType = entry.key;
+          List<dynamic> mealIdList = entry.value;
 
-          await fetchFoodIdFromAPI(foodId);
+          List<Food> foods = [];
+
+          for (var id in mealIdList) {
+            String foodId = id as String;
+
+            debugPrint("the food id is $foodId");
+
+            final food = await fetchFoodIdFromAPI(foodId);
+          }
         }
       } else {
         // Handle the case where the document does not exist
@@ -346,6 +362,8 @@ class FirebaseAuthService {
     } catch (e) {
       // Handle any errors that occur during the fetch
     }
+
+    return retFoods;
   }
 
   void removeMealFromFirestore(Food meal, String date) async {
@@ -398,6 +416,7 @@ class FirebaseAuthService {
           await http.get(Uri.parse('$url?searchExpression=$foodId'));
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        debugPrint("the json data is $jsonData");
       }
     } catch (e) {}
   }

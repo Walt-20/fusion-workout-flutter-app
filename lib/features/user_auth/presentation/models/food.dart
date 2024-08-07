@@ -64,7 +64,7 @@ class Food {
   }
 
   // Method to convert Food object to map
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'food_id': foodId,
       'food_name': foodName,
