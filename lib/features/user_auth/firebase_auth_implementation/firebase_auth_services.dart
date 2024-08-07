@@ -322,8 +322,7 @@ class FirebaseAuthService {
     }
   }
 
-  Future<Map<String, List<Food>>> fetchFoodIdFromFirestore(
-      DateTime date) async {
+  Future<Map<String, List<Food>>> fetchFoodFromFirestore(DateTime date) async {
     String dateString = DateFormat('yyyy-MM-dd').format(date);
     final userMealsCollection = FirebaseFirestore.instance
         .collection('Users')
@@ -342,27 +341,20 @@ class FirebaseAuthService {
 
         debugPrint("the data within firebase is ${data.toString()}");
 
-        for (var entry in data.entries) {
-          String mealType = entry.key;
-          List<dynamic> mealIdList = entry.value;
+        data.forEach((mealType, foodList) {
+          List<Food> foods = (foodList as List<dynamic>).map((foodItem) {
+            return Food.fromJson(foodItem as Map<String, dynamic>);
+          }).toList();
+          retFoods[mealType] = foods;
+        });
 
-          List<Food> foods = [];
-
-          for (var id in mealIdList) {
-            String foodId = id as String;
-
-            debugPrint("the food id is $foodId");
-
-            final food = await fetchFoodIdFromAPI(foodId);
-          }
-        }
+        debugPrint(retFoods.toString());
       } else {
         // Handle the case where the document does not exist
       }
     } catch (e) {
-      // Handle any errors that occur during the fetch
+      debugPrint("error $e");
     }
-
     return retFoods;
   }
 

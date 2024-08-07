@@ -62,7 +62,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   void initState() {
     // TODO: implement initState
     debugPrint("search food page is initialized");
-    // _fetchFoodFromDatabase();
+    _fetchFoodFromDatabase();
   }
 
   @override
@@ -78,9 +78,9 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   Future<void> _fetchFoodFromDatabase() async {
     debugPrint("fetch food from database within search food page");
     _selectedFoodsByMeal =
-        await _auth.fetchFoodIdFromFirestore(widget.selectedDate);
+        await _auth.fetchFoodFromFirestore(widget.selectedDate);
 
-    _selectedFoodsByMeal = {};
+    setState(() {});
   }
 
   @override
@@ -166,6 +166,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                 // Hide keyboard and close the search bar
                                 FocusScope.of(context).unfocus();
                                 _searchController.clear(); // Clear search field
+                                controller.closeView(null);
                               },
                             );
                           },
