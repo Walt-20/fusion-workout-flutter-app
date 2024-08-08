@@ -37,7 +37,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Current servings: ${meal.servings}'),
+              // Text('Current servings: ${meal.servings}'),
               SizedBox(height: 12),
               TextField(
                 keyboardType: TextInputType.number,

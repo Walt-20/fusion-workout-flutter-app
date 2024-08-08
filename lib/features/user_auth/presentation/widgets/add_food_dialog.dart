@@ -141,7 +141,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
                   key: Key('AddFoodButton'),
                   child: const Text('Add'),
                   onPressed: () {
-                    _addToMeal(food, _multiplier);
+                    // _addToMeal(food, _multiplier);
                   },
                 ),
               ],
@@ -152,45 +152,45 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
     );
   }
 
-  void _addToMeal(dynamic food, int multiplier) {
-    Food foodData = Food.fromMap(food);
-    foodData.parseNutritionalValues();
+  // void _addToMeal(dynamic food, int multiplier) {
+  //   Food foodData = Food.fromMap(food);
+  //   foodData.parseNutritionalValues();
 
-    double updatedTotalProtein;
-    double updatedTotalCarbs;
-    double updatedTotalFats;
-    double updatedTotalCalories;
-    Food updatedFood = foodData;
+  //   double updatedTotalProtein;
+  //   double updatedTotalCarbs;
+  //   double updatedTotalFats;
+  //   double updatedTotalCalories;
+  //   Food updatedFood = foodData;
 
-    switch (widget.mealType) {
-      case MealType.breakfast:
-        updatedTotalCalories = foodData.calories * multiplier;
-        updatedTotalProtein = foodData.protein * multiplier;
-        updatedTotalCarbs = foodData.carbs * multiplier;
-        updatedTotalFats = foodData.fats * multiplier;
-        break;
-      case MealType.lunch:
-        updatedTotalCalories = foodData.calories * multiplier;
-        updatedTotalProtein = foodData.protein * multiplier;
-        updatedTotalCarbs = foodData.carbs * multiplier;
-        updatedTotalFats = foodData.fats * multiplier;
-        break;
-      case MealType.dinner:
-        updatedTotalCalories = foodData.calories * multiplier;
-        updatedTotalProtein = foodData.protein * multiplier;
-        updatedTotalCarbs = foodData.carbs * multiplier;
-        updatedTotalFats = foodData.fats * multiplier;
-        break;
-      default:
-        debugPrint("Error: Invalid meal type");
-        return;
-    }
+  //   switch (widget.mealType) {
+  //     case MealType.breakfast:
+  //       updatedTotalCalories = foodData.calories * multiplier;
+  //       updatedTotalProtein = foodData.protein * multiplier;
+  //       updatedTotalCarbs = foodData.carbs * multiplier;
+  //       updatedTotalFats = foodData.fats * multiplier;
+  //       break;
+  //     case MealType.lunch:
+  //       updatedTotalCalories = foodData.calories * multiplier;
+  //       updatedTotalProtein = foodData.protein * multiplier;
+  //       updatedTotalCarbs = foodData.carbs * multiplier;
+  //       updatedTotalFats = foodData.fats * multiplier;
+  //       break;
+  //     case MealType.dinner:
+  //       updatedTotalCalories = foodData.calories * multiplier;
+  //       updatedTotalProtein = foodData.protein * multiplier;
+  //       updatedTotalCarbs = foodData.carbs * multiplier;
+  //       updatedTotalFats = foodData.fats * multiplier;
+  //       break;
+  //     default:
+  //       debugPrint("Error: Invalid meal type");
+  //       return;
+  //   }
 
-    updatedFood.servings = multiplier;
+  //   updatedFood.servings = multiplier;
 
-    widget.updateNutritionalValues(updatedTotalCalories, updatedTotalProtein,
-        updatedTotalCarbs, updatedTotalFats, updatedFood, multiplier);
+  //   widget.updateNutritionalValues(updatedTotalCalories, updatedTotalProtein,
+  //       updatedTotalCarbs, updatedTotalFats, updatedFood, multiplier);
 
-    Navigator.of(context).pop();
-  }
+  //   Navigator.of(context).pop();
+  // }
 }

@@ -1,97 +1,120 @@
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
+
+// class Food {
+//   String foodId;
+//   String foodName;
+//   String foodType;
+//   dynamic foodSubCategories;
+//   String foodUrl;
+//   dynamic servings;
+//   String day;
+//   Food({
+//     required this.foodId,
+//     required this.foodName,
+//     required this.foodType,
+//     required this.foodSubCategories,
+//     required this.foodUrl,
+//     required this.servings,
+//     String? day,
+//   }) : this.day = day ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+//   factory Food.fromJson(Map<String, dynamic> json) {
+//     return Food(
+//       foodId: json['food_id'],
+//       foodName: json['food_name'],
+//       foodType: json['food_type'],
+//       foodSubCategories: json['food_sub_categoires'],
+//       foodUrl: json['food_url'],
+//       servings: json['servings'],
+//     );
+//   }
+
+//   // Private method to extract numeric value from nutritional value string
+//   double _extractNutrientValue(String valueString, String nutrientName) {
+//     String nutrientValueString =
+//         valueString.split(": ")[1].replaceAll(RegExp(r'[a-zA-Z]'), '');
+//     return double.parse(nutrientValueString);
+//   }
+
+//   // Method to convert Food object to map
+//   Map<String, dynamic> toJson() {
+//     return {
+//       'food_id': foodId,
+//       'food_name': foodName,
+//       'food_type': foodType,
+//       'food_url': foodUrl,
+//       'food_sub_categories': foodSubCategories,
+//       'servings': servings,
+//       'food_day': day,
+//     };
+//   }
+
+//   // Method to create Food object from map
+//   factory Food.fromMap(Map<String, dynamic> map) {
+//     return Food(
+//       foodId: map['food_id'],
+//       foodName: map['food_name'],
+//       foodType: map['food_type'],
+//       foodSubCategories: map['food_sub_categories'],
+//       foodUrl: map['food_url'],
+//       servings: map['servings'],
+//       day: map['food_day'],
+//     );
+//   }
+// }
+
+import 'dart:convert';
 
 class Food {
-  String foodId;
-  String foodName;
-  String foodDescription;
-  String foodUrl;
-  double calories;
-  double fats;
-  double carbs;
-  double protein;
-  String day;
-  int servings;
+  final String foodId;
+  final String foodName;
+  final String brandName;
+  final List<Serving> servings;
 
   Food({
     required this.foodId,
     required this.foodName,
-    required this.foodDescription,
-    required this.foodUrl,
-    this.calories = 0.0,
-    this.fats = 0.0,
-    this.carbs = 0.0,
-    this.protein = 0.0,
-    this.servings = 1,
-    String? day,
-  }) : this.day = day ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+    required this.brandName,
+    required this.servings,
+  });
 
+  // Factory method to create a FoodItem from JSON
   factory Food.fromJson(Map<String, dynamic> json) {
     return Food(
       foodId: json['food_id'],
       foodName: json['food_name'],
-      foodDescription: json['food_description'],
-      foodUrl: json['food_url'],
-      calories: 0.0,
-      fats: 0.0,
-      carbs: 0.0,
-      protein: 0.0,
-      servings: 1,
+      brandName: json['brand_name'] ?? '',
+      servings: (json['servings']['serving'] as List)
+          .map((s) => Serving.fromJson(s))
+          .toList(),
     );
   }
 
-  // Method to parse food_description and extract nutritional values
-  void parseNutritionalValues() {
-    // Extract nutritional values from food_description
-    List<String> nutritionalValues = foodDescription.split(" | ");
-    for (String value in nutritionalValues) {
-      if (value.contains("Calories")) {
-        calories = _extractNutrientValue(value, "Calories");
-      } else if (value.contains("Fat")) {
-        fats = _extractNutrientValue(value, "Fat");
-      } else if (value.contains("Carbs")) {
-        carbs = _extractNutrientValue(value, "Carbs");
-      } else if (value.contains("Protein")) {
-        protein = _extractNutrientValue(value, "Protein");
-      }
-    }
-  }
-
-  // Private method to extract numeric value from nutritional value string
-  double _extractNutrientValue(String valueString, String nutrientName) {
-    String nutrientValueString =
-        valueString.split(": ")[1].replaceAll(RegExp(r'[a-zA-Z]'), '');
-    return double.parse(nutrientValueString);
-  }
-
-  // Method to convert Food object to map
+  // Method to convert FoodItem to JSON
   Map<String, dynamic> toJson() {
     return {
       'food_id': foodId,
       'food_name': foodName,
-      'food_description': foodDescription,
-      'food_url': foodUrl,
-      'calories': calories,
-      'fat': fats,
-      'carbs': carbs,
-      'protein': protein,
-      'servings': servings,
-      'food_day': day,
     };
   }
+}
 
-  // Method to create Food object from map
-  factory Food.fromMap(Map<String, dynamic> map) {
-    return Food(
-      foodId: map['food_id'],
-      foodName: map['food_name'],
-      foodDescription: map['food_description'],
-      foodUrl: map['food_url'],
-      day: map['food_day'],
+class Serving {
+  final String serving_id;
+  final String serving_description;
+  final String calories;
+
+  Serving({
+    required this.serving_id,
+    required this.serving_description,
+    required this.calories,
+  });
+
+  factory Serving.fromJson(Map<String, dynamic> json) {
+    return Serving(
+      serving_id: json['serving_id'],
+      serving_description: json['serving_description'],
+      calories: json['calories'],
     );
-  }
-
-  @override
-  String toString() {
-    return '{food_id: $foodId, food_name: $foodName, food_description: $foodDescription, servings: $servings, food_url: $foodUrl}';
   }
 }

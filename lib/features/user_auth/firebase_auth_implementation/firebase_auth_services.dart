@@ -64,7 +64,6 @@ class FirebaseAuthService {
 
   Future<void> addExerciseToFirestore(
       DateTime date, List<Map<String, dynamic>> exercises) async {
-    debugPrint("what is the list of exercises ${exercises.toString()}");
     final dateString = DateFormat('yyyy-MM-dd').format(date);
 
     final docRef = FirebaseFirestore.instance
@@ -89,19 +88,12 @@ class FirebaseAuthService {
 
     final docSnapshot = await docRef.get();
 
-    debugPrint("the doc snapshot is $docSnapshot");
-
     if (docSnapshot.exists) {
-      debugPrint("the docSnapshot does exist");
       List<dynamic> existingExercises = docSnapshot.data()?['exercises'] ?? [];
-
-      debugPrint("existingExercises is ${existingExercises.toString()}");
 
       bool found = false;
       for (var i = 0; i < existingExercises.length; i++) {
         if (existingExercises[i]['id'] == exercise['id']) {
-          debugPrint("exercise is ${exercise['id']}");
-          debugPrint("exercise completed is ${exercise['completed']}");
           existingExercises[i] = exercise;
           found = true;
           break;
@@ -188,7 +180,6 @@ class FirebaseAuthService {
   }
 
   Future<void> removeExerciseFromFirebase(DateTime date, String uid) async {
-    debugPrint("should be in removeExerciseFromFirebase menu");
     String userUid = FirebaseAuth.instance.currentUser!.uid;
     String dateString = DateFormat('yyyy-MM-dd').format(date);
     final firestore = FirebaseFirestore.instance;
@@ -199,8 +190,6 @@ class FirebaseAuthService {
         .doc(userUid)
         .collection('exercises')
         .doc(dateString);
-
-    debugPrint("the doc ref is $docRef");
 
     try {
       // Get the document
@@ -233,9 +222,7 @@ class FirebaseAuthService {
 
       if (querySnapshot.exists) {
         var data = querySnapshot.data();
-        debugPrint("whats that data! it's $data");
         if (data != null && data is Map<String, dynamic>) {
-          debugPrint("these are the data you are looking for");
           List<Map<String, dynamic>> exerciseList =
               (data['exercises'] as List<dynamic>).map((entry) {
             return entry as Map<String, dynamic>;
@@ -304,15 +291,13 @@ class FirebaseAuthService {
         .collection('meals')
         .doc(dateString);
 
-    debugPrint("${food.toString()}");
-
     try {
       Map<String, dynamic> foodData = {};
 
       food.forEach((mealType, foodList) {
         foodData[mealType] = foodList.map((foodItem) {
-          foodItem.parseNutritionalValues();
-          return foodItem.toJson();
+          // foodItem.parseNutritionalValues();
+          return foodItem;
         }).toList();
       });
 
@@ -335,11 +320,8 @@ class FirebaseAuthService {
       DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
 
       if (mealDocSnapshot.exists) {
-        debugPrint("there exists a mealDocSnapshot ");
         Map<String, dynamic> data =
             mealDocSnapshot.data() as Map<String, dynamic>;
-
-        debugPrint("the data within firebase is ${data.toString()}");
 
         data.forEach((mealType, foodList) {
           List<Food> foods = (foodList as List<dynamic>).map((foodItem) {
@@ -347,8 +329,6 @@ class FirebaseAuthService {
           }).toList();
           retFoods[mealType] = foods;
         });
-
-        debugPrint(retFoods.toString());
       } else {
         // Handle the case where the document does not exist
       }
@@ -358,35 +338,35 @@ class FirebaseAuthService {
     return retFoods;
   }
 
-  void removeMealFromFirestore(Food meal, String date) async {
-    final userMealsCollection = FirebaseFirestore.instance
-        .collection('Users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('meals')
-        .doc(date);
+  // void removeMealFromFirestore(Food meal, String date) async {
+  //   final userMealsCollection = FirebaseFirestore.instance
+  //       .collection('Users')
+  //       .doc(FirebaseAuth.instance.currentUser!.uid)
+  //       .collection('meals')
+  //       .doc(date);
 
-    try {
-      DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
+  //   try {
+  //     DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
 
-      // Explicitly cast the data to Map<String, dynamic>
-      Map<String, dynamic> mealData =
-          mealDocSnapshot.data() as Map<String, dynamic>? ?? {};
+  //     // Explicitly cast the data to Map<String, dynamic>
+  //     Map<String, dynamic> mealData =
+  //         mealDocSnapshot.data() as Map<String, dynamic>? ?? {};
 
-      List<dynamic> mealsList = mealData['meals'] ?? [];
+  //     List<dynamic> mealsList = mealData['meals'] ?? [];
 
-      // Assuming `foodId` is a property of `Food` and accessible in this context
-      mealsList
-          .removeWhere((dynamic mealItem) => mealItem['foodId'] == meal.foodId);
+  //     // Assuming `foodId` is a property of `Food` and accessible in this context
+  //     mealsList
+  //         .removeWhere((dynamic mealItem) => mealItem['foodId'] == meal.foodId);
 
-      if (mealsList.isEmpty) {
-        await userMealsCollection.delete();
-      } else {
-        await userMealsCollection.update({'meals': mealsList});
-      }
-    } catch (e) {
-      // Consider handling the exception or logging it for debugging purposes
-    }
-  }
+  //     if (mealsList.isEmpty) {
+  //       await userMealsCollection.delete();
+  //     } else {
+  //       await userMealsCollection.update({'meals': mealsList});
+  //     }
+  //   } catch (e) {
+  //     // Consider handling the exception or logging it for debugging purposes
+  //   }
+  // }
 
   void signOut(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
