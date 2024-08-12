@@ -27,6 +27,27 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            //           Widget build(BuildContext context) {
+            //   return DropdownMenu<String>(
+            //     initialSelection: list.first,
+            //     onSelected: (String? value) {
+            //       // This is called when the user selects an item.
+            //       setState(() {
+            //         dropdownValue = value!;
+            //       });
+            //     },
+            //     dropdownMenuEntries: list.map<DropdownMenuEntry<String>>((String value) {
+            //       return DropdownMenuEntry<String>(value: value, label: value);
+            //     }).toList(),
+            //   );
+            // }
+            DropdownMenu(
+              dropdownMenuEntries: widget.food.servings
+                  .map<DropdownMenuEntry<String>>((Serving value) {
+                return DropdownMenuEntry<String>(
+                    value: value.serving_id, label: value.serving_description);
+              }).toList(),
+            ),
             TextField(
               controller: _servingsController,
               decoration:

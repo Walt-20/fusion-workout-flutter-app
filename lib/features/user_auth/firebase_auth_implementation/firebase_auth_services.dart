@@ -294,12 +294,17 @@ class FirebaseAuthService {
     try {
       Map<String, dynamic> foodData = {};
 
+      debugPrint("food is ${food.toString()}");
+
       food.forEach((mealType, foodList) {
         foodData[mealType] = foodList.map((foodItem) {
           // foodItem.parseNutritionalValues();
+          debugPrint("what is foodItem? ${foodItem.foodId}");
           return foodItem;
         }).toList();
       });
+
+      debugPrint("What is foodData? ${foodData.toString()}");
 
       await userMealsCollection.set(foodData, SetOptions(merge: true));
     } catch (e) {

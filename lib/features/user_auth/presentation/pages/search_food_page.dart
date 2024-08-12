@@ -65,6 +65,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   }
 
   Future<void> _addFoodMapToDatabase(Map<String, List<Food>> food) async {
+    debugPrint("adding food to database");
     await _auth.addFoodToDatabase(food, widget.selectedDate);
   }
 
@@ -190,17 +191,16 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                             IconButton(
                               icon: const Icon(Icons.edit),
                               onPressed: () async {
-                                // final result = await showDialog<Food>(
-                                //   context: context,
-                                //   builder: (BuildContext context) {
-                                //     return FoodDetailsDialog(
-                                //         food: foodList[index]);
-                                //   },
-                                // );
-                                // if (result != null) {
-                                //   await _updateSelectedFoodInDatabase(
-                                //       result, _selectedMeal);
-                                // }
+                                final result = await showDialog<Food>(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    debugPrint(
+                                        "what is ${foodList[index].foodId}");
+                                    return FoodDetailsDialog(
+                                        food: foodList[index]);
+                                  },
+                                );
+                                if (result != null) {}
                               },
                             ),
                             IconButton(
@@ -271,10 +271,14 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                               _selectedFoodsByMeal[
                                                       _selectedMeal]!
                                                   .add(food);
+                                              _addFoodMapToDatabase(
+                                                  _selectedFoodsByMeal);
                                             } else {
                                               _selectedFoodsByMeal[
                                                       _selectedMeal]!
                                                   .remove(food);
+                                              _addFoodMapToDatabase(
+                                                  _selectedFoodsByMeal);
                                             }
                                             _showFloatingMessage(context);
                                           });
@@ -289,10 +293,10 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                         setState(() {
                                           _selectedFoodsByMeal[_selectedMeal]!
                                               .add(food);
+                                          _addFoodMapToDatabase(
+                                              _selectedFoodsByMeal);
+                                          controller.closeView(null);
                                         });
-                                        _addFoodMapToDatabase(
-                                            _selectedFoodsByMeal);
-                                        controller.closeView(null);
                                       },
                                     );
                                   },
