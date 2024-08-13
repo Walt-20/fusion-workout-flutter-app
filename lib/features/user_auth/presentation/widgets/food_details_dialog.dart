@@ -12,11 +12,14 @@ class FoodDetailsDialog extends StatefulWidget {
 
 class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
   final TextEditingController _servingsController = TextEditingController();
+  String? _selectedServingId;
 
   @override
   void initState() {
     super.initState();
-    // _servingsController.text = widget.food.servings.toString();
+    if (widget.food.servings.isNotEmpty) {
+      _selectedServingId = widget.food.servings.first.serving_id;
+    }
   }
 
   @override
@@ -27,32 +30,28 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            //           Widget build(BuildContext context) {
-            //   return DropdownMenu<String>(
-            //     initialSelection: list.first,
-            //     onSelected: (String? value) {
-            //       // This is called when the user selects an item.
-            //       setState(() {
-            //         dropdownValue = value!;
-            //       });
-            //     },
-            //     dropdownMenuEntries: list.map<DropdownMenuEntry<String>>((String value) {
-            //       return DropdownMenuEntry<String>(value: value, label: value);
-            //     }).toList(),
-            //   );
-            // }
-            DropdownMenu(
-              dropdownMenuEntries: widget.food.servings
-                  .map<DropdownMenuEntry<String>>((Serving value) {
-                return DropdownMenuEntry<String>(
-                    value: value.serving_id, label: value.serving_description);
+            DropdownButton<String>(
+              items: widget.food.servings
+                  .map<DropdownMenuItem<String>>((Serving value) {
+                debugPrint('Serving ID: ${value.serving_id}');
+                return DropdownMenuItem<String>(
+                  value: value.serving_id,
+                  child: Text(value.serving_description),
+                );
               }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedServingId = newValue;
+                });
+              },
+              value: _selectedServingId,
+              hint: const Text('Select a serving'),
             ),
             TextField(
               controller: _servingsController,
               decoration:
                   const InputDecoration(labelText: 'Number of Servings'),
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.text,
             ),
           ],
         ),
@@ -66,12 +65,14 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            setState(() {
-              // widget.food.servings = int.parse(_servingsController.text);
-              // debugPrint("${widget.food.servings}");
-              debugPrint("${widget.food.foodName}");
-            });
-            Navigator.of(context).pop(widget.food);
+            if (_selectedServingId != null) {
+              final servings = _servingsController.text ?? "1";
+              Navigator.of(context).pop({
+                'food': widget.food,
+                'servingId': _selectedServingId,
+                'numberOfServings': servings,
+              });
+            }
           },
           child: const Text('Save'),
         ),

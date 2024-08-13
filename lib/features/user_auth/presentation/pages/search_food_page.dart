@@ -89,14 +89,27 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     setState(() {});
   }
 
-  void _updateSelectedFood(Food food, bool isAdding) {
+  void _updateSelectedFood(
+      Food food, String servingId, String numberOfServings) {
+    _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
+      foodId: food.foodId,
+      servingId: servingId,
+      numberOfServings: numberOfServings,
+    ));
+  }
+
+  void _addOrRemoveSelectedFood(
+      Food food, String servingId, String numberOfServings, bool isAdding) {
     setState(() {
       if (isAdding) {
         _selectedFoodsByMeal[_selectedMeal]!.add(food);
         _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
           foodId: food.foodId,
-          servingId: food.servings.first.serving_id,
+          servingId: servingId,
+          numberOfServings: numberOfServings ?? "1",
         ));
+        debugPrint(
+            "what is _selectedFoodForDatabase now? ${_selectedFoodForDatabase['numberOfServings']}");
       } else {
         _selectedFoodsByMeal[_selectedMeal]!.remove(food);
         _selectedFoodForDatabase[_selectedMeal]!.removeWhere(
@@ -221,7 +234,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                             IconButton(
                               icon: const Icon(Icons.edit),
                               onPressed: () async {
-                                final result = await showDialog<Food>(
+                                final result =
+                                    await showDialog<Map<String, dynamic>>(
                                   context: context,
                                   builder: (BuildContext context) {
                                     return FoodDetailsDialog(
@@ -229,7 +243,16 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                   },
                                 );
                                 if (result != null) {
-                                  _updateSelectedFood(result, true);
+                                  final food = result['food'] as Food;
+                                  final servingId =
+                                      result['servingId'] as String;
+                                  debugPrint(
+                                      "what is the servingId? $servingId");
+                                  final numberOfServings =
+                                      result['numberOfServings'] as String;
+                                  _updateSelectedFood(
+                                      food, servingId, numberOfServings);
+                                  _addFoodMapToDatabase();
                                 }
                               },
                             ),
@@ -237,9 +260,11 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                               icon: const Icon(Icons.remove_circle_outline),
                               onPressed: () {
                                 setState(() {
-                                  _updateSelectedFood(
+                                  _addOrRemoveSelectedFood(
                                       _selectedFoodsByMeal[_selectedMeal]![
                                           index],
+                                      '',
+                                      "0",
                                       false);
                                 });
                               },
@@ -299,11 +324,13 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                             isChecked = value!;
 
                                             if (isChecked) {
-                                              _updateSelectedFood(food, true);
+                                              _addOrRemoveSelectedFood(
+                                                  food, '', "0", true);
                                               _addFoodMapToDatabase();
                                               setState(() {});
                                             } else {
-                                              _updateSelectedFood(food, false);
+                                              _addOrRemoveSelectedFood(
+                                                  food, '', "0", false);
                                             }
                                             _showFloatingMessage(context);
                                           });
