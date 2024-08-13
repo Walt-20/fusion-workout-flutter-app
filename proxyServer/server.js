@@ -198,8 +198,65 @@ app.get('/search-food-3', (req, res) => {
       }
       
     });
+  }
+});
+
+app.get('/fetch-food-id', (req, res) => {
+  const useMockData = false;
+
+  if (useMockData) {
+    res.json(mockData);
+  } else {
+
+    // check that token is available and not expired
+    if (!fatApiAccessToken || !fatApiTokenExpiration || fatApiTokenExpiration < Date.now()) {
+      console.log(`Token expiration is ${fatApiTokenExpiration}`);
+      return res.status(401).json({ error: 'Access token expired' });
     }
-  });
+    
+    // Construct the request to FatSecret API
+    const baseURL = 'https://platform.fatsecret.com/rest/server.api';
+    const searchExpression = req.query.searchExpression;
+    const format = req.query.format || 'json';
+
+    console.log(`what is the searchExpression? ${searchExpression}`)
+  
+    const options = {
+      method: 'GET',
+      url: baseURL,
+      headers: {
+        'Authorization': `Bearer ${fatApiAccessToken}`,
+        'Content-Type': 'application/json'
+      },
+      qs: {
+        method: 'food.get.v4',
+        food_id: searchExpression || '',
+        format: format,
+      }
+    };
+  
+    request(options, function(error, response, body) {
+      if (error) {
+        console.error('Error fetching food:', error);
+        return res.status(500).json({ error: 'Failed to fetch Food' });
+      }
+  
+      try {
+        const parsedBody = JSON.parse(body);
+
+        if (parsedBody.food) {
+          res.json(parsedBody);
+        } else {
+          console.error('No food data in response:', parsedBody);
+        }
+      } catch (error) {
+        console.error('Error parsing JSON response:', error);
+        res.status(500).json({ error: 'Error parsing JSON response' });
+      }
+      
+    });
+  }
+});
   
 
 

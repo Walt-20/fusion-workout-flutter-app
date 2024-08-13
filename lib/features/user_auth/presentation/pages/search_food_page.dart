@@ -68,7 +68,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   void initState() {
     // TODO: implement initState
     debugPrint("search food page is initialized");
-    // _fetchFoodFromDatabase();
+    _fetchFoodFromDatabase();
   }
 
   Future<void> _addFoodMapToDatabase() async {

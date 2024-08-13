@@ -371,7 +371,12 @@ class FirebaseAuthService {
         .collection('meals')
         .doc(dateString);
 
-    Map<String, List<Food>> retFoods = {};
+    Map<String, List<Food>> retFoods = {
+      'Breakfast': [],
+      'Lunch': [],
+      'Dinner': [],
+      'Snacks': [],
+    };
     try {
       DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
 
@@ -379,14 +384,27 @@ class FirebaseAuthService {
         Map<String, dynamic> data =
             mealDocSnapshot.data() as Map<String, dynamic>;
 
+        final futures = <Future<void>>[];
         data.forEach((mealType, foodList) {
-          List<Food> foods = (foodList as List<dynamic>).map((foodItem) {
-            return Food.fromJson(foodItem as Map<String, dynamic>);
-          }).toList();
-          retFoods[mealType] = foods;
+          for (var food in foodList) {
+            final foodId = food['foodId'];
+            debugPrint("whats that id? $foodId");
+            futures.add(
+              fetchFoods(foodId).then((foodDetails) {
+                final food = Food.fromJson(foodDetails);
+                if (retFoods.containsKey(mealType)) {
+                  retFoods[mealType]!.add(food);
+                }
+              }).catchError((error) {
+                debugPrint("Error fetching food details: $error");
+              }),
+            );
+          }
         });
+
+        await Future.wait(futures);
       } else {
-        // Handle the case where the document does not exist
+        debugPrint("Document does not exists");
       }
     } catch (e) {
       debugPrint("error $e");
@@ -394,35 +412,34 @@ class FirebaseAuthService {
     return retFoods;
   }
 
-  // void removeMealFromFirestore(Food meal, String date) async {
-  //   final userMealsCollection = FirebaseFirestore.instance
-  //       .collection('Users')
-  //       .doc(FirebaseAuth.instance.currentUser!.uid)
-  //       .collection('meals')
-  //       .doc(date);
+  Future<Map<String, dynamic>> fetchFoods(String foodId) async {
+    final url = Uri.parse('http://10.0.2.2:3000/fetch-food-id');
 
-  //   try {
-  //     DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
+    try {
+      final response = await http.get(
+        Uri.parse('$url?searchExpression=$foodId'),
+      );
 
-  //     // Explicitly cast the data to Map<String, dynamic>
-  //     Map<String, dynamic> mealData =
-  //         mealDocSnapshot.data() as Map<String, dynamic>? ?? {};
+      debugPrint("whats that response? $response");
 
-  //     List<dynamic> mealsList = mealData['meals'] ?? [];
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
 
-  //     // Assuming `foodId` is a property of `Food` and accessible in this context
-  //     mealsList
-  //         .removeWhere((dynamic mealItem) => mealItem['foodId'] == meal.foodId);
+        debugPrint("the decoded json is ${responseBody}");
 
-  //     if (mealsList.isEmpty) {
-  //       await userMealsCollection.delete();
-  //     } else {
-  //       await userMealsCollection.update({'meals': mealsList});
-  //     }
-  //   } catch (e) {
-  //     // Consider handling the exception or logging it for debugging purposes
-  //   }
-  // }
+        if (responseBody.containsKey('food')) {
+          return responseBody['food'] as Map<String, dynamic>;
+        } else {
+          throw Exception('Unexpected API response format');
+        }
+      } else {
+        debugPrint("Error fetching food details: ${response.statusCode}");
+        throw Exception('Failed to load foods');
+      }
+    } catch (e) {
+      throw Exception('OAuth Token has expired. Signout and log back in. $e');
+    }
+  }
 
   void signOut(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
