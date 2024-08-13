@@ -7,6 +7,7 @@ import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dar
 import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -282,8 +283,9 @@ class FirebaseAuthService {
   }
 
   // user can add food
+  // user can add food
   Future<void> addFoodToDatabase(
-      Map<String, List<Food>> food, DateTime date) async {
+      Map<String, List<FoodForDatabase>> food, DateTime date) async {
     String dateString = DateFormat('yyyy-MM-dd').format(date);
     final userMealsCollection = FirebaseFirestore.instance
         .collection('Users')
@@ -292,23 +294,44 @@ class FirebaseAuthService {
         .doc(dateString);
 
     try {
+      final existingDataSnapshot = await userMealsCollection.get();
+      Map<String, dynamic> existingData = existingDataSnapshot.data() ?? {};
+
       Map<String, dynamic> foodData = {};
 
       debugPrint("food is ${food.toString()}");
 
       food.forEach((mealType, foodList) {
-        foodData[mealType] = foodList.map((foodItem) {
-          // foodItem.parseNutritionalValues();
-          debugPrint("what is foodItem? ${foodItem.foodId}");
-          return foodItem;
+        // Initialize meal type if it doesn't exist
+        List<Map<String, dynamic>> existingFoodList =
+            existingData[mealType]?.cast<Map<String, dynamic>>() ?? [];
+        List<Map<String, dynamic>> newFoodList = foodList.map((foodItem) {
+          final foodItemMap = foodItem.toMap();
+          return foodItemMap;
         }).toList();
+
+        // Merge existing and new food items
+        newFoodList.forEach((newFoodItem) {
+          int index = existingFoodList.indexWhere((existingFoodItem) =>
+              existingFoodItem['foodId'] == newFoodItem['foodId']);
+          if (index != -1) {
+            // Update existing food item
+            existingFoodList[index] = newFoodItem;
+          } else {
+            // Add new food item
+            existingFoodList.add(newFoodItem);
+          }
+        });
+
+        foodData[mealType] = existingFoodList;
       });
 
       debugPrint("What is foodData? ${foodData.toString()}");
 
+      // Set the new structure in Firestore if it doesn't exist
       await userMealsCollection.set(foodData, SetOptions(merge: true));
     } catch (e) {
-      debugPrint("error $e");
+      debugPrint("Error adding food to database: $e");
     }
   }
 

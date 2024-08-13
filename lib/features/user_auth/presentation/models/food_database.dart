@@ -13,4 +13,11 @@ class FoodForDatabase {
       servingId: servingId,
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'foodId': foodId,
+      'servingId': servingId,
+    };
+  }
 }

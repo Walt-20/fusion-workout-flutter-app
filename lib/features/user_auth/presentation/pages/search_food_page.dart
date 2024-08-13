@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/floating_message.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/food_details_dialog.dart';
 import 'package:http/http.dart' as http;
@@ -55,6 +56,12 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     'Dinner': [],
     'Snacks': [],
   };
+  Map<String, List<FoodForDatabase>> _selectedFoodForDatabase = {
+    'Breakfast': [],
+    'Lunch': [],
+    'Dinner': [],
+    'Snacks': [],
+  };
   FirebaseAuthService _auth = FirebaseAuthService();
 
   @override
@@ -64,9 +71,10 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     // _fetchFoodFromDatabase();
   }
 
-  Future<void> _addFoodMapToDatabase(Map<String, List<Food>> food) async {
+  Future<void> _addFoodMapToDatabase() async {
     debugPrint("adding food to database");
-    await _auth.addFoodToDatabase(food, widget.selectedDate);
+    await _auth.addFoodToDatabase(
+        _selectedFoodForDatabase, widget.selectedDate);
   }
 
   Future<void> _fetchFoodFromDatabase() async {
@@ -210,7 +218,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                   _selectedFoodsByMeal[_selectedMeal]!.remove(
                                       _selectedFoodsByMeal[_selectedMeal]![
                                           index]);
-                                  _addFoodMapToDatabase(_selectedFoodsByMeal);
+                                  // _addFoodMapToDatabase(_selectedFoodsByMeal);
                                 });
                               },
                             ),
@@ -267,18 +275,26 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                         onChanged: (bool? value) {
                                           setState(() {
                                             isChecked = value!;
+                                            FoodForDatabase
+                                                foodForDatabaseObject =
+                                                FoodForDatabase(
+                                                    foodId: food.foodId,
+                                                    servingId: food.servings
+                                                        .first.serving_id);
                                             if (isChecked) {
                                               _selectedFoodsByMeal[
                                                       _selectedMeal]!
                                                   .add(food);
-                                              _addFoodMapToDatabase(
-                                                  _selectedFoodsByMeal);
+                                              _selectedFoodForDatabase[
+                                                      _selectedMeal]!
+                                                  .add(foodForDatabaseObject);
+                                              _addFoodMapToDatabase();
                                             } else {
                                               _selectedFoodsByMeal[
                                                       _selectedMeal]!
                                                   .remove(food);
-                                              _addFoodMapToDatabase(
-                                                  _selectedFoodsByMeal);
+                                              // _addFoodMapToDatabase(
+                                              //     _selectedFoodsByMeal);
                                             }
                                             _showFloatingMessage(context);
                                           });
@@ -293,8 +309,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                         setState(() {
                                           _selectedFoodsByMeal[_selectedMeal]!
                                               .add(food);
-                                          _addFoodMapToDatabase(
-                                              _selectedFoodsByMeal);
+                                          // _addFoodMapToDatabase(
+                                          //     _selectedFoodsByMeal);
                                           controller.closeView(null);
                                         });
                                       },
