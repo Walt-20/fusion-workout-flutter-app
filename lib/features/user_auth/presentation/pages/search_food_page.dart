@@ -77,6 +77,10 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
         _selectedFoodForDatabase, widget.selectedDate);
   }
 
+  Future<void> _removeFoodFromDatabase(mealType, foodId, date) async {
+    await _auth.removeFoodFromDatabase(mealType, foodId, date);
+  }
+
   Future<void> _fetchFoodFromDatabase() async {
     debugPrint("fetch food from database within search food page");
     _selectedFoodsByMeal =
@@ -278,9 +282,11 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                             FoodForDatabase
                                                 foodForDatabaseObject =
                                                 FoodForDatabase(
-                                                    foodId: food.foodId,
-                                                    servingId: food.servings
-                                                        .first.serving_id);
+                                              foodId: food.foodId,
+                                              servingId: food
+                                                  .servings.first.serving_id,
+                                            );
+
                                             if (isChecked) {
                                               _selectedFoodsByMeal[
                                                       _selectedMeal]!
@@ -293,8 +299,16 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                               _selectedFoodsByMeal[
                                                       _selectedMeal]!
                                                   .remove(food);
-                                              // _addFoodMapToDatabase(
-                                              //     _selectedFoodsByMeal);
+                                              _selectedFoodForDatabase[
+                                                      _selectedMeal]!
+                                                  .removeWhere((item) =>
+                                                      item.foodId ==
+                                                      foodForDatabaseObject
+                                                          .foodId);
+                                              _removeFoodFromDatabase(
+                                                  _selectedMeal,
+                                                  foodForDatabaseObject.foodId,
+                                                  DateTime.now());
                                             }
                                             _showFloatingMessage(context);
                                           });
@@ -304,7 +318,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                       ),
                                       title: Text(food.foodName + brandName),
                                       subtitle: Text(
-                                          "${food.servings[0].serving_description} - Calories: ${food.servings[0].calories}kcal"),
+                                        "${food.servings[0].serving_description} - Calories: ${food.servings[0].calories}kcal",
+                                      ),
                                       onTap: () {
                                         setState(() {
                                           _selectedFoodsByMeal[_selectedMeal]!

@@ -283,7 +283,6 @@ class FirebaseAuthService {
   }
 
   // user can add food
-  // user can add food
   Future<void> addFoodToDatabase(
       Map<String, List<FoodForDatabase>> food, DateTime date) async {
     String dateString = DateFormat('yyyy-MM-dd').format(date);
@@ -332,6 +331,35 @@ class FirebaseAuthService {
       await userMealsCollection.set(foodData, SetOptions(merge: true));
     } catch (e) {
       debugPrint("Error adding food to database: $e");
+    }
+  }
+
+  Future<void> removeFoodFromDatabase(
+      String mealType, String foodId, DateTime date) async {
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    final userMealsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals')
+        .doc(dateString);
+
+    try {
+      final existingDataSnapshot = await userMealsCollection.get();
+      Map<String, dynamic> existingData = existingDataSnapshot.data() ?? {};
+
+      if (existingData.containsKey(mealType)) {
+        List<Map<String, dynamic>> foodList =
+            existingData[mealType]?.cast<Map<String, dynamic>>() ?? [];
+
+        // Remove the food item with the specified foodId
+        foodList.removeWhere((foodItem) => foodItem['foodId'] == foodId);
+
+        // Update the Firestore document
+        existingData[mealType] = foodList;
+        await userMealsCollection.set(existingData, SetOptions(merge: true));
+      }
+    } catch (e) {
+      debugPrint("Error removing food from database: $e");
     }
   }
 
