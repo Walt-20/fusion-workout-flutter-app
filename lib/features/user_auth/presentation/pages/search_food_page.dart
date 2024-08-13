@@ -89,6 +89,24 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     setState(() {});
   }
 
+  void _updateSelectedFood(Food food, bool isAdding) {
+    setState(() {
+      if (isAdding) {
+        _selectedFoodsByMeal[_selectedMeal]!.add(food);
+        _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
+          foodId: food.foodId,
+          servingId: food.servings.first.serving_id,
+        ));
+      } else {
+        _selectedFoodsByMeal[_selectedMeal]!.remove(food);
+        _selectedFoodForDatabase[_selectedMeal]!.removeWhere(
+          (item) => item.foodId == food.foodId,
+        );
+        _removeFoodFromDatabase(_selectedMeal, food.foodId, DateTime.now());
+      }
+    });
+  }
+
   // Future<void> _updateSelectedFoodInDatabase(
   //     Food result, String mealToUpdate) async {
   //   final meals = await _auth.fetchFoodFromFirestore(widget.selectedDate);
@@ -206,23 +224,23 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                 final result = await showDialog<Food>(
                                   context: context,
                                   builder: (BuildContext context) {
-                                    debugPrint(
-                                        "what is ${foodList[index].foodId}");
                                     return FoodDetailsDialog(
                                         food: foodList[index]);
                                   },
                                 );
-                                if (result != null) {}
+                                if (result != null) {
+                                  _updateSelectedFood(result, true);
+                                }
                               },
                             ),
                             IconButton(
                               icon: const Icon(Icons.remove_circle_outline),
                               onPressed: () {
                                 setState(() {
-                                  _selectedFoodsByMeal[_selectedMeal]!.remove(
+                                  _updateSelectedFood(
                                       _selectedFoodsByMeal[_selectedMeal]![
-                                          index]);
-                                  // _addFoodMapToDatabase(_selectedFoodsByMeal);
+                                          index],
+                                      false);
                                 });
                               },
                             ),
@@ -279,36 +297,13 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                         onChanged: (bool? value) {
                                           setState(() {
                                             isChecked = value!;
-                                            FoodForDatabase
-                                                foodForDatabaseObject =
-                                                FoodForDatabase(
-                                              foodId: food.foodId,
-                                              servingId: food
-                                                  .servings.first.serving_id,
-                                            );
 
                                             if (isChecked) {
-                                              _selectedFoodsByMeal[
-                                                      _selectedMeal]!
-                                                  .add(food);
-                                              _selectedFoodForDatabase[
-                                                      _selectedMeal]!
-                                                  .add(foodForDatabaseObject);
+                                              _updateSelectedFood(food, true);
                                               _addFoodMapToDatabase();
+                                              setState(() {});
                                             } else {
-                                              _selectedFoodsByMeal[
-                                                      _selectedMeal]!
-                                                  .remove(food);
-                                              _selectedFoodForDatabase[
-                                                      _selectedMeal]!
-                                                  .removeWhere((item) =>
-                                                      item.foodId ==
-                                                      foodForDatabaseObject
-                                                          .foodId);
-                                              _removeFoodFromDatabase(
-                                                  _selectedMeal,
-                                                  foodForDatabaseObject.foodId,
-                                                  DateTime.now());
+                                              _updateSelectedFood(food, false);
                                             }
                                             _showFloatingMessage(context);
                                           });
@@ -320,15 +315,6 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                       subtitle: Text(
                                         "${food.servings[0].serving_description} - Calories: ${food.servings[0].calories}kcal",
                                       ),
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedFoodsByMeal[_selectedMeal]!
-                                              .add(food);
-                                          // _addFoodMapToDatabase(
-                                          //     _selectedFoodsByMeal);
-                                          controller.closeView(null);
-                                        });
-                                      },
                                     );
                                   },
                                 );
