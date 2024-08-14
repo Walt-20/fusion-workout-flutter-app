@@ -19,7 +19,8 @@ class Event {
   factory Event.fromMap(Map<String, dynamic> map) {
     return Event(
       name: map['name'],
-      workouts: (map['workouts'] as List).map((w) => Workout.fromMap(w)).toList(),
+      workouts:
+          (map['workouts'] as List).map((w) => Workout.fromMap(w)).toList(),
     );
   }
 }
