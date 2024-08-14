@@ -1,43 +1,22 @@
-name: Android Release
+# Note: In a yml each level is padded by 2 spaces
+name: Flutter
 
-#1
 on:
-  #2
+  # Runs this action when you push on master
   push:
     branches: [ "main" ]
+  # Runs this when a PR against master is created
   pull_request:
     branches: [ "main" ]
-  
-  #3
-  workflow_dispatch:
 
-#4
 jobs:
-  #5
-  build:
-    #6
+  flutter_job:
+
+    # The machine, we can also use windows-latest or ubuntu-latest
+    # We are choosing macos-latest because we will be also building for iOS
     runs-on: ubuntu-latest
 
-    #7
     steps:
-      #8
-      - uses: actions/checkout@v3
-      #9
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: "21.x"
-          cache: 'gradle'
-      #10
-      - uses: subosito/flutter-action@v2
-      with:
-        #11
-        flutter-version: "3.22.3"
-        channel: 'stable'
-        cache: true
-      # 12
-      - name: Get dependencies
-        run: flutter pub get
-      # Runs a set of commands using teh runners shell
-      - name: Start release build
-        run: flutter build appbundle
+
+      # Clones the project on the machine
+      - uses: actions/checkout@v4
