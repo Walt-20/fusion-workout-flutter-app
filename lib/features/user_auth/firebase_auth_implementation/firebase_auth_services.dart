@@ -57,9 +57,36 @@ class FirebaseAuthService {
       'height': entry.height,
       'availability': entry.availability,
     }).then((value) {
-      debugPrint("success");
+      debugPrint("Profile information added successfuly");
     }).catchError((onError) {
       debugPrint(onError.toString());
+    });
+
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('exercises')
+        .doc('initial')
+        .set({
+      'initialized': true,
+    }).then((value) {
+      debugPrint("Exercises collection initialized successfully");
+    }).catchError((onError) {
+      debugPrint(
+          "Error initializing exercises collection: ${onError.toString()}");
+    });
+
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals')
+        .doc('initial')
+        .set({
+      'initialized': true,
+    }).then((value) {
+      debugPrint("Meals collection initialized successfully");
+    }).catchError((onError) {
+      debugPrint("Error initializing meals collection: ${onError.toString()}");
     });
   }
 
