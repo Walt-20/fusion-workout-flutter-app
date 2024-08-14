@@ -5,7 +5,11 @@ import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_con
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/my_button.dart';
-import 'dashboard_page.dart';
+import 'package:fusion_workouts/features/user_auth/provider/tokenprovider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
@@ -19,6 +23,22 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  // Variable to track if the widget is mounted
+  bool _isMounted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isMounted = true;
+  }
+
+  @override
+  void dispose() {
+    _isMounted = false;
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,28 +118,44 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Future<void> fetchOAuthToken() async {
+    // final url = Uri.parse(
+    //     'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/get-token');
+
+    final url = Uri.parse('http://10.0.2.2:3000/get-token');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        debugPrint("fetchOAuthToken ${jsonData['access_token']}");
+        if (mounted) {
+          Provider.of<TokenProvider>(context, listen: false)
+              .updateToken(jsonData['access_token']);
+        }
+      } else {
+        FirebaseAuth.instance.signOut();
+        throw Exception('Failed to fetch OAuth2 token');
+      }
+    } catch (e) {
+      FirebaseAuth.instance.signOut();
+    }
+  }
+
   void _login() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    showDialog(
-      context: context,
-      builder: (context) => Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    if (email.isEmpty || password.isEmpty) {
+      showAlertMessage("Please enter both your email and password");
+      return;
+    }
 
     try {
       await _auth.signInWithEmailAndPassword(email, password);
+      await fetchOAuthToken();
     } on FirebaseAuthException catch (e) {
-      if (mounted) {
-        showAlertMessage(
-            e.code); // Show alert only if the widget is still mounted
-      }
-    } finally {
-      if (mounted) {
-        Navigator.pop(context); // Dismiss the dialog in the finally block
-      }
+      showAlertMessage(e.code);
     }
   }
 
@@ -139,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
     } else if (message == 'network-request-failed') {
       message = 'Network request failed';
     } else {
-      message = 'An error occurred';
+      message = message;
     }
 
     showDialog(
