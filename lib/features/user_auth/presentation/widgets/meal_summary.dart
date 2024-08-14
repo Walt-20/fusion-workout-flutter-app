@@ -14,7 +14,7 @@ class MealSummaryWidget extends StatelessWidget {
   final EdgeInsetsGeometry padding;
 
   const MealSummaryWidget({
-    Key? key,
+    super.key,
     required this.meals,
     required this.mealName,
     required this.totalCalories,
@@ -24,7 +24,7 @@ class MealSummaryWidget extends StatelessWidget {
     required this.onTap,
     required this.onUpdate,
     this.padding = const EdgeInsets.all(8.0),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class MealSummaryWidget extends StatelessWidget {
                     mealName,
                     style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(237, 255, 134, 21),
+                          color: const Color.fromARGB(237, 255, 134, 21),
                         ),
                   ),
                   Row(
@@ -72,8 +72,8 @@ class MealSummaryWidget extends StatelessWidget {
                   )
                 ],
               ),
-              SizedBox(height: 8.0),
-              _buildNutritionalInfo('Calories', '${totalCalories} kcal'),
+              const SizedBox(height: 8.0),
+              _buildNutritionalInfo('Calories', '$totalCalories kcal'),
               _buildNutritionalInfo(
                   'Protein', '${proteinIntake.toStringAsFixed(2)}g'),
               _buildNutritionalInfo(
@@ -92,7 +92,7 @@ class MealSummaryWidget extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),

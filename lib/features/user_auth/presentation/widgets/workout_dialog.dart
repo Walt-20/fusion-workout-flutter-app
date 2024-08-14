@@ -4,9 +4,10 @@ import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.
 class AddWorkoutDialog extends StatefulWidget {
   final String eventName;
 
-  AddWorkoutDialog(this.eventName);
+  const AddWorkoutDialog(this.eventName, {super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _AddWorkoutDialogState createState() => _AddWorkoutDialogState();
 }
 
@@ -15,7 +16,6 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _repetitionsController = TextEditingController();
   final TextEditingController _setsController = TextEditingController();
-  final TextEditingController _workoutNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -25,32 +25,32 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           TextField(
-            key: Key('exerciseNameField'),
+            key: const Key('exerciseNameField'),
             controller: _exerciseController,
-            decoration: InputDecoration(labelText: "Exercise"),
+            decoration: const InputDecoration(labelText: "Exercise"),
           ),
           TextField(
-            key: Key('weightField'),
+            key: const Key('weightField'),
             controller: _weightController,
-            decoration: InputDecoration(labelText: "Weight"),
+            decoration: const InputDecoration(labelText: "Weight"),
             keyboardType: TextInputType.number,
           ),
           Row(
             children: [
               Expanded(
                 child: TextField(
-                  key: Key('repsField'),
+                  key: const Key('repsField'),
                   controller: _repetitionsController,
-                  decoration: InputDecoration(labelText: "Reps"),
+                  decoration: const InputDecoration(labelText: "Reps"),
                   keyboardType: TextInputType.number,
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: TextField(
-                  key: Key('setsField'),
+                  key: const Key('setsField'),
                   controller: _setsController,
-                  decoration: InputDecoration(labelText: "Sets"),
+                  decoration: const InputDecoration(labelText: "Sets"),
                   keyboardType: TextInputType.number,
                 ),
               ),
@@ -60,7 +60,7 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
       ),
       actions: [
         ElevatedButton(
-          key: Key('addWorkoutButton'),
+          key: const Key('addWorkoutButton'),
           onPressed: () {
             final workout = Workout(
               exercise: _exerciseController.text,
@@ -70,7 +70,7 @@ class _AddWorkoutDialogState extends State<AddWorkoutDialog> {
             );
             Navigator.of(context).pop(workout);
           },
-          child: Text("Add Workout"),
+          child: const Text("Add Workout"),
         ),
       ],
     );

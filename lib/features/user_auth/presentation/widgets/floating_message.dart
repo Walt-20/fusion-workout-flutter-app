@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class FloatingMessage extends StatelessWidget {
   final int foodCount;
 
-  const FloatingMessage({Key? key, required this.foodCount}) : super(key: key);
+  const FloatingMessage({super.key, required this.foodCount});
 
   @override
   Widget build(BuildContext context) {
@@ -13,11 +13,11 @@ class FloatingMessage extends StatelessWidget {
       left: 16.0,
       right: 16.0,
       child: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         color: Colors.black.withOpacity(0.7),
         child: Text(
           'Foods added: $foodCount',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
           textAlign: TextAlign.center,
         ),
       ),

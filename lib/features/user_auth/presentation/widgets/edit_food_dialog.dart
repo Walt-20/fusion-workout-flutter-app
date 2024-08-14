@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 
 class EditFoodDialog extends StatefulWidget {
@@ -7,18 +6,17 @@ class EditFoodDialog extends StatefulWidget {
   final Function(List<Food>) onUpdate;
 
   const EditFoodDialog({
-    Key? key,
+    super.key,
     required this.meals,
     required this.onUpdate,
-  }) : super(key: key);
+  });
 
   @override
+  // ignore: library_private_types_in_public_api
   _EditFoodDialogState createState() => _EditFoodDialogState();
 }
 
 class _EditFoodDialogState extends State<EditFoodDialog> {
-  final FirebaseAuthService _auth = FirebaseAuthService();
-
   void _deleteMeal(Food meal) {
     setState(() {
       widget.meals.remove(meal);
@@ -27,8 +25,6 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
   }
 
   void _editMeal(BuildContext context, Food meal) {
-    int servings = 1;
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -38,29 +34,27 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Text('Current servings: ${meal.servings}'),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               TextField(
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'New servings',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: (value) {
-                  servings = 1;
-                },
+                onChanged: (value) {},
               ),
             ],
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Update'),
+              child: const Text('Update'),
               onPressed: () {
                 widget.onUpdate(widget.meals);
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -74,7 +68,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Edit Foods'),
+      title: const Text('Edit Foods'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -88,7 +82,7 @@ class _EditFoodDialogState extends State<EditFoodDialog> {
                     onPressed: () {
                       _deleteMeal(meal);
                     },
-                    icon: Icon(Icons.delete),
+                    icon: const Icon(Icons.delete),
                     color: Colors.red,
                   ),
                   onTap: () {

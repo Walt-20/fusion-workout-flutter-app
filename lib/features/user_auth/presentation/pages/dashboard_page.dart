@@ -19,14 +19,15 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
   final user = FirebaseAuth.instance.currentUser!;
-  FirebaseAuthService _auth = FirebaseAuthService();
+  final FirebaseAuthService _auth = FirebaseAuthService();
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   List<Map<String, dynamic>> exercises = [];
 
   // variables for food
-  Map<String, List<Food>> _selectedFoodsByMeal = {
+  // ignore: unused_field
+  final Map<String, List<Food>> _selectedFoodsByMeal = {
     'Breakfast': [],
     'Lunch': [],
     'Dinner': [],
@@ -363,8 +364,7 @@ class _DashboardPageState extends State<DashboardPage>
                                           ),
                                         ),
                                         Text(
-                                          "Reps: ${exercise['reps']?.join(',').toString() ?? "Add reps"}" ??
-                                              'Reps: ',
+                                          "Reps: ${exercise['reps']?.join(',').toString() ?? "Add reps"}",
                                           style: TextStyle(
                                             fontSize: 14.0,
                                             fontWeight: FontWeight.bold,
@@ -378,8 +378,7 @@ class _DashboardPageState extends State<DashboardPage>
                                           ),
                                         ),
                                         Text(
-                                          "Sets: ${exercise['sets']?.toString() ?? "Add sets"}" ??
-                                              'Sets: ',
+                                          "Sets: ${exercise['sets']?.toString() ?? "Add sets"}",
                                           style: TextStyle(
                                             fontSize: 14.0,
                                             fontWeight: FontWeight.bold,
@@ -393,8 +392,7 @@ class _DashboardPageState extends State<DashboardPage>
                                           ),
                                         ),
                                         Text(
-                                          "Weight: ${exercise['weight']?.join(',').toString() ?? "Add weights"}" ??
-                                              'Weight: ',
+                                          "Weight: ${exercise['weight']?.join(',').toString() ?? "Add weights"}",
                                           style: TextStyle(
                                             fontSize: 14.0,
                                             fontWeight: FontWeight.bold,
@@ -407,7 +405,7 @@ class _DashboardPageState extends State<DashboardPage>
                                                     : TextDecoration.none,
                                           ),
                                         ),
-                                        Spacer(),
+                                        const Spacer(),
                                         Align(
                                           alignment: Alignment.centerRight,
                                           child: SizedBox(
@@ -494,11 +492,11 @@ class _DashboardPageState extends State<DashboardPage>
                                     ),
                                   ),
                                 );
-                              }).toList(),
+                              }),
                               Container(
                                 margin: const EdgeInsets.only(right: 8.0),
                                 child: IconButton(
-                                  icon: Icon(Icons.add),
+                                  icon: const Icon(Icons.add),
                                   iconSize: 32.0,
                                   onPressed: () {
                                     Navigator.push(
@@ -526,18 +524,18 @@ class _DashboardPageState extends State<DashboardPage>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
+                              const Text(
                                 "Add Workout",
                                 style: TextStyle(
                                   fontSize: 24.0,
                                   color: Colors.black87,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 16.0,
                               ),
                               IconButton(
-                                icon: Icon(Icons.add),
+                                icon: const Icon(Icons.add),
                                 iconSize: 32.0,
                                 onPressed: () {
                                   Navigator.push(
@@ -574,18 +572,18 @@ class _DashboardPageState extends State<DashboardPage>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         "Add Calories",
                         style: TextStyle(
                           fontSize: 24.0,
                           color: Colors.black87,
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 16.0,
                       ),
                       IconButton(
-                        icon: Icon(Icons.add),
+                        icon: const Icon(Icons.add),
                         iconSize: 32.0,
                         onPressed: () {
                           Navigator.push(

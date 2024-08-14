@@ -20,12 +20,13 @@ class AddFoodDialog extends StatefulWidget {
   final UpdateNutritionalValues updateNutritionalValues;
 
   const AddFoodDialog({
-    Key? key,
+    super.key,
     required this.mealType,
     required this.updateNutritionalValues,
-  }) : super(key: key);
+  });
 
   @override
+  // ignore: library_private_types_in_public_api
   _AddFoodDialogState createState() => _AddFoodDialogState();
 }
 
@@ -45,12 +46,12 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextField(
-                key: Key('searchController'),
+                key: const Key('searchController'),
                 controller: _searchController,
                 decoration: InputDecoration(
                   labelText: 'Search for food',
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.search),
+                    icon: const Icon(Icons.search),
                     onPressed: () {
                       _fetchSearchFood(_searchController.text);
                     },
@@ -58,9 +59,9 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
                 ),
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             if (_searchResults.isEmpty)
-              Center(child: Text('No results found'))
+              const Center(child: Text('No results found'))
             else
               Column(
                 children: List.generate(_searchResults.length, (index) {
@@ -116,9 +117,9 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Servings", style: TextStyle(fontSize: 16)),
+                        const Text("Servings", style: TextStyle(fontSize: 16)),
                         DropdownButton<int>(
-                          key: Key('DropdownMenu'),
+                          key: const Key('DropdownMenu'),
                           value: _multiplier,
                           items: List.generate(10, (index) => index + 1)
                               .map<DropdownMenuItem<int>>((int value) {
@@ -138,7 +139,7 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
               ),
               actions: <Widget>[
                 TextButton(
-                  key: Key('AddFoodButton'),
+                  key: const Key('AddFoodButton'),
                   child: const Text('Add'),
                   onPressed: () {
                     // _addToMeal(food, _multiplier);

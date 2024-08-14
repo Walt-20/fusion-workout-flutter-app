@@ -25,17 +25,14 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   // Variable to track if the widget is mounted
-  bool _isMounted = false;
 
   @override
   void initState() {
     super.initState();
-    _isMounted = true;
   }
 
   @override
   void dispose() {
-    _isMounted = false;
     super.dispose();
   }
 
