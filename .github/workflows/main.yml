@@ -20,3 +20,13 @@ jobs:
 
       # Clones the project on the machine
       - uses: actions/checkout@v4
+
+      # Installs flutter and related dependancy on this machine
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # Fetchs project dependencies from pub
+      - name: Install dependencies
+        run: flutter pub get
