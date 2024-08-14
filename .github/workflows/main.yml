@@ -33,7 +33,7 @@ jobs:
       with:
         #11
         flutter-version: "3.22.3"
-        chanel: 'stable'
+        channel: 'stable'
         cache: true
       # 12
       - name: Get dependencies
