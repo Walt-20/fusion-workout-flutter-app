@@ -66,6 +66,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
 
   @override
   void initState() {
+    super.initState();
     // TODO: implement initState
     debugPrint("search food page is initialized");
     _fetchFoodFromDatabase();
@@ -106,7 +107,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
         _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
           foodId: food.foodId,
           servingId: servingId,
-          numberOfServings: numberOfServings ?? "1",
+          numberOfServings: numberOfServings,
         ));
         debugPrint(
             "what is _selectedFoodForDatabase now? ${_selectedFoodForDatabase['numberOfServings']}");
@@ -340,7 +341,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                       ),
                                       title: Text(food.foodName + brandName),
                                       subtitle: Text(
-                                        "${food.servings[0].serving_description} - Calories: ${food.servings[0].calories}kcal",
+                                        "${food.servings[0].servingDescription} - Calories: ${food.servings[0].calories}kcal",
                                       ),
                                     );
                                   },

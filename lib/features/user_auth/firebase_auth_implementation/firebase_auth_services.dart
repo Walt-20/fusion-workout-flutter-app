@@ -4,8 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
@@ -310,6 +308,7 @@ class FirebaseAuthService {
         }).toList();
 
         // Merge existing and new food items
+        // ignore: avoid_function_literals_in_foreach_calls
         newFoodList.forEach((newFoodItem) {
           int index = existingFoodList.indexWhere((existingFoodItem) =>
               existingFoodItem['foodId'] == newFoodItem['foodId']);
@@ -425,7 +424,7 @@ class FirebaseAuthService {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
 
-        debugPrint("the decoded json is ${responseBody}");
+        debugPrint("the decoded json is $responseBody");
 
         if (responseBody.containsKey('food')) {
           return responseBody['food'] as Map<String, dynamic>;
@@ -444,8 +443,10 @@ class FirebaseAuthService {
   void signOut(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
+      // ignore: unused_local_variable
       final userId = user.uid;
       await FirebaseAuth.instance.signOut();
+      // ignore: use_build_context_synchronously
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const AuthPage()),
         (Route<dynamic> route) => false,
@@ -463,6 +464,8 @@ class FirebaseAuthService {
         final jsonData = json.decode(response.body);
         debugPrint("the json data is $jsonData");
       }
-    } catch (e) {}
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 }

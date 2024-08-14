@@ -123,16 +123,39 @@ class _SignUpPageState extends State<SignUpPage> {
       if (_passwordController.text == _confirmPasswordController.text) {
         await _auth.signUpWithEmailAndPassword(email, password);
         if (!mounted) return;
+        Navigator.pop(context); // Close the progress dialog
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => OnBoarding()));
       } else {
         if (!mounted) return;
+        Navigator.pop(context); // Close the progress dialog
         showAlertMessage("Passwords do not match");
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
-      Navigator.pop(context);
-      showAlertMessage(e.code);
+      Navigator.pop(context); // Close the progress dialog
+      String errorMessage;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorMessage = "The email address is already in use.";
+          break;
+        case 'invalid-email':
+          errorMessage = "The email address is not valid.";
+          break;
+        case 'operation-not-allowed':
+          errorMessage = "Email/password accounts are not enabled.";
+          break;
+        case 'weak-password':
+          errorMessage = "The password is too weak.";
+          break;
+        default:
+          errorMessage = "An unknown error occurred.";
+      }
+      showAlertMessage(errorMessage);
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close the progress dialog
+      showAlertMessage("An error occurred. Please try again.");
     }
   }
 
