@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
+import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/search_exercise_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/search_food_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/widgets/exercise_details_dialog.dart';
@@ -24,20 +25,16 @@ class _DashboardPageState extends State<DashboardPage>
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   List<Map<String, dynamic>> exercises = [];
-
-  // variables for food
-  Map<String, List<Food>> _selectedFoodsByMeal = {
-    'Breakfast': [],
-    'Lunch': [],
-    'Dinner': [],
-    'Snacks': [],
-  };
+  Map<String, List<FoodForDatabase>> nutritionalData = {};
+  Map<String, List<Food>> foodData = {};
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    debugPrint("initialize dashboard");
     _fetchExercisesFromDatabase();
+    _fetchNutritionalDataFromDatabase();
   }
 
   @override
@@ -56,12 +53,7 @@ class _DashboardPageState extends State<DashboardPage>
 
   void _clearLocalDatastructures() {
     exercises = [];
-    _selectedFoodsByMeal = {
-      'Breakfast': [],
-      'Lunch': [],
-      'Dinner': [],
-      'Snacks': [],
-    };
+    nutritionalData = {};
   }
 
   void _showCalendarDialog() {
@@ -163,8 +155,19 @@ class _DashboardPageState extends State<DashboardPage>
     await _fetchExercisesFromDatabase();
   }
 
+  Future<void> _fetchNutritionalDataFromDatabase() async {
+    try {
+      final fetchedNutrition = await _auth.fetchNutritionalData(_focusedDay);
+      setState(() {
+        nutritionalData = fetchedNutrition;
+        debugPrint("what is nutritional data? ${nutritionalData.toString()}");
+      });
+    } catch (e) {
+      debugPrint("issues require tissues");
+    }
+  }
+
   Future<void> _fetchExercisesFromDatabase() async {
-    debugPrint("fetching the exercise");
     try {
       final fetchedExercises = await _auth.fetchExercises(_focusedDay);
       if (fetchedExercises.isNotEmpty) {
@@ -199,6 +202,32 @@ class _DashboardPageState extends State<DashboardPage>
     };
 
     await _auth.updateMoveExerciseInFirebase(_focusedDay, [exerciseMap]);
+  }
+
+  num calculateTotalCalories(
+      Map<String, List<FoodForDatabase>> nutritionalData) {
+    num totalCalories = 0;
+
+    // ignore: unnecessary_set_literal
+    nutritionalData.forEach((key, value) {
+      for (var food in value) {
+        totalCalories += num.parse(food.totalCalories);
+      }
+    });
+
+    return totalCalories;
+  }
+
+  num calculateTotalProtein(
+      Map<String, List<FoodForDatabase>> nutritionalData) {
+    num totalProtein = 0;
+
+    nutritionalData.forEach((key, value) {
+      for (var food in value) {
+        totalProtein += num.parse(food.totalProtein);
+      }
+    });
+    return totalProtein;
   }
 
   @override
@@ -584,37 +613,103 @@ class _DashboardPageState extends State<DashboardPage>
                   borderRadius: BorderRadius.circular(4.0),
                   border: Border.all(color: Colors.grey[400]!),
                 ),
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Add Calories",
-                        style: TextStyle(
-                          fontSize: 24.0,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 16.0,
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        iconSize: 32.0,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SearchFoodPage(
-                                selectedDate: _focusedDay,
+                child: nutritionalData.isEmpty
+                    ? Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Add Calories",
+                              style: TextStyle(
+                                fontSize: 24.0,
+                                color: Colors.black87,
                               ),
                             ),
-                          );
-                        },
+                            SizedBox(
+                              width: 16.0,
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.add),
+                              iconSize: 32.0,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SearchFoodPage(
+                                      selectedDate: _focusedDay,
+                                      onFoodSelected:
+                                          (Map<String, List<Food>> selectedFood,
+                                              Map<String, List<FoodForDatabase>>
+                                                  nutritionalDetails) {
+                                        setState(() {
+                                          foodData = selectedFood;
+                                          nutritionalData = nutritionalDetails;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Calories: ${calculateTotalCalories(nutritionalData)} kcal",
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              SizedBox(height: 8.0),
+                              Text(
+                                "Protein: ${calculateTotalProtein(nutritionalData)} g",
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              SizedBox(height: 8.0),
+                              Text(
+                                "Add More Food!",
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  color: Colors.black87,
+                                ),
+                              )
+                            ],
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            iconSize: 32.0,
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SearchFoodPage(
+                                    selectedDate: _focusedDay,
+                                    onFoodSelected:
+                                        (Map<String, List<Food>> selectedFood,
+                                            Map<String, List<FoodForDatabase>>
+                                                nutritionalDetails) {
+                                      setState(() {
+                                        foodData = selectedFood;
+                                        nutritionalData = nutritionalDetails;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
               ),
             ],
           ),

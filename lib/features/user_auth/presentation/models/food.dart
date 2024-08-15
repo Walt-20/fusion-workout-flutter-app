@@ -103,11 +103,13 @@ class Serving {
   final String serving_id;
   final String serving_description;
   final String calories;
+  final String protein;
 
   Serving({
     required this.serving_id,
     required this.serving_description,
     required this.calories,
+    required this.protein,
   });
 
   factory Serving.fromJson(Map<String, dynamic> json) {
@@ -115,6 +117,7 @@ class Serving {
       serving_id: json['serving_id'],
       serving_description: json['serving_description'],
       calories: json['calories'],
+      protein: json['protein'],
     );
   }
 }

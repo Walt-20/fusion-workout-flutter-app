@@ -251,18 +251,14 @@ class FirebaseAuthService {
 
       if (querySnapshot.exists) {
         var data = querySnapshot.data();
-        debugPrint("what is data? ${data.toString()}");
 
         if (data != null && data is Map<String, dynamic>) {
-          debugPrint("data is not null and data is a map of string dynamic");
-
           // Check if 'exercises' field exists and is a list
           if (data.containsKey('exercises') && data['exercises'] != null) {
             List<Map<String, dynamic>> exerciseList =
                 (data['exercises'] as List<dynamic>).map((entry) {
               return entry as Map<String, dynamic>;
             }).toList();
-            debugPrint("what is exerciseList? $exerciseList");
             return exerciseList;
           } else {
             // If 'exercises' field is null or doesn't exist, return an empty list
@@ -398,6 +394,33 @@ class FirebaseAuthService {
       }
     } catch (e) {
       debugPrint("Error removing food from database: $e");
+    }
+  }
+
+  Future<Map<String, List<FoodForDatabase>>> fetchNutritionalData(
+      DateTime date) async {
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    final userMealsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals')
+        .doc(dateString);
+
+    DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
+
+    if (mealDocSnapshot.exists) {
+      Map<String, dynamic> data =
+          mealDocSnapshot.data() as Map<String, dynamic>;
+      Map<String, List<FoodForDatabase>> foodMap = {};
+      data.forEach((key, value) {
+        List<FoodForDatabase> foodList = (value as List)
+            .map((item) => FoodForDatabase.fromMap(item))
+            .toList();
+        foodMap[key] = foodList;
+      });
+      return foodMap;
+    } else {
+      return {};
     }
   }
 
