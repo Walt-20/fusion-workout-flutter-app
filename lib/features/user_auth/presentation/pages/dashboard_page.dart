@@ -54,6 +54,16 @@ class _DashboardPageState extends State<DashboardPage>
     }
   }
 
+  void _clearLocalDatastructures() {
+    exercises = [];
+    _selectedFoodsByMeal = {
+      'Breakfast': [],
+      'Lunch': [],
+      'Dinner': [],
+      'Snacks': [],
+    };
+  }
+
   void _showCalendarDialog() {
     showDialog(
       context: context,
@@ -115,6 +125,7 @@ class _DashboardPageState extends State<DashboardPage>
                     if (_selectedDay != null) {
                       setState(() {
                         _focusedDay = _selectedDay!;
+                        _clearLocalDatastructures();
                         _fetchExercisesFromDatabase();
                       });
                     }
@@ -153,11 +164,14 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Future<void> _fetchExercisesFromDatabase() async {
+    debugPrint("fetching the exercise");
     try {
       final fetchedExercises = await _auth.fetchExercises(_focusedDay);
-      setState(() {
-        exercises = fetchedExercises;
-      });
+      if (fetchedExercises.isNotEmpty) {
+        setState(() {
+          exercises = fetchedExercises;
+        });
+      }
     } catch (e) {
       debugPrint("Error fetching exercises: $e");
     }

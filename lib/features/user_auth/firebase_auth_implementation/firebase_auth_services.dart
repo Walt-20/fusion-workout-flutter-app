@@ -66,10 +66,8 @@ class FirebaseAuthService {
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('exercises')
-        .doc('initial')
-        .set({
-      'initialized': true,
-    }).then((value) {
+        .doc(DateFormat('yyyy-MM-dd').format(DateTime.now()))
+        .set({}).then((value) {
       debugPrint("Exercises collection initialized successfully");
     }).catchError((onError) {
       debugPrint(
@@ -80,9 +78,12 @@ class FirebaseAuthService {
         .collection('Users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('meals')
-        .doc('initial')
+        .doc(DateFormat('yyyy-MM-dd').format(DateTime.now()))
         .set({
-      'initialized': true,
+      'Breakfast': [],
+      'Lunch': [],
+      'Dinner': [],
+      'Snacks': [],
     }).then((value) {
       debugPrint("Meals collection initialized successfully");
     }).catchError((onError) {
@@ -250,13 +251,23 @@ class FirebaseAuthService {
 
       if (querySnapshot.exists) {
         var data = querySnapshot.data();
-        if (data != null && data is Map<String, dynamic>) {
-          List<Map<String, dynamic>> exerciseList =
-              (data['exercises'] as List<dynamic>).map((entry) {
-            return entry as Map<String, dynamic>;
-          }).toList();
+        debugPrint("what is data? ${data.toString()}");
 
-          return exerciseList;
+        if (data != null && data is Map<String, dynamic>) {
+          debugPrint("data is not null and data is a map of string dynamic");
+
+          // Check if 'exercises' field exists and is a list
+          if (data.containsKey('exercises') && data['exercises'] != null) {
+            List<Map<String, dynamic>> exerciseList =
+                (data['exercises'] as List<dynamic>).map((entry) {
+              return entry as Map<String, dynamic>;
+            }).toList();
+            debugPrint("what is exerciseList? $exerciseList");
+            return exerciseList;
+          } else {
+            // If 'exercises' field is null or doesn't exist, return an empty list
+            return [];
+          }
         } else {
           return [];
         }
