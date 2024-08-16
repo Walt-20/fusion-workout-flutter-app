@@ -49,7 +49,7 @@ List<Food> parsedFoodItem(String responseBody) {
 }
 
 class _SearchFoodPageState extends State<SearchFoodPage> {
-  int _pageNumber = 0;
+  final int _pageNumber = 0;
   int _selectedMealIndex = 0;
   final List<String> _mealOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
   String _selectedMeal = 'Breakfast';
@@ -59,16 +59,18 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     'Dinner': [],
     'Snacks': [],
   };
+  // ignore: prefer_final_fields
   Map<String, List<FoodForDatabase>> _selectedFoodForDatabase = {
     'Breakfast': [],
     'Lunch': [],
     'Dinner': [],
     'Snacks': [],
   };
-  FirebaseAuthService _auth = FirebaseAuthService();
+  final FirebaseAuthService _auth = FirebaseAuthService();
 
   @override
   void initState() {
+    super.initState();
     debugPrint("search food page is initialized");
     _fetchFoodFromDatabase();
   }
@@ -99,7 +101,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     var protein = 0.0;
     var parsedNumberOfServings = double.parse(numberOfServings);
     for (var serving in food.servings) {
-      if (servingId == serving.serving_id) {
+      if (servingId == serving.servingId) {
         var parsedCalories = double.parse(serving.calories);
         var parsedProtein = double.parse(serving.protein);
         calories = parsedCalories * parsedNumberOfServings;
@@ -134,7 +136,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
         _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
           foodId: food.foodId,
           servingId: servingId,
-          numberOfServings: numberOfServings ?? "1",
+          numberOfServings: numberOfServings,
           totalCalories: nutritionalData[0].toString(),
           totalProtein: nutritionalData[1].toString(),
         ));
@@ -153,7 +155,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   }
 
   void _showFloatingMessage(BuildContext context) {
-    final overlay = Overlay.of(context)!;
+    final overlay = Overlay.of(context);
     final overlayEntry = OverlayEntry(
       builder: (context) => FloatingMessage(
         foodCount: _selectedFoodsByMeal[_selectedMeal]!.length,
@@ -163,7 +165,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     overlay.insert(overlayEntry);
 
     // Remove the overlay entry after a short duration
-    Future.delayed(Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () {
       overlayEntry.remove();
     });
   }
@@ -188,22 +190,22 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                   _selectedMeal = _mealOptions[index];
                 });
               },
+              color: const Color.fromARGB(237, 255, 134, 21),
+              selectedColor: Colors.white,
+              fillColor: const Color.fromARGB(255, 255, 134, 21),
               children: _mealOptions
                   .map((meal) => Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(meal),
                       ))
                   .toList(),
-              color: Color.fromARGB(237, 255, 134, 21),
-              selectedColor: Colors.white,
-              fillColor: Color.fromARGB(255, 255, 134, 21),
             ),
           ),
           // Expanded to push the search bar to the bottom
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Container(
+              child: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.95,
                 height: MediaQuery.of(context).size.height * 0.65,
                 child: ListView.builder(
@@ -253,7 +255,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                               index]
                                           .servings
                                           .first
-                                          .serving_id,
+                                          .servingId,
                                       "1",
                                       false);
                                 });
@@ -301,8 +303,6 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                     ? "  (${food.brandName})"
                                     : "";
                                 bool isChecked = false;
-                                int numberOfFoods = 0;
-
                                 return StatefulBuilder(
                                   builder: (BuildContext context,
                                       StateSetter setState) {
@@ -316,28 +316,26 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                             if (isChecked) {
                                               _addOrRemoveSelectedFood(
                                                   food,
-                                                  food.servings.first
-                                                      .serving_id,
+                                                  food.servings.first.servingId,
                                                   "1",
                                                   true);
                                               _addFoodMapToDatabase();
                                             } else {
                                               _addOrRemoveSelectedFood(
                                                   food,
-                                                  food.servings.first
-                                                      .serving_id,
+                                                  food.servings.first.servingId,
                                                   "1",
                                                   false);
                                             }
                                             _showFloatingMessage(context);
                                           });
                                         },
-                                        activeColor:
-                                            Color.fromARGB(237, 255, 134, 21),
+                                        activeColor: const Color.fromARGB(
+                                            237, 255, 134, 21),
                                       ),
                                       title: Text(food.foodName + brandName),
                                       subtitle: Text(
-                                        "${food.servings[0].serving_description} - Calories: ${food.servings[0].calories}kcal",
+                                        "${food.servings[0].servingDescription} - Calories: ${food.servings[0].calories}kcal",
                                       ),
                                     );
                                   },

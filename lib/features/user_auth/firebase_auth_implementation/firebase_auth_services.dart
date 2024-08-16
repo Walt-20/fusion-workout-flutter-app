@@ -4,8 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
@@ -67,12 +65,12 @@ class FirebaseAuthService {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('exercises')
         .doc(DateFormat('yyyy-MM-dd').format(DateTime.now()))
-        .set({}).then((value) {
-      debugPrint("Exercises collection initialized successfully");
-    }).catchError((onError) {
-      debugPrint(
-          "Error initializing exercises collection: ${onError.toString()}");
-    });
+        .set({})
+        .then((value) {})
+        .catchError((onError) {
+          debugPrint(
+              "Error initializing exercises collection: ${onError.toString()}");
+        });
 
     FirebaseFirestore.instance
         .collection('Users')
@@ -80,15 +78,16 @@ class FirebaseAuthService {
         .collection('meals')
         .doc(DateFormat('yyyy-MM-dd').format(DateTime.now()))
         .set({
-      'Breakfast': [],
-      'Lunch': [],
-      'Dinner': [],
-      'Snacks': [],
-    }).then((value) {
-      debugPrint("Meals collection initialized successfully");
-    }).catchError((onError) {
-      debugPrint("Error initializing meals collection: ${onError.toString()}");
-    });
+          'Breakfast': [],
+          'Lunch': [],
+          'Dinner': [],
+          'Snacks': [],
+        })
+        .then((value) {})
+        .catchError((onError) {
+          debugPrint(
+              "Error initializing meals collection: ${onError.toString()}");
+        });
   }
 
   Future<void> addExerciseToFirestore(
@@ -332,8 +331,6 @@ class FirebaseAuthService {
 
       Map<String, dynamic> foodData = {};
 
-      debugPrint("food is ${food.toString()}");
-
       food.forEach((mealType, foodList) {
         // Initialize meal type if it doesn't exist
         List<Map<String, dynamic>> existingFoodList =
@@ -344,7 +341,7 @@ class FirebaseAuthService {
         }).toList();
 
         // Merge existing and new food items
-        newFoodList.forEach((newFoodItem) {
+        for (var newFoodItem in newFoodList) {
           int index = existingFoodList.indexWhere((existingFoodItem) =>
               existingFoodItem['foodId'] == newFoodItem['foodId']);
           if (index != -1) {
@@ -354,7 +351,7 @@ class FirebaseAuthService {
             // Add new food item
             existingFoodList.add(newFoodItem);
           }
-        });
+        }
 
         foodData[mealType] = existingFoodList;
       });
@@ -487,8 +484,6 @@ class FirebaseAuthService {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
 
-        debugPrint("the decoded json is ${responseBody}");
-
         if (responseBody.containsKey('food')) {
           return responseBody['food'] as Map<String, dynamic>;
         } else {
@@ -506,8 +501,8 @@ class FirebaseAuthService {
   void signOut(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final userId = user.uid;
       await FirebaseAuth.instance.signOut();
+      // ignore: use_build_context_synchronously
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const AuthPage()),
         (Route<dynamic> route) => false,

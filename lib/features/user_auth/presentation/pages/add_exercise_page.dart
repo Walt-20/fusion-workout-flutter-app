@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:intl/intl.dart'; // Ensure you have this for date formatting
 
 class AddExercisePage extends StatefulWidget {
   final String? exerciseMuscle;
@@ -21,7 +18,7 @@ class AddExercisePage extends StatefulWidget {
 }
 
 class _AddExercisePageState extends State<AddExercisePage> {
-  FirebaseAuthService _auth = FirebaseAuthService();
+  final FirebaseAuthService _auth = FirebaseAuthService();
   late TextEditingController _repsController;
   late TextEditingController _setsController;
   late TextEditingController _weightController;
@@ -64,6 +61,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
     await _auth.addExerciseToFirestore(widget.selectedDate, [exercise]);
 
     // Close the dialog
+    // ignore: use_build_context_synchronously
     Navigator.of(context).pop();
   }
 
@@ -87,7 +85,7 @@ class _AddExercisePageState extends State<AddExercisePage> {
           TextField(
             controller: _weightController,
             decoration: const InputDecoration(labelText: 'Weight'),
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
         ],
       ),

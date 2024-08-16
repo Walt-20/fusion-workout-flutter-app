@@ -20,7 +20,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage>
     with WidgetsBindingObserver {
   final user = FirebaseAuth.instance.currentUser!;
-  FirebaseAuthService _auth = FirebaseAuthService();
+  final FirebaseAuthService _auth = FirebaseAuthService();
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
@@ -32,7 +32,6 @@ class _DashboardPageState extends State<DashboardPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    debugPrint("initialize dashboard");
     _fetchExercisesFromDatabase();
     _fetchNutritionalDataFromDatabase();
   }
@@ -158,12 +157,10 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Future<void> _fetchNutritionalDataFromDatabase() async {
-    debugPrint("fetching nutritional data");
     try {
       final fetchedNutrition = await _auth.fetchNutritionalData(_focusedDay);
       setState(() {
         nutritionalData = fetchedNutrition;
-        debugPrint("what is nutritional data? ${nutritionalData.toString()}");
       });
     } catch (e) {
       debugPrint("issues require tissues");
@@ -317,7 +314,7 @@ class _DashboardPageState extends State<DashboardPage>
                       color: Colors.grey.withOpacity(0.2),
                       spreadRadius: 2,
                       blurRadius: 8,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ],
                   border: Border.all(color: Colors.grey[300]!),
@@ -396,7 +393,7 @@ class _DashboardPageState extends State<DashboardPage>
                                                   : TextDecoration.none,
                                         ),
                                       ),
-                                      SizedBox(height: 4.0),
+                                      const SizedBox(height: 4.0),
                                       Text(
                                         exercise['muscle'] ?? 'No Muscle',
                                         style: TextStyle(
@@ -411,7 +408,7 @@ class _DashboardPageState extends State<DashboardPage>
                                                   : TextDecoration.none,
                                         ),
                                       ),
-                                      SizedBox(height: 4.0),
+                                      const SizedBox(height: 4.0),
                                       Text(
                                         "Reps: ${exercise['reps']?.join(',') ?? 'Add reps'}",
                                         style: TextStyle(
@@ -426,7 +423,7 @@ class _DashboardPageState extends State<DashboardPage>
                                                   : TextDecoration.none,
                                         ),
                                       ),
-                                      SizedBox(height: 4.0),
+                                      const SizedBox(height: 4.0),
                                       Text(
                                         "Sets: ${exercise['sets']?.toString() ?? 'Add sets'}",
                                         style: TextStyle(
@@ -441,7 +438,7 @@ class _DashboardPageState extends State<DashboardPage>
                                                   : TextDecoration.none,
                                         ),
                                       ),
-                                      SizedBox(height: 4.0),
+                                      const SizedBox(height: 4.0),
                                       Text(
                                         "Weight: ${exercise['weight']?.join(',') ?? 'Add weights'}",
                                         style: TextStyle(
@@ -456,7 +453,7 @@ class _DashboardPageState extends State<DashboardPage>
                                                   : TextDecoration.none,
                                         ),
                                       ),
-                                      Spacer(),
+                                      const Spacer(),
                                       Align(
                                         alignment: Alignment.centerRight,
                                         child: SizedBox(
@@ -464,7 +461,7 @@ class _DashboardPageState extends State<DashboardPage>
                                           child: Row(
                                             children: [
                                               IconButton(
-                                                icon: Icon(Icons
+                                                icon: const Icon(Icons
                                                     .remove_circle_outline),
                                                 onPressed: () async {
                                                   await _removeFromDatabase(
@@ -477,12 +474,12 @@ class _DashboardPageState extends State<DashboardPage>
                                                 },
                                               ),
                                               Checkbox(
-                                                fillColor: MaterialStateProperty
+                                                fillColor: WidgetStateProperty
                                                     .resolveWith(
-                                                        (Set<MaterialState>
+                                                        (Set<WidgetState>
                                                             states) {
                                                   if (states.contains(
-                                                      MaterialState.selected)) {
+                                                      WidgetState.selected)) {
                                                     return const Color.fromARGB(
                                                         237, 255, 134, 21);
                                                   }
@@ -537,11 +534,11 @@ class _DashboardPageState extends State<DashboardPage>
                                   ),
                                 ),
                               );
-                            }).toList(),
+                            }),
                             Container(
                               margin: const EdgeInsets.only(right: 8.0),
                               child: IconButton(
-                                icon: Icon(Icons.add),
+                                icon: const Icon(Icons.add),
                                 iconSize: 32.0,
                                 onPressed: () {
                                   Navigator.push(
@@ -564,7 +561,7 @@ class _DashboardPageState extends State<DashboardPage>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
+                            const Text(
                               "Add Workout",
                               style: TextStyle(
                                 fontSize: 24.0,
@@ -573,7 +570,7 @@ class _DashboardPageState extends State<DashboardPage>
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.add),
+                              icon: const Icon(Icons.add),
                               iconSize: 32.0,
                               onPressed: () {
                                 Navigator.push(
@@ -606,7 +603,7 @@ class _DashboardPageState extends State<DashboardPage>
                       color: Colors.grey.withOpacity(0.2),
                       spreadRadius: 2,
                       blurRadius: 8,
-                      offset: Offset(0, 4),
+                      offset: const Offset(0, 4),
                     ),
                   ],
                   border: Border.all(color: Colors.grey[300]!),
@@ -625,29 +622,29 @@ class _DashboardPageState extends State<DashboardPage>
                         children: [
                           Text(
                             "Calories: ${calculateTotalCalories(nutritionalData)} kcal",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 20.0,
                               fontWeight: FontWeight.w500,
                               color: Colors.black87,
                             ),
                           ),
-                          SizedBox(height: 8.0),
+                          const SizedBox(height: 8.0),
                           Text(
-                            "Protein: ${calculateTotalProtein(nutritionalData)} g",
-                            style: TextStyle(
+                            "Protein: ${calculateTotalProtein(nutritionalData).toStringAsFixed(2)} g",
+                            style: const TextStyle(
                               fontSize: 20.0,
                               fontWeight: FontWeight.w500,
                               color: Colors.black87,
                             ),
                           ),
-                          SizedBox(height: 16.0),
+                          const SizedBox(height: 16.0),
                         ],
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                         width: 16.0), // Add spacing between column and button
                     IconButton(
-                      icon: Icon(Icons.add),
+                      icon: const Icon(Icons.add),
                       iconSize: 32.0,
                       onPressed: () {
                         Navigator.push(

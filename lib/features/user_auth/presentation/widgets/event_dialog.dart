@@ -17,7 +17,6 @@ class _AddEventDialogState extends State<AddEventDialog> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _eventNameController = TextEditingController(text: widget.exerciseMuscle);
   }
@@ -31,10 +30,10 @@ class _AddEventDialogState extends State<AddEventDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Create Workout"),
+      title: const Text("Create Workout"),
       content: TextField(
         controller: _eventNameController,
-        decoration: InputDecoration(labelText: "Workout Name"),
+        decoration: const InputDecoration(labelText: "Workout Name"),
       ),
       actions: [
         ElevatedButton(
@@ -44,7 +43,7 @@ class _AddEventDialogState extends State<AddEventDialog> {
               Navigator.of(context).pop(eventName);
             }
           },
-          child: Text("Create"),
+          child: const Text("Create"),
         ),
       ],
     );

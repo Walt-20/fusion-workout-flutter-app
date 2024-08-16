@@ -1,6 +1,5 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,6 @@ import 'package:fusion_workouts/features/user_auth/presentation/pages/dashboard_
 import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/pages/signup_page.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/add_food_dialog.dart';
 import 'package:fusion_workouts/firebase_options.dart';
 import 'package:fusion_workouts/main.dart';
 import 'package:integration_test/integration_test.dart';
@@ -22,14 +20,13 @@ void main() {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     await FirebaseAuth.instance.signOut();
-    FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-    FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
   });
 
   tearDown(() async {
     await FirebaseAuth.instance.signOut();
   });
 
+  // ignore: unused_element
   Future<void> login(WidgetTester tester, email, password) async {
     final emailField = find.byKey(Key('emailField'));
     final passwordField = find.byKey(Key('passwordField'));

@@ -21,10 +21,10 @@ class SearchExercisePage extends StatefulWidget {
 }
 
 class _SearchExercisePageState extends State<SearchExercisePage> {
-  Future<List<Exercise>>? _exercises;
   List<Exercise> _selectedExercises = [];
+  // ignore: prefer_final_fields
   Set<String> _existingExerciseIds = {}; // Track existing exercise IDs
-  FirebaseAuthService _auth = FirebaseAuthService();
+  final FirebaseAuthService _auth = FirebaseAuthService();
 
   @override
   void initState() {
@@ -46,6 +46,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
         throw Exception('Failed to load exercises');
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to load exercises. Please try again later.'),
@@ -86,7 +87,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
   }
 
   Future<void> _addExerciseToFirebase(Exercise exercise) async {
-    String uid = Uuid().v4();
+    String uid = const Uuid().v4();
     Map<String, dynamic> exerciseMap = {
       'id': uid,
       'name': exercise.name,
@@ -98,25 +99,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     };
 
     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
-
-    widget.onExerciseAdded();
-  }
-
-  Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
-    debugPrint("the exercise uid is ${exercise.uid}");
-    debugPrint("exercise completed is ${exercise.completed}");
-    Map<String, dynamic> exerciseMap = {
-      'id': exercise.uid,
-      'name': exercise.name,
-      'muscle': exercise.muscle,
-      'reps': exercise.reps,
-      'sets': exercise.sets,
-      'weight': exercise.weight,
-      'completed': exercise.completed,
-    };
-
-    await _auth
-        .updateMoveExerciseInFirebase(widget.selectedDate, [exerciseMap]);
 
     widget.onExerciseAdded();
   }
@@ -284,7 +266,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                     _selectedExercises.insert(0, list[index]);
                                     _addExerciseToFirebase(list[index]);
                                   }
-                                  _exercises = Future.value([]);
                                   controller.closeView("");
                                 });
                               },

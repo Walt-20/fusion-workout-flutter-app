@@ -4,9 +4,10 @@ import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart
 class FoodDetailsDialog extends StatefulWidget {
   final Food food;
 
-  const FoodDetailsDialog({Key? key, required this.food}) : super(key: key);
+  const FoodDetailsDialog({super.key, required this.food});
 
   @override
+  // ignore: library_private_types_in_public_api
   _FoodDetailsDialogState createState() => _FoodDetailsDialogState();
 }
 
@@ -18,7 +19,7 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
   void initState() {
     super.initState();
     if (widget.food.servings.isNotEmpty) {
-      _selectedServingId = widget.food.servings.first.serving_id;
+      _selectedServingId = widget.food.servings.first.servingId;
     }
   }
 
@@ -33,10 +34,10 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
             DropdownButton<String>(
               items: widget.food.servings
                   .map<DropdownMenuItem<String>>((Serving value) {
-                debugPrint('Serving ID: ${value.serving_id}');
+                debugPrint('Serving ID: ${value.servingId}');
                 return DropdownMenuItem<String>(
-                  value: value.serving_id,
-                  child: Text(value.serving_description),
+                  value: value.servingId,
+                  child: Text(value.servingDescription),
                 );
               }).toList(),
               onChanged: (String? newValue) {
@@ -66,7 +67,7 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
         ElevatedButton(
           onPressed: () {
             if (_selectedServingId != null) {
-              final servings = _servingsController.text ?? "1";
+              final servings = _servingsController.text;
               Navigator.of(context).pop({
                 'food': widget.food,
                 'servingId': _selectedServingId,

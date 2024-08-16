@@ -30,8 +30,8 @@ class Exercise {
     List<dynamic>? weight,
     this.completed = false,
     this.uid,
-  })  : this.reps = reps ?? [],
-        this.weight = weight ?? [];
+  })  : reps = reps ?? [],
+        weight = weight ?? [];
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     return Exercise(
