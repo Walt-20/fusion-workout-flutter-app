@@ -48,6 +48,7 @@ class _DashboardPageState extends State<DashboardPage>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       await _fetchExercisesFromDatabase();
+      await _fetchNutritionalDataFromDatabase();
     }
   }
 
@@ -119,6 +120,7 @@ class _DashboardPageState extends State<DashboardPage>
                         _focusedDay = _selectedDay!;
                         _clearLocalDatastructures();
                         _fetchExercisesFromDatabase();
+                        _fetchNutritionalDataFromDatabase();
                       });
                     }
                   },
@@ -156,6 +158,7 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   Future<void> _fetchNutritionalDataFromDatabase() async {
+    debugPrint("fetching nutritional data");
     try {
       final fetchedNutrition = await _auth.fetchNutritionalData(_focusedDay);
       setState(() {
@@ -308,188 +311,189 @@ class _DashboardPageState extends State<DashboardPage>
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(4.0),
-                  border: Border.all(color: Colors.grey[400]!),
+                  borderRadius: BorderRadius.circular(12.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.grey[300]!),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (exercises.isNotEmpty)
-                      Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              // Display existing exercises
-                              ...exercises.map((exercise) {
-                                return GestureDetector(
-                                  onTap: () async {
-                                    final updateExercise =
-                                        Exercise.fromJson(exercise);
+                child: exercises.isNotEmpty
+                    ? SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            // Display existing exercises
+                            ...exercises.map((exercise) {
+                              return GestureDetector(
+                                onTap: () async {
+                                  final updateExercise =
+                                      Exercise.fromJson(exercise);
 
-                                    final result =
-                                        await showDialog<Map<String, dynamic>?>(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return ExerciseDetailsDialog(
-                                            exercise: updateExercise);
-                                      },
+                                  final result =
+                                      await showDialog<Map<String, dynamic>?>(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return ExerciseDetailsDialog(
+                                        exercise: updateExercise,
+                                      );
+                                    },
+                                  );
+
+                                  if (result != null) {
+                                    final updatedExercise = Exercise(
+                                      uid: exercise['id'],
+                                      name: exercise['name'],
+                                      muscle: exercise['muscle'],
+                                      equipment: exercise['equipment'] ?? '',
+                                      difficulty: exercise['difficulty'] ?? '',
+                                      instructions:
+                                          exercise['instructions'] ?? '',
+                                      reps: result['reps'],
+                                      sets: result['sets'],
+                                      weight: result['weight'],
+                                      type: '',
+                                      completed: false,
                                     );
 
-                                    if (result != null) {
-                                      final updatedExercise = Exercise(
-                                        uid: exercise['id'],
-                                        name: exercise['name'],
-                                        muscle: exercise['muscle'],
-                                        equipment: exercise['equipment'] ?? '',
-                                        difficulty:
-                                            exercise['difficulty'] ?? '',
-                                        instructions:
-                                            exercise['instructions'] ?? '',
-                                        reps: result['reps'],
-                                        sets: result['sets'],
-                                        weight: result['weight'],
-                                        type: '',
-                                        completed: false,
-                                      );
-
-                                      _updateExerciseInDatabase(
-                                          updatedExercise);
-                                      setState(() {});
-                                    }
-                                  },
-                                  child: Container(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.35,
-                                    margin: const EdgeInsets.only(right: 8.0),
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[200],
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      border:
-                                          Border.all(color: Colors.grey[300]!),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          exercise['name'] ?? 'No Name',
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
-                                          style: TextStyle(
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.bold,
-                                            color: exercise['completed'] == true
-                                                ? Colors.grey[600]
-                                                : const Color.fromARGB(
-                                                    237, 255, 134, 21),
-                                            decoration:
-                                                exercise['completed'] == true
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                          ),
+                                    _updateExerciseInDatabase(updatedExercise);
+                                    setState(() {});
+                                  }
+                                },
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.35,
+                                  margin: const EdgeInsets.only(right: 8.0),
+                                  padding: const EdgeInsets.all(12.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[100],
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    border:
+                                        Border.all(color: Colors.grey[300]!),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        exercise['name'] ?? 'No Name',
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 2,
+                                        style: TextStyle(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.bold,
+                                          color: exercise['completed'] == true
+                                              ? Colors.grey[600]
+                                              : const Color.fromARGB(
+                                                  237, 255, 134, 21),
+                                          decoration:
+                                              exercise['completed'] == true
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
                                         ),
-                                        Text(
-                                          exercise['muscle'] ?? 'No Muscle',
-                                          style: TextStyle(
-                                            fontSize: 14.0,
-                                            fontWeight: FontWeight.bold,
-                                            color: exercise['completed'] == true
-                                                ? Colors.grey[500]
-                                                : Colors.grey[600],
-                                            decoration:
-                                                exercise['completed'] == true
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                          ),
+                                      ),
+                                      SizedBox(height: 4.0),
+                                      Text(
+                                        exercise['muscle'] ?? 'No Muscle',
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: exercise['completed'] == true
+                                              ? Colors.grey[500]
+                                              : Colors.grey[600],
+                                          decoration:
+                                              exercise['completed'] == true
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
                                         ),
-                                        Text(
-                                          "Reps: ${exercise['reps']?.join(',').toString() ?? "Add reps"}" ??
-                                              'Reps: ',
-                                          style: TextStyle(
-                                            fontSize: 14.0,
-                                            fontWeight: FontWeight.bold,
-                                            color: exercise['completed'] == true
-                                                ? Colors.grey[500]
-                                                : Colors.grey[600],
-                                            decoration:
-                                                exercise['completed'] == true
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                          ),
+                                      ),
+                                      SizedBox(height: 4.0),
+                                      Text(
+                                        "Reps: ${exercise['reps']?.join(',') ?? 'Add reps'}",
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: exercise['completed'] == true
+                                              ? Colors.grey[500]
+                                              : Colors.grey[600],
+                                          decoration:
+                                              exercise['completed'] == true
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
                                         ),
-                                        Text(
-                                          "Sets: ${exercise['sets']?.toString() ?? "Add sets"}" ??
-                                              'Sets: ',
-                                          style: TextStyle(
-                                            fontSize: 14.0,
-                                            fontWeight: FontWeight.bold,
-                                            color: exercise['completed'] == true
-                                                ? Colors.grey[500]
-                                                : Colors.grey[600],
-                                            decoration:
-                                                exercise['completed'] == true
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                          ),
+                                      ),
+                                      SizedBox(height: 4.0),
+                                      Text(
+                                        "Sets: ${exercise['sets']?.toString() ?? 'Add sets'}",
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: exercise['completed'] == true
+                                              ? Colors.grey[500]
+                                              : Colors.grey[600],
+                                          decoration:
+                                              exercise['completed'] == true
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
                                         ),
-                                        Text(
-                                          "Weight: ${exercise['weight']?.join(',').toString() ?? "Add weights"}" ??
-                                              'Weight: ',
-                                          style: TextStyle(
-                                            fontSize: 14.0,
-                                            fontWeight: FontWeight.bold,
-                                            color: exercise['completed'] == true
-                                                ? Colors.grey[500]
-                                                : Colors.grey[600],
-                                            decoration:
-                                                exercise['completed'] == true
-                                                    ? TextDecoration.lineThrough
-                                                    : TextDecoration.none,
-                                          ),
+                                      ),
+                                      SizedBox(height: 4.0),
+                                      Text(
+                                        "Weight: ${exercise['weight']?.join(',') ?? 'Add weights'}",
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.w500,
+                                          color: exercise['completed'] == true
+                                              ? Colors.grey[500]
+                                              : Colors.grey[600],
+                                          decoration:
+                                              exercise['completed'] == true
+                                                  ? TextDecoration.lineThrough
+                                                  : TextDecoration.none,
                                         ),
-                                        Spacer(),
-                                        Align(
-                                          alignment: Alignment.centerRight,
-                                          child: SizedBox(
-                                            width: 120,
-                                            child: Row(
-                                              children: [
-                                                IconButton(
-                                                  icon: const Icon(Icons
-                                                      .remove_circle_outline),
-                                                  onPressed: () async {
-                                                    await _removeFromDatabase(
-                                                        exercise['id']);
-                                                    exercises.removeWhere(
-                                                        (item) =>
-                                                            item['id'] ==
-                                                            exercise['id']);
-                                                    setState(() {});
-                                                  },
-                                                ),
-                                                Checkbox(
-                                                  fillColor: WidgetStateProperty
-                                                      .resolveWith(
-                                                          (Set<WidgetState>
-                                                              states) {
-                                                    if (states.contains(
-                                                        WidgetState.selected)) {
-                                                      return const Color
-                                                          .fromARGB(
-                                                          237, 255, 134, 21);
-                                                    }
-                                                    return Colors.white;
-                                                  }),
-                                                  value:
-                                                      exercise['completed'] ??
-                                                          false,
-                                                  onChanged: (bool? value) {
+                                      ),
+                                      Spacer(),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: SizedBox(
+                                          width: 120,
+                                          child: Row(
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(Icons
+                                                    .remove_circle_outline),
+                                                onPressed: () async {
+                                                  await _removeFromDatabase(
+                                                      exercise['id']);
+                                                  exercises.removeWhere(
+                                                      (item) =>
+                                                          item['id'] ==
+                                                          exercise['id']);
+                                                  setState(() {});
+                                                },
+                                              ),
+                                              Checkbox(
+                                                fillColor: MaterialStateProperty
+                                                    .resolveWith(
+                                                        (Set<MaterialState>
+                                                            states) {
+                                                  if (states.contains(
+                                                      MaterialState.selected)) {
+                                                    return const Color.fromARGB(
+                                                        237, 255, 134, 21);
+                                                  }
+                                                  return Colors.white;
+                                                }),
+                                                value: exercise['completed'] ??
+                                                    false,
+                                                onChanged: (bool? value) {
+                                                  setState(() {
                                                     exercise['completed'] =
                                                         value ?? false;
-
                                                     if (exercise['completed']) {
                                                       exercises.removeWhere(
                                                           (item) =>
@@ -497,7 +501,6 @@ class _DashboardPageState extends State<DashboardPage>
                                                               exercise['name']);
                                                       exercises.add(exercise);
                                                     }
-
                                                     final updatedExercise =
                                                         Exercise(
                                                       uid: exercise['id'],
@@ -521,65 +524,23 @@ class _DashboardPageState extends State<DashboardPage>
                                                       completed:
                                                           exercise['completed'],
                                                     );
-
                                                     _moveCheckedExerciseToEndOfList(
                                                         updatedExercise);
-                                                    setState(
-                                                      () {},
-                                                    );
-                                                  },
-                                                ),
-                                              ],
-                                            ),
+                                                  });
+                                                },
+                                              ),
+                                            ],
                                           ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                              Container(
-                                margin: const EdgeInsets.only(right: 8.0),
-                                child: IconButton(
-                                  icon: Icon(Icons.add),
-                                  iconSize: 32.0,
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            SearchExercisePage(
-                                          selectedDate:
-                                              _selectedDay ?? DateTime.now(),
-                                          onExerciseAdded: _updateDashboard,
                                         ),
-                                      ),
-                                    );
-                                  },
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Add Workout",
-                                style: TextStyle(
-                                  fontSize: 24.0,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              SizedBox(
-                                width: 16.0,
-                              ),
-                              IconButton(
+                              );
+                            }).toList(),
+                            Container(
+                              margin: const EdgeInsets.only(right: 8.0),
+                              child: IconButton(
                                 icon: Icon(Icons.add),
                                 iconSize: 32.0,
                                 onPressed: () {
@@ -589,44 +550,27 @@ class _DashboardPageState extends State<DashboardPage>
                                       builder: (context) => SearchExercisePage(
                                         selectedDate:
                                             _selectedDay ?? DateTime.now(),
-                                        onExerciseAdded:
-                                            _fetchExercisesFromDatabase,
+                                        onExerciseAdded: _updateDashboard,
                                       ),
                                     ),
                                   );
                                 },
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16.0),
-              Container(
-                width: MediaQuery.of(context).size.width * 0.95,
-                height: MediaQuery.of(context).size.height * 0.35,
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4.0),
-                  border: Border.all(color: Colors.grey[400]!),
-                ),
-                child: nutritionalData.isEmpty
-                    ? Center(
+                      )
+                    : Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "Add Calories",
+                              "Add Workout",
                               style: TextStyle(
                                 fontSize: 24.0,
+                                fontWeight: FontWeight.bold,
                                 color: Colors.black87,
                               ),
-                            ),
-                            SizedBox(
-                              width: 16.0,
                             ),
                             IconButton(
                               icon: Icon(Icons.add),
@@ -635,17 +579,11 @@ class _DashboardPageState extends State<DashboardPage>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => SearchFoodPage(
-                                      selectedDate: _focusedDay,
-                                      onFoodSelected:
-                                          (Map<String, List<Food>> selectedFood,
-                                              Map<String, List<FoodForDatabase>>
-                                                  nutritionalDetails) {
-                                        setState(() {
-                                          foodData = selectedFood;
-                                          nutritionalData = nutritionalDetails;
-                                        });
-                                      },
+                                    builder: (context) => SearchExercisePage(
+                                      selectedDate:
+                                          _selectedDay ?? DateTime.now(),
+                                      onExerciseAdded:
+                                          _fetchExercisesFromDatabase,
                                     ),
                                   ),
                                 );
@@ -653,63 +591,78 @@ class _DashboardPageState extends State<DashboardPage>
                             ),
                           ],
                         ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      ),
+              ),
+              const SizedBox(height: 16.0),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.95,
+                height: MediaQuery.of(context).size.height * 0.35,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Row(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.center, // Align children vertically
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween, // Space between items
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment
+                            .center, // Center the column vertically
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Calories: ${calculateTotalCalories(nutritionalData)} kcal",
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              SizedBox(height: 8.0),
-                              Text(
-                                "Protein: ${calculateTotalProtein(nutritionalData)} g",
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              SizedBox(height: 8.0),
-                              Text(
-                                "Add More Food!",
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  color: Colors.black87,
-                                ),
-                              )
-                            ],
+                          Text(
+                            "Calories: ${calculateTotalCalories(nutritionalData)} kcal",
+                            style: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.add),
-                            iconSize: 32.0,
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => SearchFoodPage(
-                                    selectedDate: _focusedDay,
-                                    onFoodSelected:
-                                        (Map<String, List<Food>> selectedFood,
-                                            Map<String, List<FoodForDatabase>>
-                                                nutritionalDetails) {
-                                      setState(() {
-                                        foodData = selectedFood;
-                                        nutritionalData = nutritionalDetails;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
+                          SizedBox(height: 8.0),
+                          Text(
+                            "Protein: ${calculateTotalProtein(nutritionalData)} g",
+                            style: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
                           ),
+                          SizedBox(height: 16.0),
                         ],
                       ),
+                    ),
+                    SizedBox(
+                        width: 16.0), // Add spacing between column and button
+                    IconButton(
+                      icon: Icon(Icons.add),
+                      iconSize: 32.0,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SearchFoodPage(
+                              selectedDate: _focusedDay,
+                              onFoodAdded: _fetchNutritionalDataFromDatabase,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
