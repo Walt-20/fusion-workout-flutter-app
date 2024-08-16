@@ -81,7 +81,8 @@ class _AddFoodDialogState extends State<AddFoodDialog> {
   }
 
   Future<void> _fetchSearchFood(String query) async {
-    final url = Uri.parse('http://10.0.2.2:3000/search-food');
+    final url = Uri.parse(
+        'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/search-food');
 
     try {
       final response =

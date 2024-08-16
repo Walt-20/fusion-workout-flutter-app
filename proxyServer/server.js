@@ -173,6 +173,8 @@ app.get('/search-food-3', (req, res) => {
     try {
       const parsedBody = JSON.parse(body);
 
+      console.log('parsedBody is', parsedBody);
+
       if (parsedBody && parsedBody.foods_search && parsedBody.foods_search.results) {
         const foods = parsedBody.foods_search.results.food;
 

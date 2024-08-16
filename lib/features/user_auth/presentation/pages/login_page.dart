@@ -122,7 +122,8 @@ class _LoginPageState extends State<LoginPage> {
     // final url = Uri.parse(
     //     'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/get-token');
 
-    final url = Uri.parse('http://10.0.2.2:3000/get-token');
+    final url = Uri.parse(
+        'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/get-token');
 
     try {
       final response = await http.get(url);

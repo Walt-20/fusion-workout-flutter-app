@@ -17,14 +17,6 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    if (kDebugMode) {
-      try {
-        FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-        FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-      } catch (e) {
-        print('Failed to connect to the emulator: $e');
-      }
-    }
   } catch (e) {
     debugPrint('Failed to initalize Firebase: $e');
   }
