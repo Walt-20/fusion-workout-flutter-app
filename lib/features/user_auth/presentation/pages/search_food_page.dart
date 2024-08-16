@@ -8,13 +8,12 @@ import 'package:fusion_workouts/features/user_auth/presentation/widgets/food_det
 import 'package:http/http.dart' as http;
 
 class SearchFoodPage extends StatefulWidget {
-  final Function(Map<String, List<Food>>, Map<String, List<FoodForDatabase>>)
-      onFoodSelected;
+  final VoidCallback onFoodAdded;
   final DateTime selectedDate;
   const SearchFoodPage({
     super.key,
     required this.selectedDate,
-    required this.onFoodSelected,
+    required this.onFoodAdded,
   });
 
   @override
@@ -69,7 +68,6 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     debugPrint("search food page is initialized");
     _fetchFoodFromDatabase();
   }
@@ -78,6 +76,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     debugPrint("adding food to database");
     await _auth.addFoodToDatabase(
         _selectedFoodForDatabase, widget.selectedDate);
+
+    widget.onFoodAdded();
   }
 
   Future<void> _removeFoodFromDatabase(mealType, foodId, date) async {
@@ -119,6 +119,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
       totalCalories: nutritionalData[0].toString(),
       totalProtein: nutritionalData[1].toString(),
     ));
+
+    widget.onFoodAdded();
   }
 
   void _addOrRemoveSelectedFood(
@@ -145,6 +147,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
         _removeFoodFromDatabase(_selectedMeal, food.foodId, DateTime.now());
       }
     });
+
+    widget.onFoodAdded();
   }
 
   void _showFloatingMessage(BuildContext context) {
@@ -244,8 +248,12 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                   _addOrRemoveSelectedFood(
                                       _selectedFoodsByMeal[_selectedMeal]![
                                           index],
-                                      '',
-                                      "0",
+                                      _selectedFoodsByMeal[_selectedMeal]![
+                                              index]
+                                          .servings
+                                          .first
+                                          .serving_id,
+                                      "1",
                                       false);
                                 });
                               },
@@ -306,12 +314,19 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
 
                                             if (isChecked) {
                                               _addOrRemoveSelectedFood(
-                                                  food, '', "0", true);
+                                                  food,
+                                                  food.servings.first
+                                                      .serving_id,
+                                                  "1",
+                                                  true);
                                               _addFoodMapToDatabase();
-                                              setState(() {});
                                             } else {
                                               _addOrRemoveSelectedFood(
-                                                  food, '', "0", false);
+                                                  food,
+                                                  food.servings.first
+                                                      .serving_id,
+                                                  "1",
+                                                  false);
                                             }
                                             _showFloatingMessage(context);
                                           });
