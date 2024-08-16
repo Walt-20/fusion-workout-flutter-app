@@ -55,10 +55,39 @@ class FirebaseAuthService {
       'height': entry.height,
       'availability': entry.availability,
     }).then((value) {
-      debugPrint("success");
+      debugPrint("Profile information added successfuly");
     }).catchError((onError) {
       debugPrint(onError.toString());
     });
+
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('exercises')
+        .doc(DateFormat('yyyy-MM-dd').format(DateTime.now()))
+        .set({})
+        .then((value) {})
+        .catchError((onError) {
+          debugPrint(
+              "Error initializing exercises collection: ${onError.toString()}");
+        });
+
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals')
+        .doc(DateFormat('yyyy-MM-dd').format(DateTime.now()))
+        .set({
+          'Breakfast': [],
+          'Lunch': [],
+          'Dinner': [],
+          'Snacks': [],
+        })
+        .then((value) {})
+        .catchError((onError) {
+          debugPrint(
+              "Error initializing meals collection: ${onError.toString()}");
+        });
   }
 
   Future<void> addExerciseToFirestore(
@@ -221,13 +250,19 @@ class FirebaseAuthService {
 
       if (querySnapshot.exists) {
         var data = querySnapshot.data();
-        if (data != null && data is Map<String, dynamic>) {
-          List<Map<String, dynamic>> exerciseList =
-              (data['exercises'] as List<dynamic>).map((entry) {
-            return entry as Map<String, dynamic>;
-          }).toList();
 
-          return exerciseList;
+        if (data != null && data is Map<String, dynamic>) {
+          // Check if 'exercises' field exists and is a list
+          if (data.containsKey('exercises') && data['exercises'] != null) {
+            List<Map<String, dynamic>> exerciseList =
+                (data['exercises'] as List<dynamic>).map((entry) {
+              return entry as Map<String, dynamic>;
+            }).toList();
+            return exerciseList;
+          } else {
+            // If 'exercises' field is null or doesn't exist, return an empty list
+            return [];
+          }
         } else {
           return [];
         }
@@ -296,8 +331,6 @@ class FirebaseAuthService {
 
       Map<String, dynamic> foodData = {};
 
-      debugPrint("food is ${food.toString()}");
-
       food.forEach((mealType, foodList) {
         // Initialize meal type if it doesn't exist
         List<Map<String, dynamic>> existingFoodList =
@@ -308,8 +341,7 @@ class FirebaseAuthService {
         }).toList();
 
         // Merge existing and new food items
-        // ignore: avoid_function_literals_in_foreach_calls
-        newFoodList.forEach((newFoodItem) {
+        for (var newFoodItem in newFoodList) {
           int index = existingFoodList.indexWhere((existingFoodItem) =>
               existingFoodItem['foodId'] == newFoodItem['foodId']);
           if (index != -1) {
@@ -319,7 +351,7 @@ class FirebaseAuthService {
             // Add new food item
             existingFoodList.add(newFoodItem);
           }
-        });
+        }
 
         foodData[mealType] = existingFoodList;
       });
@@ -359,6 +391,33 @@ class FirebaseAuthService {
       }
     } catch (e) {
       debugPrint("Error removing food from database: $e");
+    }
+  }
+
+  Future<Map<String, List<FoodForDatabase>>> fetchNutritionalData(
+      DateTime date) async {
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    final userMealsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals')
+        .doc(dateString);
+
+    DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
+
+    if (mealDocSnapshot.exists) {
+      Map<String, dynamic> data =
+          mealDocSnapshot.data() as Map<String, dynamic>;
+      Map<String, List<FoodForDatabase>> foodMap = {};
+      data.forEach((key, value) {
+        List<FoodForDatabase> foodList = (value as List)
+            .map((item) => FoodForDatabase.fromMap(item))
+            .toList();
+        foodMap[key] = foodList;
+      });
+      return foodMap;
+    } else {
+      return {};
     }
   }
 
@@ -412,7 +471,8 @@ class FirebaseAuthService {
   }
 
   Future<Map<String, dynamic>> fetchFoods(String foodId) async {
-    final url = Uri.parse('http://10.0.2.2:3000/fetch-food-id');
+    final url = Uri.parse(
+        'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/fetch-food-id');
 
     try {
       final response = await http.get(
@@ -423,8 +483,6 @@ class FirebaseAuthService {
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
-
-        debugPrint("the decoded json is $responseBody");
 
         if (responseBody.containsKey('food')) {
           return responseBody['food'] as Map<String, dynamic>;
@@ -443,8 +501,6 @@ class FirebaseAuthService {
   void signOut(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      // ignore: unused_local_variable
-      final userId = user.uid;
       await FirebaseAuth.instance.signOut();
       // ignore: use_build_context_synchronously
       Navigator.of(context).pushAndRemoveUntil(
@@ -455,7 +511,8 @@ class FirebaseAuthService {
   }
 
   Future<void> fetchFoodIdFromAPI(String foodId) async {
-    final url = Uri.parse('http://10.0.2.2:3000/fetch-foodId');
+    final url = Uri.parse(
+        'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/fetch-foodId');
 
     try {
       final response =

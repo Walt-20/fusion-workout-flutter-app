@@ -21,10 +21,9 @@ class SearchExercisePage extends StatefulWidget {
 }
 
 class _SearchExercisePageState extends State<SearchExercisePage> {
-  // ignore: unused_field
-  Future<List<Exercise>>? _exercises;
   List<Exercise> _selectedExercises = [];
-  final Set<String> _existingExerciseIds = {}; // Track existing exercise IDs
+  // ignore: prefer_final_fields
+  Set<String> _existingExerciseIds = {}; // Track existing exercise IDs
   final FirebaseAuthService _auth = FirebaseAuthService();
 
   @override
@@ -100,26 +99,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     };
 
     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
-
-    widget.onExerciseAdded();
-  }
-
-  // ignore: unused_element
-  Future<void> _moveCheckedExerciseToEndOfList(Exercise exercise) async {
-    debugPrint("the exercise uid is ${exercise.uid}");
-    debugPrint("exercise completed is ${exercise.completed}");
-    Map<String, dynamic> exerciseMap = {
-      'id': exercise.uid,
-      'name': exercise.name,
-      'muscle': exercise.muscle,
-      'reps': exercise.reps,
-      'sets': exercise.sets,
-      'weight': exercise.weight,
-      'completed': exercise.completed,
-    };
-
-    await _auth
-        .updateMoveExerciseInFirebase(widget.selectedDate, [exerciseMap]);
 
     widget.onExerciseAdded();
   }
@@ -287,7 +266,6 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                     _selectedExercises.insert(0, list[index]);
                                     _addExerciseToFirebase(list[index]);
                                   }
-                                  _exercises = Future.value([]);
                                   controller.closeView("");
                                 });
                               },

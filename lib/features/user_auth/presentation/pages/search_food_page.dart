@@ -8,10 +8,12 @@ import 'package:fusion_workouts/features/user_auth/presentation/widgets/food_det
 import 'package:http/http.dart' as http;
 
 class SearchFoodPage extends StatefulWidget {
+  final VoidCallback onFoodAdded;
   final DateTime selectedDate;
   const SearchFoodPage({
     super.key,
     required this.selectedDate,
+    required this.onFoodAdded,
   });
 
   @override
@@ -19,7 +21,8 @@ class SearchFoodPage extends StatefulWidget {
 }
 
 Future<List<Food>> fetchSuggestions(String query, int pageNumber) async {
-  final url = Uri.parse('http://10.0.2.2:3000/search-food-3');
+  final url = Uri.parse(
+      'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/search-food-3');
 
   try {
     final response = await http.get(
@@ -56,7 +59,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     'Dinner': [],
     'Snacks': [],
   };
-  final Map<String, List<FoodForDatabase>> _selectedFoodForDatabase = {
+  // ignore: prefer_final_fields
+  Map<String, List<FoodForDatabase>> _selectedFoodForDatabase = {
     'Breakfast': [],
     'Lunch': [],
     'Dinner': [],
@@ -75,6 +79,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     debugPrint("adding food to database");
     await _auth.addFoodToDatabase(
         _selectedFoodForDatabase, widget.selectedDate);
+
+    widget.onFoodAdded();
   }
 
   Future<void> _removeFoodFromDatabase(mealType, foodId, date) async {
@@ -89,24 +95,50 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
     setState(() {});
   }
 
+  List<double> _calculateNutritionalData(
+      Food food, String servingId, String numberOfServings) {
+    var calories = 0.0;
+    var protein = 0.0;
+    var parsedNumberOfServings = double.parse(numberOfServings);
+    for (var serving in food.servings) {
+      if (servingId == serving.servingId) {
+        var parsedCalories = double.parse(serving.calories);
+        var parsedProtein = double.parse(serving.protein);
+        calories = parsedCalories * parsedNumberOfServings;
+        protein = parsedProtein * parsedNumberOfServings;
+      }
+    }
+    return [calories, protein];
+  }
+
   void _updateSelectedFood(
       Food food, String servingId, String numberOfServings) {
+    var nutritionalData =
+        _calculateNutritionalData(food, servingId, numberOfServings);
     _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
       foodId: food.foodId,
       servingId: servingId,
       numberOfServings: numberOfServings,
+      totalCalories: nutritionalData[0].toString(),
+      totalProtein: nutritionalData[1].toString(),
     ));
+
+    widget.onFoodAdded();
   }
 
   void _addOrRemoveSelectedFood(
       Food food, String servingId, String numberOfServings, bool isAdding) {
     setState(() {
       if (isAdding) {
+        var nutritionalData =
+            _calculateNutritionalData(food, servingId, numberOfServings);
         _selectedFoodsByMeal[_selectedMeal]!.add(food);
         _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
           foodId: food.foodId,
           servingId: servingId,
           numberOfServings: numberOfServings,
+          totalCalories: nutritionalData[0].toString(),
+          totalProtein: nutritionalData[1].toString(),
         ));
         debugPrint(
             "what is _selectedFoodForDatabase now? ${_selectedFoodForDatabase['numberOfServings']}");
@@ -118,53 +150,9 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
         _removeFoodFromDatabase(_selectedMeal, food.foodId, DateTime.now());
       }
     });
+
+    widget.onFoodAdded();
   }
-
-  // Future<void> _updateSelectedFoodInDatabase(
-  //     Food result, String mealToUpdate) async {
-  //   final meals = await _auth.fetchFoodFromFirestore(widget.selectedDate);
-
-  //   meals.forEach((mealType, mealsList) {
-  //     if (mealType.contains(mealToUpdate)) {
-  //       for (int i = 0; i < mealsList.length; i++) {
-  //         if (mealsList[i].foodId == result.foodId) {
-  //           // final descriptionPattern = RegExp(
-  //           //     r'Per\s+(\d+\/\d+|\d+)\s+[\w\s]+-\s+Calories:\s+([\d.]+)kcal\s*\|\s*Fat:\s*([\d.]+)g\s*\|\s*Carbs:\s*([\d.]+)g\s*\|\s*Protein:\s*([\d.]+)g');
-  //           // debugPrint("Food Description: ${mealsList[i].foodDescription}");
-  //           // debugPrint("Regex Pattern: ${descriptionPattern.pattern}");
-  //           // final match =
-  //           //     descriptionPattern.firstMatch(mealsList[i].foodDescription);
-
-  //           // if (match != null) {
-  //           //   final servingSize = match.group(1)!;
-  //           //   final originalCalories = double.parse(match.group(2)!);
-  //           //   final originalFat = double.parse(match.group(3)!);
-  //           //   final originalCarbs = double.parse(match.group(4)!);
-  //           //   final originalProtein = double.parse(match.group(5)!);
-
-  //           //   debugPrint("Serving Size: $servingSize");
-  //           //   debugPrint("Original Calories: $originalCalories");
-  //           //   debugPrint("Original Fat: $originalFat");
-  //           //   debugPrint("Original Carbs: $originalCarbs");
-  //           //   debugPrint("Original Protein: $originalProtein");
-  //           // } else {
-  //           //   debugPrint("Match not found");
-  //           // }
-
-  //           // break;
-  //         }
-  //       }
-  //     }
-  //   });
-
-  //   debugPrint("what are the meals ${meals.toString()}");
-
-  //   await _auth.addFoodToDatabase(meals, widget.selectedDate);
-
-  //   setState(() {
-  //     _selectedFoodsByMeal = meals;
-  //   });
-  // }
 
   void _showFloatingMessage(BuildContext context) {
     final overlay = Overlay.of(context);
@@ -263,8 +251,12 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                   _addOrRemoveSelectedFood(
                                       _selectedFoodsByMeal[_selectedMeal]![
                                           index],
-                                      '',
-                                      "0",
+                                      _selectedFoodsByMeal[_selectedMeal]![
+                                              index]
+                                          .servings
+                                          .first
+                                          .servingId,
+                                      "1",
                                       false);
                                 });
                               },
@@ -311,7 +303,6 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                     ? "  (${food.brandName})"
                                     : "";
                                 bool isChecked = false;
-
                                 return StatefulBuilder(
                                   builder: (BuildContext context,
                                       StateSetter setState) {
@@ -324,12 +315,17 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
 
                                             if (isChecked) {
                                               _addOrRemoveSelectedFood(
-                                                  food, '', "0", true);
+                                                  food,
+                                                  food.servings.first.servingId,
+                                                  "1",
+                                                  true);
                                               _addFoodMapToDatabase();
-                                              setState(() {});
                                             } else {
                                               _addOrRemoveSelectedFood(
-                                                  food, '', "0", false);
+                                                  food,
+                                                  food.servings.first.servingId,
+                                                  "1",
+                                                  false);
                                             }
                                             _showFloatingMessage(context);
                                           });
