@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/exercise_details_dialog.dart';
+import 'package:fusion_workouts/app/models/exercise.dart';
+import 'package:fusion_workouts/app/widgets/exercise_details_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 

@@ -3,12 +3,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/event.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
+import 'package:fusion_workouts/app/models/entry.dart';
+import 'package:fusion_workouts/app/models/event.dart';
+import 'package:fusion_workouts/app/models/exercise.dart';
+import 'package:fusion_workouts/app/models/food.dart';
+import 'package:fusion_workouts/app/models/food_database.dart';
+import 'package:fusion_workouts/app/models/workouts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'auth_page.dart';

@@ -1,50 +1,32 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_container_widget.dart';
+import 'package:fusion_workouts/app/pages/on_boarding.dart';
+import 'package:fusion_workouts/app/widgets/form_container_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/my_button.dart';
-import 'package:fusion_workouts/features/user_auth/provider/tokenprovider.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:fusion_workouts/app/widgets/my_button.dart';
 
-import 'package:provider/provider.dart';
-
-class LoginPage extends StatefulWidget {
+class SignUpPage extends StatefulWidget {
   final Function()? onTap;
-  const LoginPage({super.key, required this.onTap});
+  const SignUpPage({super.key, required this.onTap});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpPageState extends State<SignUpPage> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Variable to track if the widget is mounted
-  bool _isMounted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _isMounted = true;
-  }
-
-  @override
-  void dispose() {
-    _isMounted = false;
-    super.dispose();
-  }
-
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Login",
+          "Sign Up",
           style: TextStyle(
             color: Color.fromARGB(237, 255, 134, 21),
           ),
@@ -59,14 +41,14 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Welcome, get back to work!",
+                  "Create an account to get started!",
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
                   height: 30,
                 ),
                 FormContainerWidget(
-                  fieldKey: Key("emailField"),
+                  fieldKey: Key('emailField'),
                   controller: _emailController,
                   hintText: "Email",
                   isPasswordField: false,
@@ -75,18 +57,27 @@ class _LoginPageState extends State<LoginPage> {
                   height: 10,
                 ),
                 FormContainerWidget(
-                  fieldKey: Key("passwordField"),
+                  fieldKey: Key('passwordField'),
                   controller: _passwordController,
                   hintText: "Password",
+                  isPasswordField: true,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                FormContainerWidget(
+                  fieldKey: Key('confirmPasswordField'),
+                  controller: _confirmPasswordController,
+                  hintText: "Confirm Password",
                   isPasswordField: true,
                 ),
                 SizedBox(
                   height: 30,
                 ),
                 MyButton(
-                  fieldKey: Key("loginButton"),
-                  text: "Login",
-                  onTap: _login,
+                  fieldKey: Key('signupButton'),
+                  text: "Sign Up",
+                  onTap: _signUp,
                 ),
                 SizedBox(
                   height: 20,
@@ -94,15 +85,14 @@ class _LoginPageState extends State<LoginPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don't have an account?"),
+                    Text("Have an account?"),
                     SizedBox(
                       width: 5,
                     ),
                     GestureDetector(
-                      key: Key('signupButton'),
                       onTap: widget.onTap,
                       child: Text(
-                        "Sign Up",
+                        "Login",
                         style: TextStyle(
                           color: Color.fromARGB(237, 255, 134, 21),
                         ),
@@ -118,63 +108,35 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> fetchOAuthToken() async {
-    final url = Uri.parse('http://10.0.2.2:3000/get-token');
-
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        debugPrint("fetchOAuthToken ${jsonData['access_token']}");
-        if (mounted) {
-          Provider.of<TokenProvider>(context, listen: false)
-              .updateToken(jsonData['access_token']);
-        }
-      } else {
-        FirebaseAuth.instance.signOut();
-        throw Exception('Failed to fetch OAuth2 token');
-      }
-    } catch (e) {
-      FirebaseAuth.instance.signOut();
-    }
-  }
-
-  void _login() async {
+  void _signUp() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      showAlertMessage("Please enter both your email and password");
-      return;
-    }
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
 
     try {
-      await _auth.signInWithEmailAndPassword(email, password);
-      await fetchOAuthToken();
+      if (_passwordController.text == _confirmPasswordController.text) {
+        await _auth.signUpWithEmailAndPassword(email, password);
+        if (!mounted) return;
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => OnBoarding()));
+      } else {
+        if (!mounted) return;
+        showAlertMessage("Passwords do not match");
+      }
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
       showAlertMessage(e.code);
     }
   }
 
   void showAlertMessage(String message) {
-    if (message == 'user-not-found') {
-      message = 'User not found';
-    } else if (message == 'wrong-password') {
-      message = 'Wrong password';
-    } else if (message == 'invalid-email') {
-      message = 'Invalid email';
-    } else if (message == 'user-disabled') {
-      message = 'User disabled';
-    } else if (message == 'too-many-requests') {
-      message = 'Too many requests';
-    } else if (message == 'operation-not-allowed') {
-      message = 'Operation not allowed';
-    } else if (message == 'network-request-failed') {
-      message = 'Network request failed';
-    } else {
-      message = message;
-    }
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

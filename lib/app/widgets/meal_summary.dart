@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/edit_food_dialog.dart';
+import 'package:fusion_workouts/app/models/food.dart';
+import 'package:fusion_workouts/app/widgets/edit_food_dialog.dart';
 
 class MealSummaryWidget extends StatelessWidget {
   final List<Food> meals;

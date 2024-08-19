@@ -1,4 +1,4 @@
-import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
+import 'package:fusion_workouts/app/models/workouts.dart';
 
 class Event {
   String name;
@@ -19,7 +19,8 @@ class Event {
   factory Event.fromMap(Map<String, dynamic> map) {
     return Event(
       name: map['name'],
-      workouts: (map['workouts'] as List).map((w) => Workout.fromMap(w)).toList(),
+      workouts:
+          (map['workouts'] as List).map((w) => Workout.fromMap(w)).toList(),
     );
   }
 }

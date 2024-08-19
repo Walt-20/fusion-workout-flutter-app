@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
+import 'package:fusion_workouts/app/models/food.dart';
 
 class EditFoodDialog extends StatefulWidget {
   final List<Food> meals;

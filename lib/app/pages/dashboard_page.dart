@@ -1,14 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/search_exercise_page.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/search_food_page.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/exercise_details_dialog.dart';
+import 'package:fusion_workouts/app/models/exercise.dart';
+import 'package:fusion_workouts/app/models/food.dart';
+import 'package:fusion_workouts/app/models/food_database.dart';
+import 'package:fusion_workouts/app/pages/search_exercise_page.dart';
+import 'package:fusion_workouts/app/pages/search_food_page.dart';
+import 'package:fusion_workouts/app/widgets/exercise_details_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -626,7 +628,7 @@ class _DashboardPageState extends State<DashboardPage>
                           Text(
                             "Calories: ${calculateTotalCalories(nutritionalData)} kcal",
                             style: TextStyle(
-                              fontSize: 20.0,
+                              fontSize: 24.0,
                               fontWeight: FontWeight.w500,
                               color: Colors.black87,
                             ),
@@ -635,7 +637,7 @@ class _DashboardPageState extends State<DashboardPage>
                           Text(
                             "Protein: ${calculateTotalProtein(nutritionalData)} g",
                             style: TextStyle(
-                              fontSize: 20.0,
+                              fontSize: 24.0,
                               fontWeight: FontWeight.w500,
                               color: Colors.black87,
                             ),
@@ -664,6 +666,23 @@ class _DashboardPageState extends State<DashboardPage>
                   ],
                 ),
               ),
+              SizedBox(
+                height: 32.0,
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: GestureDetector(
+                  onTap: () {
+                    launchUrl(
+                      Uri.parse('https://www.fatsecret.com'),
+                    );
+                  },
+                  child: SvgPicture.network(
+                    'https://platform.fatsecret.com/api/static/images/powered_by_fatsecret.svg',
+                    height: 50,
+                  ),
+                ),
+              )
             ],
           ),
         ),

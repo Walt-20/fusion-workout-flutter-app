@@ -6,7 +6,7 @@ import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:fusion_workouts/features/user_auth/provider/tokenprovider.dart';
+import 'package:fusion_workouts/app/provider/tokenprovider.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 

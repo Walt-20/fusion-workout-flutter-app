@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
+import 'package:fusion_workouts/app/models/food.dart';
 import 'package:http/http.dart' as http;
 
 enum MealType { breakfast, lunch, dinner, snack }

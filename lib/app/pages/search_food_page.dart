@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/floating_message.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/food_details_dialog.dart';
+import 'package:fusion_workouts/app/models/food.dart';
+import 'package:fusion_workouts/app/models/food_database.dart';
+import 'package:fusion_workouts/app/widgets/floating_message.dart';
+import 'package:fusion_workouts/app/widgets/food_details_dialog.dart';
 import 'package:http/http.dart' as http;
 
 class SearchFoodPage extends StatefulWidget {
