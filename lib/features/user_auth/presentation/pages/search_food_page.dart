@@ -282,7 +282,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const LinearProgressIndicator(
-                            color: Color.fromARGB(237, 255, 134, 21));
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        );
                       } else if (snapshot.hasError) {
                         return Text('Error: ${snapshot.error}');
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {

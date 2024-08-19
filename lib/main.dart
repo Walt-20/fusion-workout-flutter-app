@@ -41,8 +41,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<TokenProvider>(
       create: (context) => TokenProvider(),
-      child: const MaterialApp(
+      child: MaterialApp(
         title: 'Fusion Workouts App',
+        theme: ThemeData(
+          primaryColor: Color.fromARGB(237, 255, 134, 21),
+          textSelectionTheme: TextSelectionThemeData(
+            cursorColor: Color.fromARGB(237, 255, 134, 21),
+          ),
+        ),
         debugShowCheckedModeBanner: true,
         home: AuthPage(),
       ),

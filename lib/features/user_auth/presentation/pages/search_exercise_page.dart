@@ -293,7 +293,9 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         );
                       }
                     }
-                    return const LinearProgressIndicator();
+                    return const LinearProgressIndicator(
+                      color: Color.fromARGB(237, 255, 134, 21),
+                    );
                   },
                 )
               ];
