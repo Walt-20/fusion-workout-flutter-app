@@ -3,10 +3,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/entry.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
+import 'package:fusion_workouts/app/models/entry.dart';
+import 'package:fusion_workouts/app/models/food.dart';
+import 'package:fusion_workouts/app/models/food_database.dart';
+import 'package:fusion_workouts/app/models/workouts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'auth_page.dart';
@@ -392,6 +392,36 @@ class FirebaseAuthService {
     } catch (e) {
       debugPrint("Error removing food from database: $e");
     }
+  }
+
+  Future<Map<String, dynamic>?> fetchFoodItemByServingId(
+      DateTime date, String servingId) async {
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    final userMealsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals')
+        .doc(dateString);
+
+    DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
+
+    if (mealDocSnapshot.exists) {
+      Map<String, dynamic> existingData =
+          mealDocSnapshot.data() as Map<String, dynamic>;
+
+      for (String mealType in ['Breakfast', 'Lunch', 'Dinner', 'Snacks']) {
+        if (existingData.containsKey(mealType)) {
+          List<dynamic> foodList = existingData[mealType];
+          for (var foodItem in foodList) {
+            if (foodItem['servingId'] == servingId) {
+              return foodItem;
+            }
+          }
+        }
+      }
+    }
+
+    return null; // Return null if the servingId is not found
   }
 
   Future<Map<String, List<FoodForDatabase>>> fetchNutritionalData(

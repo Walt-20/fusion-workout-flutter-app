@@ -46,8 +46,8 @@ dependencies:
   provider: ^6.1.2
   usb_serial: ^0.5.2
   uuid: ^4.4.2
-  mockito: ^5.4.4
-
+  flutter_svg: ^2.0.10+1
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   integration_test:

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
+import 'package:fusion_workouts/app/models/food.dart';
 
 class FoodDetailsDialog extends StatefulWidget {
   final Food food;

@@ -1,15 +1,17 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_container_widget.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:fusion_workouts/app/widgets/form_container_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/my_button.dart';
-import 'package:fusion_workouts/features/user_auth/provider/tokenprovider.dart';
+import 'package:fusion_workouts/app/widgets/my_button.dart';
+import 'package:fusion_workouts/app/provider/tokenprovider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
@@ -23,10 +25,6 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseAuthService _auth = FirebaseAuthService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Variable to track if the widget is mounted
-  // ignore: unused_field
-  bool _isMounted = false;
 
   @override
   void initState() {
@@ -109,6 +107,23 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
+                SizedBox(
+                  height: 32.0,
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: GestureDetector(
+                    onTap: () {
+                      launchUrl(
+                        Uri.parse('https://www.fatsecret.com'),
+                      );
+                    },
+                    child: SvgPicture.network(
+                      'https://platform.fatsecret.com/api/static/images/powered_by_fatsecret.svg',
+                      height: 50,
+                    ),
+                  ),
+                )
               ],
             ),
           ),

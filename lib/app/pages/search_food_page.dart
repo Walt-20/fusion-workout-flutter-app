@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/food_database.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/floating_message.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/food_details_dialog.dart';
+import 'package:fusion_workouts/app/models/food.dart';
+import 'package:fusion_workouts/app/models/food_database.dart';
+import 'package:fusion_workouts/app/widgets/floating_message.dart';
+import 'package:fusion_workouts/app/widgets/food_details_dialog.dart';
 import 'package:http/http.dart' as http;
 
 class SearchFoodPage extends StatefulWidget {
@@ -227,7 +227,9 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return FoodDetailsDialog(
-                                        food: foodList[index]);
+                                      food: foodList[index],
+                                      date: widget.selectedDate,
+                                    );
                                   },
                                 );
                                 if (result != null) {
@@ -283,7 +285,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const LinearProgressIndicator(
-                            color: Color.fromARGB(237, 255, 134, 21));
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        );
                       } else if (snapshot.hasError) {
                         return Text('Error: ${snapshot.error}');
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {

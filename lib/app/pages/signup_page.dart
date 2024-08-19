@@ -1,11 +1,11 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/on_boarding.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/form_container_widget.dart';
+import 'package:fusion_workouts/app/pages/on_boarding.dart';
+import 'package:fusion_workouts/app/widgets/form_container_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/widgets/my_button.dart';
+import 'package:fusion_workouts/app/widgets/my_button.dart';
 
 class SignUpPage extends StatefulWidget {
   final Function()? onTap;

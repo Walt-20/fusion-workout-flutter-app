@@ -1,4 +1,4 @@
-import 'package:fusion_workouts/features/user_auth/presentation/models/workouts.dart';
+import 'package:fusion_workouts/app/models/workouts.dart';
 
 class Event {
   String name;

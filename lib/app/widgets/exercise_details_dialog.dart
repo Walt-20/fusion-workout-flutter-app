@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/models/exercise.dart';
+import 'package:fusion_workouts/app/models/exercise.dart';
 
 class ExerciseDetailsDialog extends StatefulWidget {
   final Exercise exercise;

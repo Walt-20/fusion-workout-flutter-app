@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/login_page.dart';
-import 'package:fusion_workouts/features/user_auth/presentation/pages/signup_page.dart';
+import 'package:fusion_workouts/app/pages/login_page.dart';
+import 'package:fusion_workouts/app/pages/signup_page.dart';
 
 class LoginOrSignupPage extends StatefulWidget {
   const LoginOrSignupPage({super.key});
