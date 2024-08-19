@@ -224,7 +224,9 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return FoodDetailsDialog(
-                                        food: foodList[index]);
+                                      food: foodList[index],
+                                      date: widget.selectedDate,
+                                    );
                                   },
                                 );
                                 if (result != null) {

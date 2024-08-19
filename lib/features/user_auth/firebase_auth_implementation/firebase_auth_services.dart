@@ -397,6 +397,36 @@ class FirebaseAuthService {
     }
   }
 
+  Future<Map<String, dynamic>?> fetchFoodItemByServingId(
+      DateTime date, String servingId) async {
+    String dateString = DateFormat('yyyy-MM-dd').format(date);
+    final userMealsCollection = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('meals')
+        .doc(dateString);
+
+    DocumentSnapshot mealDocSnapshot = await userMealsCollection.get();
+
+    if (mealDocSnapshot.exists) {
+      Map<String, dynamic> existingData =
+          mealDocSnapshot.data() as Map<String, dynamic>;
+
+      for (String mealType in ['Breakfast', 'Lunch', 'Dinner', 'Snacks']) {
+        if (existingData.containsKey(mealType)) {
+          List<dynamic> foodList = existingData[mealType];
+          for (var foodItem in foodList) {
+            if (foodItem['servingId'] == servingId) {
+              return foodItem;
+            }
+          }
+        }
+      }
+    }
+
+    return null; // Return null if the servingId is not found
+  }
+
   Future<Map<String, List<FoodForDatabase>>> fetchNutritionalData(
       DateTime date) async {
     String dateString = DateFormat('yyyy-MM-dd').format(date);

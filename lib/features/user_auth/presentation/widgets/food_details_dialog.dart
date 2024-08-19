@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/features/user_auth/presentation/models/food.dart';
 
 class FoodDetailsDialog extends StatefulWidget {
   final Food food;
+  final DateTime date;
 
-  const FoodDetailsDialog({Key? key, required this.food}) : super(key: key);
+  const FoodDetailsDialog({Key? key, required this.food, required this.date})
+      : super(key: key);
 
   @override
   _FoodDetailsDialogState createState() => _FoodDetailsDialogState();
@@ -13,12 +16,30 @@ class FoodDetailsDialog extends StatefulWidget {
 class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
   final TextEditingController _servingsController = TextEditingController();
   String? _selectedServingId;
+  String _numberOfServings = "1";
+  String _totalCalories = "0";
+  String _totalProtein = "0";
+  final FirebaseAuthService _auth = FirebaseAuthService();
 
   @override
   void initState() {
     super.initState();
+
     if (widget.food.servings.isNotEmpty) {
       _selectedServingId = widget.food.servings.first.serving_id;
+      fetchServingIdNutritionalData(_selectedServingId!);
+    }
+  }
+
+  Future<void> fetchServingIdNutritionalData(String servingId) async {
+    var map = await _auth.fetchFoodItemByServingId(widget.date, servingId);
+
+    if (map != null) {
+      setState(() {
+        _totalCalories = map['totalCalories'];
+        _totalProtein = map['totalProtein'];
+        _numberOfServings = map['numberOfServings'];
+      });
     }
   }
 
@@ -49,21 +70,26 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
             ),
             TextField(
               controller: _servingsController,
-              decoration:
-                  const InputDecoration(labelText: 'Number of Servings'),
+              decoration: InputDecoration(
+                labelText: 'Number of Servings',
+                hintText: 'Enter number of servings',
+                suffixText: _numberOfServings,
+              ),
               keyboardType: TextInputType.text,
             ),
+            SizedBox(
+              height: 8.0,
+            ),
+            Text("Total Calories: $_totalCalories"),
+            SizedBox(
+              height: 8.0,
+            ),
+            Text("Total Protein: $_totalProtein"),
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
           onPressed: () {
             if (_selectedServingId != null) {
               final servings = _servingsController.text ?? "1";
@@ -74,7 +100,30 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
               });
             }
           },
-          child: const Text('Save'),
+          child: const Text('Close'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              _numberOfServings = _servingsController.text.isNotEmpty
+                  ? _servingsController.text
+                  : "1";
+
+              int numServings = int.parse(_numberOfServings);
+              String selectedServingId = _selectedServingId!;
+              var serving = widget.food.servings.firstWhere(
+                (serving) => serving.serving_id == selectedServingId,
+                orElse: () => widget.food.servings.first,
+              );
+              int calories = int.parse(serving.calories);
+              int totalCalories = numServings * calories;
+              _totalCalories = totalCalories.toString();
+              double protein = double.parse(serving.protein);
+              double totalProtein = numServings * protein;
+              _totalProtein = totalProtein.toStringAsFixed(2);
+            });
+          },
+          child: const Text('Update'),
         ),
       ],
     );
