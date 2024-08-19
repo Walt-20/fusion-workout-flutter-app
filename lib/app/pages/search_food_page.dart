@@ -21,8 +21,7 @@ class SearchFoodPage extends StatefulWidget {
 }
 
 Future<List<Food>> fetchSuggestions(String query, int pageNumber) async {
-  final url = Uri.parse(
-      'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/search-food-3');
+  final url = Uri.parse('http://10.0.2.2:3000/search-food-3');
 
   try {
     final response = await http.get(

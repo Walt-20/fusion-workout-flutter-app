@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fusion_workouts/app/pages/profile_page.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/app/models/exercise.dart';
 import 'package:fusion_workouts/app/models/food.dart';
@@ -29,6 +31,7 @@ class _DashboardPageState extends State<DashboardPage>
   List<Map<String, dynamic>> exercises = [];
   Map<String, List<FoodForDatabase>> nutritionalData = {};
   Map<String, List<Food>> foodData = {};
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -232,9 +235,93 @@ class _DashboardPageState extends State<DashboardPage>
     return totalProtein;
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const DashboardPage(),
+          ),
+        );
+        break;
+
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SearchExercisePage(
+              selectedDate: _selectedDay ?? DateTime.now(),
+              onExerciseAdded: _updateDashboard,
+            ),
+          ),
+        );
+        break;
+
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SearchFoodPage(
+                selectedDate: _selectedDay ?? DateTime.now(),
+                onFoodAdded: _fetchNutritionalDataFromDatabase),
+          ),
+        );
+        break;
+
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProfilePage(),
+          ),
+        );
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+              color: Color.fromARGB(237, 255, 134, 21),
+            ),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.fitness_center,
+              color: Color.fromARGB(237, 255, 134, 21),
+            ),
+            label: "Exercise",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.local_dining,
+              color: Color.fromARGB(237, 255, 134, 21),
+            ),
+            label: "Nutrition",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.person,
+              color: Color.fromARGB(237, 255, 134, 21),
+            ),
+            label: "Profile",
+          ),
+        ],
+      ),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(237, 255, 134, 21),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -245,36 +332,6 @@ class _DashboardPageState extends State<DashboardPage>
             onPressed: () => _auth.signOut(context),
           ),
         ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color.fromARGB(237, 255, 134, 21),
-              ),
-              child: Text(
-                'Fusion Workout',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              key: const Key('homeButton'),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const DashboardPage()),
-                );
-              },
-            ),
-          ],
-        ),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -539,56 +596,18 @@ class _DashboardPageState extends State<DashboardPage>
                             }),
                             Container(
                               margin: const EdgeInsets.only(right: 8.0),
-                              child: IconButton(
-                                icon: const Icon(Icons.add),
-                                iconSize: 32.0,
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => SearchExercisePage(
-                                        selectedDate:
-                                            _selectedDay ?? DateTime.now(),
-                                        onExerciseAdded: _updateDashboard,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
                             ),
                           ],
                         ),
                       )
-                    : Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "Add Workout",
-                              style: TextStyle(
-                                fontSize: 24.0,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.add),
-                              iconSize: 32.0,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SearchExercisePage(
-                                      selectedDate:
-                                          _selectedDay ?? DateTime.now(),
-                                      onExerciseAdded:
-                                          _fetchExercisesFromDatabase,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                    : const Center(
+                        child: Text(
+                          "Add Workout",
+                          style: TextStyle(
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
               ),
@@ -610,55 +629,28 @@ class _DashboardPageState extends State<DashboardPage>
                   ],
                   border: Border.all(color: Colors.grey[300]!),
                 ),
-                child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.center, // Align children vertically
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween, // Space between items
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment
-                            .center, // Center the column vertically
-                        children: [
-                          Text(
-                            "Calories: ${calculateTotalCalories(nutritionalData)} kcal",
-                            style: const TextStyle(
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 8.0),
-                          Text(
-                            "Protein: ${calculateTotalProtein(nutritionalData)} g",
-                            style: const TextStyle(
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 16.0),
-                        ],
+                    Center(
+                      child: Text(
+                        "Calories: ${calculateTotalCalories(nutritionalData)} kcal",
+                        style: const TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
-                    const SizedBox(
-                        width: 16.0), // Add spacing between column and button
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      iconSize: 32.0,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SearchFoodPage(
-                              selectedDate: _focusedDay,
-                              onFoodAdded: _fetchNutritionalDataFromDatabase,
-                            ),
-                          ),
-                        );
-                      },
+                    Center(
+                      child: Text(
+                        "Protein: ${calculateTotalProtein(nutritionalData)} g",
+                        style: const TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ),
                   ],
                 ),
