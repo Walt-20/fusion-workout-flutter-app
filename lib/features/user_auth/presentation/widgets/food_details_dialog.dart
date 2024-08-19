@@ -46,7 +46,10 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Enter Details for ${widget.food.foodName}'),
+      title: Text(
+        'Enter Details for ${widget.food.foodName}',
+        style: TextStyle(color: Colors.black),
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -66,16 +69,76 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
                 });
               },
               value: _selectedServingId,
-              hint: const Text('Select a serving'),
+              hint: const Text(
+                'Select a serving',
+                style: TextStyle(
+                  color: Colors.black,
+                ),
+              ),
             ),
             TextField(
               controller: _servingsController,
               decoration: InputDecoration(
                 labelText: 'Number of Servings',
+                labelStyle: TextStyle(
+                  color: Color.fromARGB(237, 255, 134, 21),
+                ),
                 hintText: 'Enter number of servings',
+                hintStyle: TextStyle(
+                  color: Colors.black,
+                ),
                 suffixText: _numberOfServings,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color.fromARGB(237, 255, 134, 21),
+                  ),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color.fromARGB(237, 255, 134, 21),
+                  ),
+                ),
               ),
               keyboardType: TextInputType.text,
+              onChanged: (value) {
+                setState(() {
+                  _numberOfServings = _servingsController.text.isNotEmpty
+                      ? _servingsController.text
+                      : "1";
+
+                  int numServings;
+                  try {
+                    numServings = int.parse(_numberOfServings);
+                  } catch (e) {
+                    numServings = 1;
+                  }
+
+                  if (_selectedServingId != null) {
+                    String selectedServingId = _selectedServingId!;
+                    var serving = widget.food.servings.firstWhere(
+                      (serving) => serving.serving_id == selectedServingId,
+                      orElse: () => widget.food.servings.first,
+                    );
+                    int calories;
+                    try {
+                      calories = int.parse(serving.calories);
+                    } catch (e) {
+                      calories = 0;
+                    }
+                    int totalCalories = numServings * calories;
+                    _totalCalories = totalCalories.toString();
+
+                    double protein;
+                    try {
+                      protein = double.parse(serving.protein);
+                    } catch (e) {
+                      protein = 0.0;
+                    }
+                    double totalProtein = numServings * protein;
+                    _totalProtein = totalProtein.toStringAsFixed(2);
+                  }
+                });
+              },
             ),
             SizedBox(
               height: 8.0,
@@ -100,30 +163,33 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
               });
             }
           },
-          child: const Text('Close'),
+          child: const Text(
+            'Close',
+            style: TextStyle(
+              color: Color.fromARGB(237, 255, 134, 21),
+            ),
+          ),
         ),
         ElevatedButton(
           onPressed: () {
-            setState(() {
-              _numberOfServings = _servingsController.text.isNotEmpty
-                  ? _servingsController.text
-                  : "1";
-
-              int numServings = int.parse(_numberOfServings);
-              String selectedServingId = _selectedServingId!;
-              var serving = widget.food.servings.firstWhere(
-                (serving) => serving.serving_id == selectedServingId,
-                orElse: () => widget.food.servings.first,
-              );
-              int calories = int.parse(serving.calories);
-              int totalCalories = numServings * calories;
-              _totalCalories = totalCalories.toString();
-              double protein = double.parse(serving.protein);
-              double totalProtein = numServings * protein;
-              _totalProtein = totalProtein.toStringAsFixed(2);
-            });
+            if (_selectedServingId != null) {
+              final servings = _servingsController.text ?? "1";
+              Navigator.of(context).pop({
+                'food': widget.food,
+                'servingId': _selectedServingId,
+                'numberOfServings': servings,
+              });
+            }
           },
-          child: const Text('Update'),
+          child: const Text(
+            'Update',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color.fromARGB(237, 255, 134, 21),
+          ),
         ),
       ],
     );
