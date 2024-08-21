@@ -63,15 +63,15 @@ class _OnBoardingState extends State<OnBoarding> {
                 SizedBox(
                   height: 10,
                 ),
-                FormContainerWidget(
-                  controller: _phoneNumberController,
-                  key: Key('phoneNumber'),
-                  hintText: "Phone Number",
-                  isPasswordField: false,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
+                // FormContainerWidget(
+                //   controller: _phoneNumberController,
+                //   key: Key('phoneNumber'),
+                //   hintText: "Phone Number",
+                //   isPasswordField: false,
+                // ),
+                // SizedBox(
+                //   height: 10,
+                // ),
                 FormContainerWidget(
                   controller: _ageController,
                   key: Key('age'),
@@ -124,15 +124,16 @@ class _OnBoardingState extends State<OnBoarding> {
                     width: double.infinity,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 85, 85, 85),
+                      color: Color.fromARGB(237, 255, 134, 21),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
                       child: Text(
                         "Update Profile",
                         style: TextStyle(
-                            color: Color.fromARGB(237, 255, 134, 21),
-                            fontWeight: FontWeight.bold),
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

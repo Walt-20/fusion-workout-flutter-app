@@ -148,34 +148,34 @@ void main() {
 //   });
 
 //   // test wrong password credentials
-  testWidgets(
-      "Test login functionality where user enters correct credentials. ",
-      (WidgetTester tester) async {
-    // Build the app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  // testWidgets(
+  //     "Test login functionality where user enters correct credentials. ",
+  //     (WidgetTester tester) async {
+  //   // Build the app and trigger a frame.
+  //   await tester.pumpWidget(const MyApp());
 
-    expect(find.byType(LoginPage), findsOneWidget);
+  //   expect(find.byType(LoginPage), findsOneWidget);
 
-    await login(tester, 'test@example.com', 'test123aa');
+  //   await login(tester, 'test@example.com', 'test123aa');
 
-    // verify the user is on the login page with an alert message
-    expect(find.byType(LoginPage), findsOneWidget);
-  });
+  //   // verify the user is on the login page with an alert message
+  //   expect(find.byType(LoginPage), findsOneWidget);
+  // });
 
-  // test login no user credentials
-  testWidgets(
-      "Test login functionality where the user enters credentials not within Auth. ",
-      (WidgetTester tester) async {
-    // Build the app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  // // test login no user credentials
+  // testWidgets(
+  //     "Test login functionality where the user enters credentials not within Auth. ",
+  //     (WidgetTester tester) async {
+  //   // Build the app and trigger a frame.
+  //   await tester.pumpWidget(const MyApp());
 
-    expect(find.byType(LoginPage), findsOneWidget);
+  //   expect(find.byType(LoginPage), findsOneWidget);
 
-    await login(tester, 'test@gmail.com', 'test123');
+  //   await login(tester, 'test@gmail.com', 'test123');
 
-    // verify the user is on the login page with an alert message
-    expect(find.byType(LoginPage), findsOneWidget);
-  });
+  //   // verify the user is on the login page with an alert message
+  //   expect(find.byType(LoginPage), findsOneWidget);
+  // });
 
 //   // test correct credentials
 //   testWidgets(

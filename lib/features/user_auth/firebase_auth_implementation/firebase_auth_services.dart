@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fusion_workouts/app/models/entry.dart';
 import 'package:fusion_workouts/app/models/food.dart';
@@ -90,6 +91,55 @@ class FirebaseAuthService {
         });
   }
 
+  Future<void> removeAccount() async {
+    final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser?.uid);
+
+    await docRef.delete();
+
+    await FirebaseAuth.instance.currentUser?.delete();
+  }
+
+  Future<void> saveProfile(String name, String email) async {
+    final docRef = FirebaseFirestore.instance
+        .collection("Users")
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .collection("userProfile")
+        .doc("profileInformation");
+
+    await docRef.update({
+      'email': email,
+      'name': name,
+    }).then((_) {
+      debugPrint("User data updated successfully");
+    }).catchError((error) {
+      debugPrint("Failed to update user data: $error");
+    });
+  }
+
+  Future<dynamic> fetchProfileInformation() async {
+    final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('userProfile')
+        .doc('profileInformation');
+
+    try {
+      final docSnaphot = await docRef.get();
+
+      if (docSnaphot.exists) {
+        final profileInfo = docSnaphot.data();
+        return profileInfo;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      debugPrint("Error fetching profile information: $e");
+      return null;
+    }
+  }
+
   Future<void> addExerciseToFirestore(
       DateTime date, List<Map<String, dynamic>> exercises) async {
     final dateString = DateFormat('yyyy-MM-dd').format(date);
@@ -135,45 +185,6 @@ class FirebaseAuthService {
       }
     }
   }
-
-  // Future<void> updateFromSearchExerciseInFirebase(
-  //     DateTime date, Map<String, dynamic> exerciseMap) async {
-  //   final dateString = DateFormat('yyyy-MM-dd').format(date);
-  //   final docRef = FirebaseFirestore.instance
-  //       .collection('Users')
-  //       .doc(FirebaseAuth.instance.currentUser!.uid)
-  //       .collection('exercises')
-  //       .doc(dateString);
-
-  //   final docSnapshot = await docRef.get();
-
-  //   if (docSnapshot.exists) {
-  //     List<dynamic> existingExercisesDynamic =
-  //         docSnapshot.data()?['exercises'] ?? [];
-  //     List<Map<String, dynamic>> existingExercises = existingExercisesDynamic
-  //         .map((e) => Map<String, dynamic>.from(e))
-  //         .toList();
-  //     final WriteBatch batch = FirebaseFirestore.instance.batch();
-
-  //     for (var exercise in exerciseMap) {
-  //       bool found = false;
-  //       for (int i = 0; i < existingExercises.length; i++) {
-  //         if (existingExercises[i]['id'] == exercise['id']) {
-  //           existingExercises[i] = exercise;
-  //           found = true;
-  //           break;
-  //         }
-  //       }
-
-  //       if (!found) {
-  //         debugPrint("Exercise with id ${exercise['id']} is not found");
-  //       } else {
-  //         batch.update(docRef, {'exercises': existingExercises});
-  //       }
-  //     }
-  //     await batch.commit();
-  //   }
-  // }
 
   Future<void> updateMoveExerciseInFirebase(
       DateTime date, List<Map<String, dynamic>> newExercises) async {

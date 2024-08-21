@@ -326,6 +326,20 @@ class _DashboardPageState extends State<DashboardPage>
         backgroundColor: const Color.fromARGB(237, 255, 134, 21),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: GestureDetector(
+              onTap: () {
+                launchUrl(
+                  Uri.parse('https://www.fatsecret.com'),
+                );
+              },
+              child: SvgPicture.network(
+                'https://platform.fatsecret.com/api/static/images/powered_by_fatsecret.svg',
+                height: 50,
+              ),
+            ),
+          ),
           IconButton(
             key: const Key('logoutButton'),
             icon: const Icon(Icons.logout),
@@ -658,20 +672,6 @@ class _DashboardPageState extends State<DashboardPage>
               const SizedBox(
                 height: 32.0,
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: GestureDetector(
-                  onTap: () {
-                    launchUrl(
-                      Uri.parse('https://www.fatsecret.com'),
-                    );
-                  },
-                  child: SvgPicture.network(
-                    'https://platform.fatsecret.com/api/static/images/powered_by_fatsecret.svg',
-                    height: 50,
-                  ),
-                ),
-              )
             ],
           ),
         ),

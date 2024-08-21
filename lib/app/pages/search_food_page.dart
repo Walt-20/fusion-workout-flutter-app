@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/app/models/food.dart';
 import 'package:fusion_workouts/app/models/food_database.dart';
 import 'package:fusion_workouts/app/widgets/floating_message.dart';
 import 'package:fusion_workouts/app/widgets/food_details_dialog.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 class SearchFoodPage extends StatefulWidget {
   final VoidCallback onFoodAdded;
@@ -172,7 +174,31 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Search Foods')),
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(237, 255, 134, 21),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: GestureDetector(
+              onTap: () {
+                launchUrl(
+                  Uri.parse('https://www.fatsecret.com'),
+                );
+              },
+              child: SvgPicture.network(
+                'https://platform.fatsecret.com/api/static/images/powered_by_fatsecret.svg',
+                height: 50,
+              ),
+            ),
+          ),
+          IconButton(
+            key: const Key('logoutButton'),
+            icon: const Icon(Icons.logout),
+            onPressed: () => _auth.signOut(context),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // Meal toggle buttons at the top
