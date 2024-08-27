@@ -72,48 +72,48 @@ class _OnBoardingState extends State<OnBoarding> {
                 // SizedBox(
                 //   height: 10,
                 // ),
-                FormContainerWidget(
-                  controller: _ageController,
-                  key: Key('age'),
-                  hintText: "Age",
-                  isPasswordField: false,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                FormContainerWidget(
-                  controller: _sexController,
-                  key: Key('sex'),
-                  hintText: "Sex",
-                  isPasswordField: false,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                FormContainerWidget(
-                  controller: _weightController,
-                  key: Key('weight'),
-                  hintText: "Weight",
-                  isPasswordField: false,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                FormContainerWidget(
-                  controller: _heightController,
-                  key: Key('height'),
-                  hintText: "Height",
-                  isPasswordField: false,
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                FormContainerWidget(
-                  controller: _availabilityController,
-                  key: Key('availability'),
-                  hintText: "Workout availability (within a seven day peroid)",
-                  isPasswordField: false,
-                ),
+                // FormContainerWidget(
+                //   controller: _ageController,
+                //   key: Key('age'),
+                //   hintText: "Age",
+                //   isPasswordField: false,
+                // ),
+                // SizedBox(
+                //   height: 10,
+                // ),
+                // FormContainerWidget(
+                //   controller: _sexController,
+                //   key: Key('sex'),
+                //   hintText: "Sex",
+                //   isPasswordField: false,
+                // ),
+                // SizedBox(
+                //   height: 10,
+                // ),
+                // FormContainerWidget(
+                //   controller: _weightController,
+                //   key: Key('weight'),
+                //   hintText: "Weight",
+                //   isPasswordField: false,
+                // ),
+                // SizedBox(
+                //   height: 10,
+                // ),
+                // FormContainerWidget(
+                //   controller: _heightController,
+                //   key: Key('height'),
+                //   hintText: "Height",
+                //   isPasswordField: false,
+                // ),
+                // SizedBox(
+                //   height: 10,
+                // ),
+                // FormContainerWidget(
+                //   controller: _availabilityController,
+                //   key: Key('availability'),
+                //   hintText: "Workout availability (within a seven day peroid)",
+                //   isPasswordField: false,
+                // ),
                 SizedBox(
                   height: 30,
                 ),
@@ -129,7 +129,7 @@ class _OnBoardingState extends State<OnBoarding> {
                     ),
                     child: Center(
                       child: Text(
-                        "Update Profile",
+                        "Create Profile",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
