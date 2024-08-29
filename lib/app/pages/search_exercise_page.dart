@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fusion_workouts/app/pages/start_exercise_page.dart';
 import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:fusion_workouts/app/models/exercise.dart';
 import 'package:fusion_workouts/app/widgets/exercise_details_dialog.dart';
@@ -93,7 +94,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'name': exercise.name,
       'muscle': exercise.muscle,
       'reps': exercise.reps,
-      'sets': exercise.sets,
+      'sets': exercise.sets ?? [],
       'weight': exercise.weight,
       'completed': exercise.completed,
     };
@@ -111,7 +112,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'name': exercise.name,
       'muscle': exercise.muscle,
       'reps': exercise.reps,
-      'sets': exercise.sets,
+      'sets': exercise.sets ?? [],
       'weight': exercise.weight,
       'completed': exercise.completed,
     };
@@ -150,6 +151,8 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                         itemCount: _selectedExercises.length,
                         itemBuilder: (context, index) {
                           final exercise = _selectedExercises[index];
+                          debugPrint(
+                              "what is the exercise uid? ${exercise.uid}");
                           return GestureDetector(
                             onTap: () async {
                               final result =
@@ -239,12 +242,31 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                         });
                                       },
                                     ),
-
-                                    // Add Spacer to push the button to the right
-                                    Spacer(),
+                                    const Spacer(),
                                     ElevatedButton(
-                                      onPressed: () {},
-                                      child: const Text("Start"),
+                                      onPressed: () {
+                                        setState(() {});
+                                        debugPrint(
+                                            " what is the uid? ${exercise.uid!}");
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                StartExercisePage(
+                                              exercise:
+                                                  _selectedExercises[index],
+                                              selectedDate: widget.selectedDate,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text(
+                                        "Start",
+                                        style: TextStyle(
+                                          color:
+                                              Color.fromARGB(237, 255, 134, 21),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),

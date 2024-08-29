@@ -13,7 +13,7 @@ class Exercise {
   final String difficulty;
   final String instructions;
   List<dynamic>? reps;
-  int? sets;
+  List<ExerciseSet>? sets;
   List<dynamic>? weight;
   bool? completed;
   String? uid;
@@ -26,7 +26,7 @@ class Exercise {
     required this.difficulty,
     required this.instructions,
     List<dynamic>? reps,
-    this.sets,
+    List<dynamic>? sets,
     List<dynamic>? weight,
     this.completed = false,
     this.uid,
@@ -43,4 +43,16 @@ class Exercise {
       instructions: json['instructions'] ?? '',
     );
   }
+
+  void updateRepsAndWeight() {
+    reps = sets?.map((set) => set.reps).toList();
+    weight = sets?.map((set) => set.weight).toList();
+  }
+}
+
+class ExerciseSet {
+  int reps;
+  double weight;
+
+  ExerciseSet({required this.reps, required this.weight});
 }
