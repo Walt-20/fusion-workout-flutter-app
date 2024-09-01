@@ -5,8 +5,12 @@ import 'package:fusion_workouts/features/user_auth/firebase_auth_implementation/
 class StartExercisePage extends StatefulWidget {
   final Exercise exercise;
   final DateTime selectedDate;
-  const StartExercisePage(
-      {super.key, required this.exercise, required this.selectedDate});
+
+  const StartExercisePage({
+    super.key,
+    required this.exercise,
+    required this.selectedDate,
+  });
 
   @override
   State<StartExercisePage> createState() => _StartExercisePageState();
@@ -20,24 +24,56 @@ class _StartExercisePageState extends State<StartExercisePage> {
   @override
   void initState() {
     super.initState();
-    sets = widget.exercise.sets ?? [];
-    isChecked = List<bool>.filled(sets.length, false, growable: true);
+    _fetchExerciseData();
   }
 
   void _addSetToFirestore(Exercise exercise) async {
-    debugPrint("the exercise uid is ${exercise.uid}");
-    debugPrint("exercise completed is ${exercise.completed}");
+    debugPrint("The exercise UID is ${exercise.uid}");
+    debugPrint("Exercise completed is ${exercise.completed}");
     exercise.updateRepsAndWeight();
     Map<String, dynamic> exerciseMap = {
       'id': exercise.uid,
       'name': exercise.name,
       'muscle': exercise.muscle,
       'reps': exercise.reps,
-      'sets': exercise.sets?.length ?? [],
+      'sets': sets.length, // Store the count of sets
       'weight': exercise.weight,
       'completed': exercise.completed,
     };
     await _auth.updateExerciseInFirebase(widget.selectedDate, exerciseMap);
+  }
+
+  Future<void> _fetchExerciseData() async {
+    try {
+      final fetchedExercises = await _auth.fetchExercises(widget.selectedDate);
+
+      final exerciseData = fetchedExercises.firstWhere(
+        (exercise) => exercise['id'] == widget.exercise.uid,
+        orElse: () => {},
+      );
+
+      if (exerciseData != null) {
+        setState(() {
+          // Initialize reps and weight from the fetched data
+          widget.exercise.reps = (exerciseData['reps'] as List<dynamic>?)
+                  ?.map((e) => e as int)
+                  .toList() ??
+              [];
+          widget.exercise.weight = (exerciseData['weight'] as List<dynamic>?)
+                  ?.map((e) => e as double)
+                  .toList() ??
+              [];
+
+          // Initialize sets based on the integer value from Firebase
+          int numberOfSets = exerciseData['sets'] as int? ?? 0;
+          sets = List.generate(
+              numberOfSets, (index) => ExerciseSet(reps: 0, weight: 0.0));
+          isChecked = List<bool>.filled(numberOfSets, false, growable: true);
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching exercise data: $e");
+    }
   }
 
   @override
@@ -83,6 +119,7 @@ class _StartExercisePageState extends State<StartExercisePage> {
                   onPressed: () {
                     setState(() {
                       sets.removeAt(index);
+                      isChecked.removeAt(index);
                       widget.exercise.sets = sets;
                     });
                   },

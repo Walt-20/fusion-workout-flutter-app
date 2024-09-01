@@ -62,8 +62,21 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
     try {
       final fetchedExercises = await _auth.fetchExercises(widget.selectedDate);
 
+      debugPrint("What is fetchedExercises? ${fetchedExercises.toString()}");
+
       setState(() {
         _selectedExercises = fetchedExercises.map((exerciseMap) {
+          // Check if 'sets' is an integer
+          int? numberOfSets = exerciseMap['sets'] as int?;
+
+          // Create a default list of ExerciseSet if needed
+          List<ExerciseSet>? sets = numberOfSets != null
+              ? List.generate(
+                  numberOfSets, (index) => ExerciseSet(reps: 0, weight: 0.0))
+              : [];
+
+          numberOfSets = sets.length;
+
           return Exercise(
             uid: exerciseMap['id'],
             name: exerciseMap['name'],
@@ -74,7 +87,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
             reps: (exerciseMap['reps'] as List<dynamic>?)
                 ?.map((e) => e as int? ?? 0)
                 .toList(),
-            sets: exerciseMap['sets'],
+            sets: sets, // Set 'sets' based on the integer value
             weight: (exerciseMap['weight'] as List<dynamic>?)
                 ?.map((e) => e as double? ?? 0.0)
                 .toList(),
@@ -88,13 +101,12 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
   }
 
   Future<void> _addExerciseToFirebase(Exercise exercise) async {
-    String uid = const Uuid().v4();
     Map<String, dynamic> exerciseMap = {
-      'id': uid,
+      'id': exercise.uid,
       'name': exercise.name,
       'muscle': exercise.muscle,
       'reps': exercise.reps,
-      'sets': exercise.sets ?? [],
+      'sets': exercise.sets,
       'weight': exercise.weight,
       'completed': exercise.completed,
     };
@@ -214,10 +226,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                 ),
                               ),
                               subtitle: Text(
-                                'Muscle: ${exercise.muscle}\n'
-                                'Reps: ${exercise.reps?.join(',') ?? "Click to add reps"}\n'
-                                'Sets: ${exercise.sets ?? "Click to add sets"}\n'
-                                'Weight: ${exercise.weight?.join(',') ?? "Click to add weights"}',
+                                'Muscle: ${exercise.muscle}\n',
                                 style: TextStyle(
                                   color: exercise.completed == true
                                       ? Colors.grey[500]
@@ -303,6 +312,8 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                 setState(() {
                                   if (!_selectedExercises
                                       .contains(list[index])) {
+                                    String uid = const Uuid().v4();
+                                    list[index].uid = uid;
                                     _selectedExercises.insert(0, list[index]);
                                     _addExerciseToFirebase(list[index]);
                                   }

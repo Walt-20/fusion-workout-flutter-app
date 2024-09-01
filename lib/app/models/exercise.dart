@@ -12,9 +12,9 @@ class Exercise {
   final String equipment;
   final String difficulty;
   final String instructions;
-  List<dynamic>? reps;
+  List<int>? reps;
   List<ExerciseSet>? sets;
-  List<dynamic>? weight;
+  List<double>? weight;
   bool? completed;
   String? uid;
 
@@ -25,12 +25,13 @@ class Exercise {
     required this.equipment,
     required this.difficulty,
     required this.instructions,
-    List<dynamic>? reps,
-    List<dynamic>? sets,
-    List<dynamic>? weight,
+    List<int>? reps,
+    List<ExerciseSet>? sets,
+    List<double>? weight,
     this.completed = false,
     this.uid,
   })  : reps = reps ?? [],
+        sets = sets ?? [],
         weight = weight ?? [];
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
@@ -55,4 +56,11 @@ class ExerciseSet {
   double weight;
 
   ExerciseSet({required this.reps, required this.weight});
+
+  factory ExerciseSet.fromJson(Map<String, dynamic> json) {
+    return ExerciseSet(
+      reps: json['reps'] as int,
+      weight: json['weight'] as double,
+    );
+  }
 }
