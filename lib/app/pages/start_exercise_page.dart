@@ -24,56 +24,16 @@ class _StartExercisePageState extends State<StartExercisePage> {
   @override
   void initState() {
     super.initState();
-    _fetchExerciseData();
+    sets = widget.exercise.sets ?? [];
+    isChecked = List<bool>.filled(sets.length, false, growable: true);
   }
 
   void _addSetToFirestore(Exercise exercise) async {
     debugPrint("The exercise UID is ${exercise.uid}");
     debugPrint("Exercise completed is ${exercise.completed}");
-    exercise.updateRepsAndWeight();
-    Map<String, dynamic> exerciseMap = {
-      'id': exercise.uid,
-      'name': exercise.name,
-      'muscle': exercise.muscle,
-      'reps': exercise.reps,
-      'sets': sets.length, // Store the count of sets
-      'weight': exercise.weight,
-      'completed': exercise.completed,
-    };
-    await _auth.updateExerciseInFirebase(widget.selectedDate, exerciseMap);
-  }
-
-  Future<void> _fetchExerciseData() async {
-    try {
-      final fetchedExercises = await _auth.fetchExercises(widget.selectedDate);
-
-      final exerciseData = fetchedExercises.firstWhere(
-        (exercise) => exercise['id'] == widget.exercise.uid,
-        orElse: () => {},
-      );
-
-      if (exerciseData != null) {
-        setState(() {
-          // Initialize reps and weight from the fetched data
-          widget.exercise.reps = (exerciseData['reps'] as List<dynamic>?)
-                  ?.map((e) => e as int)
-                  .toList() ??
-              [];
-          widget.exercise.weight = (exerciseData['weight'] as List<dynamic>?)
-                  ?.map((e) => e as double)
-                  .toList() ??
-              [];
-
-          // Initialize sets based on the integer value from Firebase
-          int numberOfSets = exerciseData['sets'] as int? ?? 0;
-          sets = List.generate(
-              numberOfSets, (index) => ExerciseSet(reps: 0, weight: 0.0));
-          isChecked = List<bool>.filled(numberOfSets, false, growable: true);
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching exercise data: $e");
-    }
+    Map<String, dynamic> exerciseMap = exercise.toJson();
+    debugPrint("what is exercise map? ${exerciseMap.toString()}");
+    await _auth.updateSetsInDatabase(widget.selectedDate, exerciseMap);
   }
 
   @override
@@ -90,9 +50,25 @@ class _StartExercisePageState extends State<StartExercisePage> {
               children: [
                 Expanded(
                   child: TextFormField(
-                    decoration: InputDecoration(labelText: 'Reps'),
+                    decoration: const InputDecoration(
+                      labelText: 'Reps',
+                      labelStyle: TextStyle(
+                        color: Color.fromARGB(237, 255, 134, 21),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        ),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        ),
+                      ),
+                    ),
                     keyboardType: TextInputType.number,
                     initialValue: sets[index].reps.toString(),
+                    cursorColor: const Color.fromARGB(237, 255, 134, 21),
                     onChanged: (value) {
                       setState(() {
                         sets[index].reps = int.tryParse(value) ?? 0;
@@ -104,9 +80,25 @@ class _StartExercisePageState extends State<StartExercisePage> {
                 SizedBox(width: 16),
                 Expanded(
                   child: TextFormField(
-                    decoration: InputDecoration(labelText: 'Weight'),
+                    decoration: const InputDecoration(
+                      labelText: 'Weight',
+                      labelStyle: TextStyle(
+                        color: Color.fromARGB(237, 255, 134, 21),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        ),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color.fromARGB(237, 255, 134, 21),
+                        ),
+                      ),
+                    ),
                     keyboardType: TextInputType.number,
                     initialValue: sets[index].weight.toString(),
+                    cursorColor: Color.fromARGB(237, 255, 134, 21),
                     onChanged: (value) {
                       setState(() {
                         sets[index].weight = double.tryParse(value) ?? 0.0;
@@ -121,18 +113,18 @@ class _StartExercisePageState extends State<StartExercisePage> {
                       sets.removeAt(index);
                       isChecked.removeAt(index);
                       widget.exercise.sets = sets;
+                      _addSetToFirestore(widget.exercise);
                     });
                   },
                   icon: Icon(Icons.delete),
                 ),
                 Checkbox(
-                  value: isChecked[index],
+                  value: sets[index].isDone,
+                  activeColor: Color.fromARGB(237, 255, 134, 21),
                   onChanged: (bool? value) {
                     setState(() {
-                      isChecked[index] = value ?? false;
-                      if (isChecked[index]) {
-                        _addSetToFirestore(widget.exercise);
-                      }
+                      sets[index].isDone = value ?? false;
+                      _addSetToFirestore(widget.exercise);
                     });
                   },
                 ),
@@ -142,9 +134,10 @@ class _StartExercisePageState extends State<StartExercisePage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Color.fromARGB(237, 255, 134, 21),
         onPressed: () {
           setState(() {
-            sets.add(ExerciseSet(reps: 0, weight: 0.0));
+            sets.add(ExerciseSet(reps: 0, weight: 0.0, isDone: false));
             isChecked.add(false);
             widget.exercise.sets = sets;
           });

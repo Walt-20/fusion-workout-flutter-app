@@ -154,6 +154,47 @@ class FirebaseAuthService {
     }, SetOptions(merge: true));
   }
 
+  Future<void> updateSetsInDatabase(
+      DateTime date, Map<String, dynamic> updatedExercise) async {
+    final dateString = DateFormat('yyyy-MM-dd').format(date);
+
+    final docRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('exercises')
+        .doc(dateString);
+
+    final docSnapshot = await docRef.get();
+
+    if (docSnapshot.exists) {
+      List<dynamic> existingExercises = docSnapshot.data()?['exercises'] ?? [];
+
+      debugPrint(
+          "what is the existingExercies? ${existingExercises.toString()}");
+
+      int exerciseIndex = existingExercises
+          .indexWhere((exercise) => exercise['uid'] == updatedExercise['uid']);
+
+      debugPrint("what is the exercise index ${exerciseIndex}");
+
+      if (exerciseIndex != -1) {
+        debugPrint(
+            "what is the exercise before ${existingExercises[exerciseIndex].toString()}");
+
+        existingExercises[exerciseIndex] = updatedExercise;
+
+        debugPrint(
+            "what is the exercise now ${existingExercises[exerciseIndex].toString()}");
+
+        await docRef.update({'exercises': existingExercises});
+      } else {
+        debugPrint("issue with exercise index");
+      }
+    } else {
+      debugPrint("issue with docSnap");
+    }
+  }
+
   Future<void> updateExerciseInFirebase(
       DateTime date, Map<String, dynamic> exercise) async {
     final dateString = DateFormat('yyyy-MM-dd').format(date);

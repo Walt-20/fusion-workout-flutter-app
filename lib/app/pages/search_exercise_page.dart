@@ -65,34 +65,8 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       debugPrint("What is fetchedExercises? ${fetchedExercises.toString()}");
 
       setState(() {
-        _selectedExercises = fetchedExercises.map((exerciseMap) {
-          // Check if 'sets' is an integer
-          int? numberOfSets = exerciseMap['sets'] as int?;
-
-          // Create a default list of ExerciseSet if needed
-          List<ExerciseSet>? sets = numberOfSets != null
-              ? List.generate(
-                  numberOfSets, (index) => ExerciseSet(reps: 0, weight: 0.0))
-              : [];
-
-          numberOfSets = sets.length;
-
-          return Exercise(
-            uid: exerciseMap['id'],
-            name: exerciseMap['name'],
-            muscle: exerciseMap['muscle'],
-            equipment: exerciseMap['equipment'] ?? '',
-            difficulty: exerciseMap['difficulty'] ?? '',
-            instructions: exerciseMap['instructions'] ?? '',
-            reps: (exerciseMap['reps'] as List<dynamic>?)
-                ?.map((e) => e as int? ?? 0)
-                .toList(),
-            sets: sets, // Set 'sets' based on the integer value
-            weight: (exerciseMap['weight'] as List<dynamic>?)
-                ?.map((e) => e as double? ?? 0.0)
-                .toList(),
-            completed: exerciseMap['completed'],
-          );
+        _selectedExercises = fetchedExercises.map<Exercise>((exerciseMap) {
+          return Exercise.fromFirebaseJson(exerciseMap);
         }).toList();
       });
     } catch (e) {
@@ -101,15 +75,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
   }
 
   Future<void> _addExerciseToFirebase(Exercise exercise) async {
-    Map<String, dynamic> exerciseMap = {
-      'id': exercise.uid,
-      'name': exercise.name,
-      'muscle': exercise.muscle,
-      'reps': exercise.reps,
-      'sets': exercise.sets,
-      'weight': exercise.weight,
-      'completed': exercise.completed,
-    };
+    Map<String, dynamic> exerciseMap = exercise.toJson();
 
     await _auth.addExerciseToFirestore(widget.selectedDate, [exerciseMap]);
 
@@ -123,9 +89,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
       'id': exercise.uid,
       'name': exercise.name,
       'muscle': exercise.muscle,
-      'reps': exercise.reps,
       'sets': exercise.sets ?? [],
-      'weight': exercise.weight,
       'completed': exercise.completed,
     };
     await _auth.updateExerciseInFirebase(widget.selectedDate, exerciseMap);
@@ -184,9 +148,7 @@ class _SearchExercisePageState extends State<SearchExercisePage> {
                                   equipment: exercise.equipment,
                                   difficulty: exercise.difficulty,
                                   instructions: exercise.instructions,
-                                  reps: result['reps'],
                                   sets: result['sets'],
-                                  weight: result['weight'],
                                   completed: exercise.completed,
                                   type: '',
                                 );
