@@ -553,7 +553,8 @@ class FirebaseAuthService {
   }
 
   Future<Map<String, dynamic>> fetchFoods(String foodId) async {
-    final url = Uri.parse('http://10.0.2.2:3000/fetch-food-id');
+    final url = Uri.parse(
+        'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/fetch-food-id');
 
     try {
       final response = await http.get(
@@ -592,7 +593,8 @@ class FirebaseAuthService {
   }
 
   Future<void> fetchFoodIdFromAPI(String foodId) async {
-    final url = Uri.parse('http://10.0.2.2:3000/fetch-foodId');
+    final url = Uri.parse(
+        'http://proxy-backend-api-fusion-env.eba-semam5sh.us-east-2.elasticbeanstalk.com/fetch-foodId');
 
     try {
       final response =
