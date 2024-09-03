@@ -9,7 +9,6 @@ import 'package:fusion_workouts/app/models/food.dart';
 import 'package:fusion_workouts/app/models/food_database.dart';
 import 'package:fusion_workouts/app/pages/search_exercise_page.dart';
 import 'package:fusion_workouts/app/pages/search_food_page.dart';
-import 'package:fusion_workouts/app/widgets/exercise_details_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -205,30 +204,48 @@ class _DashboardPageState extends State<DashboardPage>
     await _auth.updateMoveExerciseInFirebase(_focusedDay, [exerciseMap]);
   }
 
-  num calculateTotalCalories(
-      Map<String, List<FoodForDatabase>> nutritionalData) {
+  Future<Map<String, num>> calculateNutritionalValues(
+      Map<String, List<FoodForDatabase>> nutritionalData) async {
     num totalCalories = 0;
-
-    // ignore: unnecessary_set_literal
-    nutritionalData.forEach((key, value) {
-      for (var food in value) {
-        totalCalories += num.parse(food.totalCalories);
-      }
-    });
-
-    return totalCalories;
-  }
-
-  num calculateTotalProtein(
-      Map<String, List<FoodForDatabase>> nutritionalData) {
     num totalProtein = 0;
+    num totalCarbs = 0;
+    num totalFats = 0;
 
-    nutritionalData.forEach((key, value) {
-      for (var food in value) {
-        totalProtein += num.parse(food.totalProtein);
+    for (var entry in nutritionalData.entries) {
+      for (var food in entry.value) {
+        // Fetch food data
+        var foodData = await _auth.fetchFoods(food.foodId);
+
+        // Access the list of servings
+        var servingDataList = foodData['servings'] as Map<String, dynamic>;
+
+        // Find the matching serving
+        for (var servingData in servingDataList['serving']) {
+          // Each servingData is a map, so we can access its fields
+          var servingId = servingData['serving_id'];
+          var calories = servingData['calories'] ?? 0;
+          var protein = servingData['protein'] ?? 0;
+          var carbohydrate = servingData['carbohydrate'] ?? 0;
+          var fat = servingData['fat'] ?? 0;
+
+          // Compare serving_id and add calories if it matches
+          if (servingId == food.servingId) {
+            totalCalories += num.parse(calories);
+            totalProtein += num.parse(protein);
+            totalCarbs += num.parse(carbohydrate);
+            totalFats += num.parse(fat);
+            break; // Exit loop once the correct serving is found
+          }
+        }
       }
-    });
-    return totalProtein;
+    }
+
+    return {
+      'calories': totalCalories,
+      'proteins': totalProtein,
+      'carbs': totalCarbs,
+      'fats': totalFats,
+    };
   }
 
   void _onItemTapped(int index) {
@@ -263,8 +280,9 @@ class _DashboardPageState extends State<DashboardPage>
           context,
           MaterialPageRoute(
             builder: (context) => SearchFoodPage(
-                selectedDate: _selectedDay ?? DateTime.now(),
-                onFoodAdded: _fetchNutritionalDataFromDatabase),
+              selectedDate: _selectedDay ?? DateTime.now(),
+              onFoodAdded: _fetchNutritionalDataFromDatabase,
+            ),
           ),
         );
         break;
@@ -323,7 +341,7 @@ class _DashboardPageState extends State<DashboardPage>
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           Align(
-            alignment: Alignment.bottomCenter,
+            alignment: Alignment.center,
             child: GestureDetector(
               onTap: () {
                 launchUrl(
@@ -332,7 +350,8 @@ class _DashboardPageState extends State<DashboardPage>
               },
               child: SvgPicture.network(
                 'https://platform.fatsecret.com/api/static/images/powered_by_fatsecret.svg',
-                height: 50,
+                height: 25,
+                width: 25,
               ),
             ),
           ),
@@ -374,7 +393,7 @@ class _DashboardPageState extends State<DashboardPage>
               const SizedBox(height: 16.0),
               Container(
                 width: MediaQuery.of(context).size.width * 0.95,
-                height: MediaQuery.of(context).size.height * 0.35,
+                height: MediaQuery.of(context).size.height * 0.70,
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -392,25 +411,54 @@ class _DashboardPageState extends State<DashboardPage>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Center(
-                      child: Text(
-                        "Calories: ${calculateTotalCalories(nutritionalData)} kcal",
-                        style: const TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    Center(
-                      child: Text(
-                        "Protein: ${calculateTotalProtein(nutritionalData)} g",
-                        style: const TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
+                    FutureBuilder<Map<String, num>>(
+                      future: calculateNutritionalValues(nutritionalData),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          var data = snapshot.data!;
+                          return Column(
+                            children: [
+                              Text(
+                                "Calories: ${data['calories']} kcal",
+                                style: const TextStyle(
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                "Protein: ${data['proteins']!.toStringAsFixed(2)} g",
+                                style: const TextStyle(
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                "Carbs: ${data['carbs']!.toStringAsFixed(2)} g",
+                                style: const TextStyle(
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                "Fats: ${data['fats']!.toStringAsFixed(2)} g",
+                                style: const TextStyle(
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),

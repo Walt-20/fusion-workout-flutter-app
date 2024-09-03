@@ -36,8 +36,6 @@ class _FoodDetailsDialogState extends State<FoodDetailsDialog> {
 
     if (map != null) {
       setState(() {
-        _totalCalories = map['totalCalories'];
-        _totalProtein = map['totalProtein'];
         _numberOfServings = map['numberOfServings'];
       });
     }

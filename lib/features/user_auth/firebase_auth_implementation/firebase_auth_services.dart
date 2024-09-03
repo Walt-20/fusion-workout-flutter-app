@@ -560,8 +560,6 @@ class FirebaseAuthService {
         Uri.parse('$url?searchExpression=$foodId'),
       );
 
-      debugPrint("whats that response? $response");
-
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
 
