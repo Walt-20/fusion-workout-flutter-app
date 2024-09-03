@@ -115,14 +115,10 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
 
   void _updateSelectedFood(
       Food food, String servingId, String numberOfServings) {
-    var nutritionalData =
-        _calculateNutritionalData(food, servingId, numberOfServings);
     _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
       foodId: food.foodId,
       servingId: servingId,
       numberOfServings: numberOfServings,
-      totalCalories: nutritionalData[0].toString(),
-      totalProtein: nutritionalData[1].toString(),
     ));
 
     widget.onFoodAdded();
@@ -132,15 +128,11 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
       Food food, String servingId, String numberOfServings, bool isAdding) {
     setState(() {
       if (isAdding) {
-        var nutritionalData =
-            _calculateNutritionalData(food, servingId, numberOfServings);
         _selectedFoodsByMeal[_selectedMeal]!.add(food);
         _selectedFoodForDatabase[_selectedMeal]!.add(FoodForDatabase(
           foodId: food.foodId,
           servingId: servingId,
           numberOfServings: numberOfServings,
-          totalCalories: nutritionalData[0].toString(),
-          totalProtein: nutritionalData[1].toString(),
         ));
         debugPrint(
             "what is _selectedFoodForDatabase now? ${_selectedFoodForDatabase['numberOfServings']}");
@@ -180,7 +172,7 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           Align(
-            alignment: Alignment.bottomCenter,
+            alignment: Alignment.center,
             child: GestureDetector(
               onTap: () {
                 launchUrl(
@@ -189,7 +181,8 @@ class _SearchFoodPageState extends State<SearchFoodPage> {
               },
               child: SvgPicture.network(
                 'https://platform.fatsecret.com/api/static/images/powered_by_fatsecret.svg',
-                height: 50,
+                height: 25,
+                width: 25,
               ),
             ),
           ),
