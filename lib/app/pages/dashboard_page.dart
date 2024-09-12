@@ -230,10 +230,13 @@ class _DashboardPageState extends State<DashboardPage>
 
           // Compare serving_id and add calories if it matches
           if (servingId == food.servingId) {
-            totalCalories += num.parse(calories);
-            totalProtein += num.parse(protein);
-            totalCarbs += num.parse(carbohydrate);
-            totalFats += num.parse(fat);
+            totalCalories +=
+                num.parse(calories) * num.parse(food.numberOfServings);
+            totalProtein +=
+                num.parse(protein) * num.parse(food.numberOfServings);
+            totalCarbs +=
+                num.parse(carbohydrate) * num.parse(food.numberOfServings);
+            totalFats += num.parse(fat) * num.parse(food.numberOfServings);
             break; // Exit loop once the correct serving is found
           }
         }
